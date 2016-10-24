@@ -63,8 +63,8 @@
   + Graph representation of variation in reference genome + input contigs
     + Format: _VG_, _GFA_?
 + Tools:
-  + SAMtools or BAMtools?
+  + **BAM to VCF** (does not exist)
   + vg
   + **Wrapper** (does not exist)
-    + Convert BAM alignment to VCF using [SB]AMtools
+    + Convert BAM alignment to VCF
     + Call vg to convert VCF to vg or gfa format
