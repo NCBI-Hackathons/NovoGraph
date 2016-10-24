@@ -53,6 +53,7 @@
     alignment file
   + MAFFT
   + **Wrappers** (do not exist)
+    + Window size specification?
 
 ### Step 3: Create graph genome!
 + Input:
