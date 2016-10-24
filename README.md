@@ -25,12 +25,31 @@
     + Format: _FASTA_ (text)
   + Individual contigs
     + Format: _FASTA_ (text)
-  + Local alignment (output of Step 1)
+  + Local alignment (output of step 1)
     + Format: _BAM_ (binary)
 + Output:
   + Global alignment where each contig has a single alignment
     + Format: _BAM_ (binary)
 + Tools:
   + **Local To Global Alignment** (does not exist)
+  + **Wrappers**? (do not exist)
 
-  
+### Step 2 Divide and conquer multiple sequence alignment
++ Input:
+  + Global alignment of all contigs (output of step 1.1)
+    + Format: _BAM_ (binary)
++ Output:
+  + Single global multiple sequence alignment
+    + Format: _BAM_ (binary)
++ Tools:
+  + **AMC** (does not exist; although some C++ code exists to accomplish part
+    of this)
+    1. Identify window coordinates (start with windows of size ~10kb) in
+    alignment file
+    2. Extract sequence data for each window
+    3. Convert window to FASTA format
+    4. Run MAFFT for each window [could be parallelized]
+    5. Reassemble the individual multiple sequence alignments into a single
+    alignment file
+  + MAFFT
+  + **Wrappers** (do not exist)
