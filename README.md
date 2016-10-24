@@ -19,7 +19,7 @@
     + Collect paths (input and output files) (validate?)
     + Call BWA
 
-### Step 1.1 Globally align all contigs
+### Step 1.1: Globally align all contigs
 + Input:
   + Reference genome (GRCh38)
     + Format: _FASTA_ (text)
@@ -34,7 +34,7 @@
   + **Local To Global Alignment** (does not exist)
   + **Wrappers**? (do not exist)
 
-### Step 2 Divide and conquer multiple sequence alignment
+### Step 2: Divide and conquer multiple sequence alignment
 + Input:
   + Global alignment of all contigs (output of step 1.1)
     + Format: _BAM_ (binary)
@@ -53,3 +53,17 @@
     alignment file
   + MAFFT
   + **Wrappers** (do not exist)
+
+### Step 3: Create graph genome!
++ Input:
+  + Single global multiple sequence alignment (output of step 2)
+    + Format: _BAM_ (binary)
++ Output:
+  + Graph representation of variation in reference genome + input contigs
+    + Format: _VG_, _GFA_?
++ Tools:
+  + SAMtools or BAMtools?
+  + vg
+  + **Wrapper** (does not exist)
+    + Convert BAM alignment to VCF using [SB]AMtools
+    + Call vg to convert VCF to vg or gfa format
