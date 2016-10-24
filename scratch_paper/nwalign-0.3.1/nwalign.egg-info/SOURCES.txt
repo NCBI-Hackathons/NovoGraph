@@ -1,0 +1,12 @@
+README.txt
+setup.py
+nwalign/__init__.py
+nwalign/cnwalign.c
+nwalign/nwserver.py
+nwalign.egg-info/PKG-INFO
+nwalign.egg-info/SOURCES.txt
+nwalign.egg-info/dependency_links.txt
+nwalign.egg-info/entry_points.txt
+nwalign.egg-info/not-zip-safe
+nwalign.egg-info/requires.txt
+nwalign.egg-info/top_level.txt
