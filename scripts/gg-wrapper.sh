@@ -40,6 +40,7 @@ done
 # + Window size specification?
 # + Call AMC
 # + MAFFT alignment
+# ./align_mafft.sh -o $OUTFILE $FASTA1 $FASTA2 ... $FASTAN
 
 ### Step 3: Create graph genome!
 # + Call BAM to VCF
