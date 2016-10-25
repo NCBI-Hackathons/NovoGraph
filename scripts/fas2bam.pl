@@ -71,7 +71,7 @@ foreach my $entry (sort keys %{$rh_entry_seqs}) {
     next if ($entry eq $ref_entry);
 
     my ($sam_start, $cigar_string, $rs_entryseq, $ra_vars) = parse_alignment($rh_entry_seqs, $entry, $ref_entry);
-    print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t$$rs_entryseq\t*\n";
+    print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t*\t0\t0\t$$rs_entryseq\t*\n";
 }
 
 #------------
