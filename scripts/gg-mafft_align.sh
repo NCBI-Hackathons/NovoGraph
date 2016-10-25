@@ -89,16 +89,21 @@ function align(){
   fi
 
 #  gg-wrapper-fas2bam
-  ./fas2bam.pl --fas $outputfile --ref "ref" --bamheader "config/windowbamheader.txt"
+
+
+#echo "input is $outputfile and output is $3"
+  bamoutput="$3/$filename.bam"
+  echo "BAM NAME: $bamoutput";
+  ./fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "config/windowbamheader.txt"
 
 }
 
 export -f align
 
 
-copyEmpty
+#copyEmpty
 
-parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+parallel -j 1  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 
