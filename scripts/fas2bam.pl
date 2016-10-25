@@ -82,7 +82,7 @@ sub process_commandline {
     
     # Set defaults here
     %Opt = ( );
-    GetOptions(\%Opt, qw( ref=s fas=s
+    GetOptions(\%Opt, qw( ref=s fas=s bamheader=s
                 manual help+ version
                 verbose 
                 )) || pod2usage(0);
