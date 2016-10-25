@@ -5,24 +5,18 @@ usage() {
   exit 1
 }
 
-INPUTFILES=();
 
-while getopts ":o:f:" opt; do
+while getopts ":o:i:" opt; do
   case "${opt}" in
     o)
       OUTFILE=${OPTARG}
-      if [ ! -r $OUTFILE ]; then
-        echo "Output file $OUTFILE does not exist or it is not readable."
-        usage
-      fi
       ;;
-    f)
-	  INPUTFILE=$OPTARG
-      if [ ! -r $INPUTFILE ]; then
-        echo "Input file $INPUTFILE does not exist or is not readable."
+    i)
+	  INPUTDIRECTORY=$OPTARG
+      if [ ! -r $INPUTDIRECTORY ]; then
+        echo "Input file $INPUTDIRECTORY does not exist or is not readable."
         usage
       fi
-      INPUTFILES+=("$INPUTFILE")
       ;;
     *)
       echo -e "\nUnrecognized option: -${OPTARG}"
@@ -31,11 +25,23 @@ while getopts ":o:f:" opt; do
   esac
 done
 
-for file in "${INPUTFILES[@]}"; do
+
+
+
+INPUTFILES=`ls $INPUTDIRECTORY`
+
+
+for fullfile in "${INPUTFILES[@]}"; do
+	filename=$(basename "$fullfile")
+	extension="${filename##*.}"
+	filename="${filename%.*}"
+
+	outputfile="${filename}_aligned.fa"
+#    echo "$filename from $fullfile" 
 	# ## -op and -ep 
 	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 input_file.fa > output_file.fa 
-
-	mafft --globalpair --thread 12 --reorder aligned --maxiterate 1000 $file >> $outfile
+#   echo $file
+	mafft --globalpair --thread 1 --reorder aligned --maxiterate 10 $fullfile > $outfile
 done
 
 
