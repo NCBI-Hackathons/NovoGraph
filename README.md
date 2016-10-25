@@ -54,6 +54,7 @@
   + MAFFT
   + **Wrappers** (do not exist)
     + Window size specification?
+    + Call AMC
 
 ### Step 3: Create graph genome!
 + Input:
