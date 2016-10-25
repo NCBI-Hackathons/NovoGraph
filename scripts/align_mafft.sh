@@ -36,22 +36,24 @@ if [ -z ${OUTFILE+x} ]; then
 fi
 
 
-
-INPUTFILES=`ls $INPUTDIRECTORY`
+i=0
+while read line
+do
+    INPUTFILES[ $i ]="$line"        
+    (( i++ ))
+done < <(ls $INPUTDIRECTORY)
 
 
 for fullfile in "${INPUTFILES[@]}"; do
-	filename=$(basename "$fullfile")
-	extension="${filename##*.}"
-	filename="${filename%.*}"
-
-	outputfile="${filename}_aligned.fa"
-#    echo "$filename from $fullfile" 
-	# ## -op and -ep 
-	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 input_file.fa > output_file.fa 
-#   echo $file
-	mafft --globalpair --thread 1 --reorder aligned --maxiterate 10 $fullfile > $outfile
+  filename=$(basename "$fullfile");
+  extension="${filename##*.}";
+  filename="${filename%.*}";
+  
+  outputfile="${INPUTDIRECTORY}/${filename}_aligned.fa";
+  mafft --auto --maxiterate 10 ${INPUTDIRECTORY}/$fullfile > $outputfile
 done
+
+
 
 
 
