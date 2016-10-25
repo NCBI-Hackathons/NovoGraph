@@ -88,13 +88,8 @@ function align(){
      cp -f $1 $outputfile
   fi
 
-#  gg-wrapper-fas2bam
-
-
-#echo "input is $outputfile and output is $3"
   bamoutput="$3/$filename.bam"
-  echo "BAM NAME: $bamoutput";
-  ./fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "config/windowbamheader.txt"
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "config/windowbamheader.txt"
 
 }
 
