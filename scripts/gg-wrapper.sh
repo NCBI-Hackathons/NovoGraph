@@ -45,15 +45,29 @@ LOCALBAMFILE="localbam"
 ./gg-01.1-local.sh -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
 
 ### Step 2: Divide and conquer multiple sequence alignment
-# Call AMC for window identification, extraction, and FASTA conversion
-# TODO: need to update BAM2MAFFT.pl so it accepts the two arguments
-perl BAM2MAFFT.pl $REFFASTA $LOCALBAMFILE
+# Call BAM2MAFFT for window identification, extraction, and FASTA conversion
+perl BAM2MAFFT.pl --referenceFasta $REFFASTA --BAM $LOCALBAMFILE
 
-# + MAFFT alignment
+# MAFFT alignment
+# TODO: check the arguments for this path; it might just take two arguments:
+# The output destination for FASTA files, and input directory for FASTA
 ./align_mafft.sh -o $OUTFILE $FASTA1 $FASTA2 ... $FASTAN
-# + Call AMC
 
+# Many FASTA -> Many BAM
+# TODO: The perl script fas2bam.pl needs to be called for each window (ideally
+# in parallel; could just be added to updated version of align_mafft.sh)
+# perl fas2bam.pl --fas $OUTFILE --ref "ref" --bamheader $BAMHEADER
+
+# Many BAM -> single BAM
+$FINALBAM="finalbam.bam"
+# TODO: Insert call to Nancy's code here
 
 ### Step 3: Create graph genome!
-# + Call BAM to VCF
-# + Call vg to convert VCF to vg or gfa format
+$VCFFILE="myvcf.vcf"
+# BAM to VCF
+# TODO: Insert call to Andrew's code here
+
+# Call vg to convert VCF to vg or gfa format
+$VGOUTFILE="vgoutput.vg"
+# TODO: What is the small/x.fa argument? a reference genome?
+vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE

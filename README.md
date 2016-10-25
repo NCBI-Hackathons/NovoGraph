@@ -19,19 +19,16 @@
   + Single file of local alignments
     + Format: _BAM_ (binary)
 + Tools:
-  + BWA (exists)
-  + **Wrappers** (do not exist)
+  + BWA
+    + Status: _complete_ (installed)
+  + Wrappers
     + Collect paths (input and output files) (validate?)
     + Call BWA
-+ Status:
-  + BWA
-    + Status: _complete_
-  + Wrappers
     + Assignees:
       + Nathan?
       + Jeff
     + Status: in progress
-      + See scripts/gg-01-local.sh in GitHub repo
+      + scripts/gg-01-local.sh on GitHub
 
 ### Step 1.1: Globally align all contigs
 + Input:
@@ -45,22 +42,19 @@
   + Global alignment where each contig has a single alignment
     + Format: _BAM_ (binary)
 + Tools:
-  + **Local To Global Alignment** (does not exist)
-  + **Wrappers**? (do not exist)
-+ Status:
-  + Local to Global Alignment
+  + Local To Global Alignment
     + Assignees:
       + Evan
       + Aarti
     + Status:
-      + In progress, see NeedlemanWunsch.ph & NW_alignment_scratch.ph in scripts
-      directory on GitHub
+      + In progress
+      + scripts/NeedlemanWunsch.ph & scripts/NW_alignment_scratch.ph on GitHub
   + Wrappers
     + Assignees:
       + Nathan?
       + Jeff
     + Status: in progress
-      + See scripts/gg-01.1-local.sh in GitHub repo
+      + scripts/gg-01.1-local.sh on GitHub
 
 ### Step 2: Divide and conquer multiple sequence alignment
 + Input:
@@ -71,54 +65,43 @@
     + Format: _BAM_ (binary)
 + Tools:
   + MAFFT
-  + **AMC** (does not exist; although some C++ code exists to accomplish part
-    of this)
+    + Status: _complete_ (installed)
+  + AMC
     1. Identify window coordinates (start with windows of size ~10kb) in
     alignment file
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     2. Extract sequence data for each window
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     3. Convert window to FASTA format
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     4. Run MAFFT for each window [could be parallelized]
-    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
-    window)
-    6. Reassemble the individual BAM MSAs into a single BAM alignment file
-  + **Wrappers** (do not exist)
-    + Window size specification?
-    + Call AMC
-+ Status:
-  + MAFFT
-    + Status: complete
-  + AMC
-    1. Identify window coordinates
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + _Location for any code?_
-    2. Extract sequence data from BAM file
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + _Location for any code?_
-    3. Convert window to FASTA format
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + _Location for any code?_
-    4. Run MAFFT
       + Assignees:
         + Nathan
       + Status: in progress
-        + See scripts/align_mafft.sh in GitHub repo
-    5. Convert each FASTA alignment to BAM
+        + scripts/align_mafft.sh on GitHub
+    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
+    window)
       + Assignees:
         + Nancy
       + Status: _complete_
-        + _Location for any code?_
-    6. Concatenate each window-BAM to single BAM
+        + scripts/fas2bam.pl
+    6. Reassemble the individual BAM MSAs into a single BAM alignment file
       + Assignees:
         + Nancy
       + Status: in progress
         + _Location for any code?_
-  + Wrappers:
+  + Wrappers
+    + Window size specification?
+    + Call AMC
     + Assignees
       + Jeff?
     + Status: **not started**
@@ -131,17 +114,14 @@
   + Graph representation of variation in reference genome + input contigs
     + Format: _VG_, _GFA_?
 + Tools:
-  + **BAM to VCF** (does not exist)
-  + **Wrapper** (does not exist)
-    + Convert BAM alignment to VCF
-    + Call vg to convert VCF to vg or gfa format
-+ Status:
-  + BAM to VCF:
+  + BAM to VCF
     + Assignees:
       + Andrew
     + Status: in progress
       + _Location for any code?_
-  + Wrapper:
+  + Wrapper
+    + Convert BAM alignment to VCF
+    + Call vg to convert VCF to vg or gfa format
     + Assignees:
       + Jeff
     + Status: **not started**
@@ -150,4 +130,4 @@
 + Assignees:
   + Nathan
 + Status: in progress
-  + See docker-compose.yml & Dockerfile in top-level of GitHub repo  
+  + docker-compose.yml & Dockerfile in top-level of GitHub repo
