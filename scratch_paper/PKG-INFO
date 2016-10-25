@@ -1,0 +1,90 @@
+Metadata-Version: 1.0
+Name: nwalign
+Version: 0.3.1
+Summary: Needleman-Wunsch global sequence alignment
+Home-page: http://bitbucket.org/brentp/biostuff/
+Author: brentp
+Author-email: bpederse@gmail.com
+License: BSD
+Description: 
+        ------------------------------------------------------------------------------
+        nwalign: fast `cython`_  - `Needleman-Wunsch`_ alignment
+        ------------------------------------------------------------------------------
+        
+        .. _`Needleman-Wunsch`: http://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm
+        .. _`scoring matrix`: http://en.wikipedia.org/wiki/Substitution_matrix
+        .. _`cython`: http://cython.org
+        
+        This module provides a python module and a command-line interface to do global-
+        sequence alignment using the `Needleman-Wunsch` algorithm. It uses `cython`_
+        and numpy for speed.
+        
+        Command-Line Usage
+        ==================
+        the nwalign executable is installed to the PATH by setuptools
+        ::
+        
+        $ nwalign alphabet alpet
+        alphabet
+        alp---et
+        
+        specify an alignment `scoring matrix`_
+        ::
+        
+        $ nwalign --matrix /usr/share/ncbi/data/BLOSUM62 EEAEE EEEEG
+        EEAEE-
+        EE-EEG
+        
+        with specified penalties
+        ::
+        
+        $ nwalign --gap_open -10 --gap_extend -4 --match 12 ASDFF ASFF
+        ASDFF
+        AS-FF
+        
+        
+        Python Usage
+        ============
+        Alignment
+        ---------
+        ::
+        
+        >>> import nwalign as nw
+        >>> nw.global_align("CEELECANTH", "PELICAN", matrix='PAM250')
+        ('CEELE-CANTH', '-PEL-ICAN--')
+        
+        # with a specified penalty for open and extend.
+        >>> nw.global_align("CEELECANTH", "PELICAN", gap_open=-10, gap_extend=-4, matrix='PAM250')
+        ('CEELECANTH', '-PELICAN--')
+        
+        
+        the `matrix` is specified as the full path to an `scoring matrix`_ as
+        is distributed with the NCBI toolset.
+        
+        Scoring
+        -------
+        get the score of an alignment. (the first 2 args are from an alignment
+        and must have the same length.
+        ::
+        
+        >>> nw.score_alignment('CEELECANTH', '-PELICAN--', gap_open=-5,
+        ...                     gap_extend=-2, matrix='PAM250')
+        11
+        
+        >>> nw.score_alignment('CEELE-CANTH', '-PEL-ICAN--', gap_open=-5,
+        ...                     gap_extend=-2, matrix='PAM250')
+        6
+        
+        
+        
+Keywords: sequence bioinformatics alignment needleman-wunsch
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Text Processing
