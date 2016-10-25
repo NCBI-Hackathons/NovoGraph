@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO: pass in number of procs and threads
 usage() {
   echo "Usage: $0 [ -i <path to input files>  -o <path to output file>  ]  "
   exit 1
@@ -62,13 +63,12 @@ function copyEmpty(){
 	echo "Copied $i files."
 }
 
-#copyEmpty 
 
 function align(){
 
  echo $1 $2 $3
 
-  fullfile=$1 
+  fullfile=$1
   filename=$(basename "$fullfile");
   extension="${filename##*.}";
   filename="${filename%.*}";
@@ -88,13 +88,15 @@ function align(){
      cp -f $1 $outputfile
   fi
 
-#  if [ "$RESULT" eq "1" ]; then 
-#       cp -f $1 $outputfile
-#  fi 
+#  gg-wrapper-fas2bam
+  ./fas2bam.pl --fas $outputfile --ref "ref" --bamheader "config/windowbamheader.txt"
 
 }
-export -f align 
 
+export -f align
+
+
+copyEmpty
 
 parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
