@@ -46,13 +46,14 @@ my %saw_read_IDs;
 my @sequence_ids = $sam->seq_ids();
 foreach my $referenceSequenceID (@sequence_ids)
 {	
-	print "Processing $referenceSequenceID", "\n";
+	next unless($referenceSequenceID eq 'chr1');
+	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
 	
 	next unless(defined $reference_href->{$referenceSequenceID});
 
 	my @alignments = $sam->get_features_by_location(-seq_id => $referenceSequenceID);
 	
-	print "Region $referenceSequenceID, have ", scalar(@alignments), " alignments.\n";
+	print "\tRegion $referenceSequenceID, have ", scalar(@alignments), " alignments.\n";
 
 	my %sequences_per_window;
 	my @window_positions;
@@ -61,8 +62,9 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $n_alignment = 0;
 	foreach my $alignment (@alignments)
 	{
-		$n_alignment++;
-		next unless(rand() <= 0.0001);
+		$n_alignment++;		
+		print "\r\t\tProecessing ", $n_alignment, "  ", scalar(@alignments), " ...";
+		
 		my $alignment_start_pos = $alignment->start;
 		my ($ref,$matches,$query) = $alignment->padded_alignment;
 		# print $ref, "\n", $query, "\n\n";
@@ -87,6 +89,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 			}
 		}
 	}
+	print "\n";
 	
 	my $scanTarget = 100;
 	my $targetWindowSize = 10000;
@@ -96,11 +99,14 @@ foreach my $referenceSequenceID (@sequence_ids)
 		my $middleWindowPos = $potentialWindowPos + $targetWindowSize;
 		my $minWindowsPos = $middleWindowPos - $scanTarget;
 		my $maxWindowsPos = $middleWindowPos + $scanTarget;
+		last if($minWindowsPos >= $#contig_coverage);
+		
 		$minWindowsPos = 0 if($minWindowsPos < 0);
 		$maxWindowsPos = $#contig_coverage if ($maxWindowsPos > $#contig_coverage);
 		
 		my @actualWindowPos_options;
 		my %actualWindowPos_options_missing;
+		die unless($minWindowsPos <= $maxWindowsPos);
 		for(my $actualWindowPos = $minWindowsPos; $actualWindowPos <= $maxWindowsPos; $actualWindowPos++)
 		{
 			my $rate_missing = 0;
@@ -115,8 +121,10 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		if(scalar(@actualWindowPos_options) == 0)
 		{
-			last;
+			push(@actualWindowPos_options, $middleWindowPos);
+			$actualWindowPos_options_missing{$middleWindowPos} = 0;
 		}
+		
 		@actualWindowPos_options = sort {$actualWindowPos_options_missing{$a} <=> $actualWindowPos_options_missing{$b}} @actualWindowPos_options;
 		if(scalar(@actualWindowPos_options))
 		{
@@ -127,8 +135,9 @@ foreach my $referenceSequenceID (@sequence_ids)
 		$potentialWindowPos = $selectedWindowPos;
 	}
 	
-	print "Window starting positions (first window starting at 0 is implicit):\n";
-	print join("\n", map {' - ' . $_} @window_positions), "\n";
+	print "\tRegion $referenceSequenceID, have ", scalar(@window_positions), " windows.\n";
+	# print "Window starting positions (first window starting at 0 is implicit):\n";
+	# print join("\n", map {' - ' . $_} @window_positions), "\n";
 	die unless($#window_positions >= 0);
 	
 	my $intervalTree_windows = Set::IntervalTree->new;	
@@ -136,17 +145,25 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $max_pos = $#contig_coverage;
 	$window_switch_positions{$window_positions[0]} = 1;
 	$intervalTree_windows->insert('w0', 0, $window_positions[0]);
+	# print "Insert ", 0, " ", $window_positions[0], " as w0\n";	
 	$window_switch_positions{$window_positions[0]} = 'w1';
 	for(my $windowI = 1; $windowI <= $#window_positions; $windowI++)
 	{
-		$intervalTree_windows->insert('w'.$windowI, $window_positions[$windowI-1], $window_positions[$windowI]);
-		$window_switch_positions{$window_positions[$windowI]} = 'w'.($windowI+1);
-		# print "Insert ", $window_positions[$windowI-1], " ", $window_positions[$windowI], " as $windowI\n";
+		my $windowID_for_tree = 'w'.$windowI;
+		$intervalTree_windows->insert($windowID_for_tree, $window_positions[$windowI-1], $window_positions[$windowI]);
+		# print "Insert ", $window_positions[$windowI-1], " ", $window_positions[$windowI], " as $windowID_for_tree\n";
+		$window_switch_positions{$window_positions[$windowI]} = 'w'.($windowI+1);		
 	}
-	$intervalTree_windows->insert('w'.($#window_positions+1), $window_positions[$#window_positions], $max_pos+1);
-	# print "Insert ", $window_positions[$#window_positions], " ", $max_pos+1, " as ", $#window_positions+1, "\n";
+	
+	my $last_windowID_for_tree = 'w'.($#window_positions+1);
+	$intervalTree_windows->insert($last_windowID_for_tree, $window_positions[$#window_positions], $max_pos+1);
+	# print "Insert ", $window_positions[$#window_positions], " ", $max_pos+1, " as $last_windowID_for_tree\n";
 	
 	print WINDOWS join("\t", $referenceSequenceID, 0, 0, $window_positions[0] - 1), "\n";
+	my $first_window_idx_key = 'w0';
+	my $first_window_referenceSequence = substr($reference_href->{$referenceSequenceID}, 0, $window_positions[0]);
+	$sequences_per_window{$first_window_idx_key} = $first_window_referenceSequence;
+	
 	for(my $windowI = 0; $windowI <= $#window_positions; $windowI++)
 	{
 		if($windowI > 0)
@@ -160,7 +177,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 			my $retrieval_aref = $intervalTree_windows->fetch($windowPos,$windowPos+1);	
 			die unless(scalar(@$retrieval_aref) == 1);
 			
-			die Dumper("Problem with windows I",  $windowI, [$windowPos,$windowPos+1], $retrieval_aref, \@window_positions) unless($retrieval_aref->[0] eq ('w'.($windowI+1)));
+			die Dumper("Problem with windows I",  $windowI, [$windowPos,$windowPos+1], $retrieval_aref) unless($retrieval_aref->[0] eq ('w'.($windowI+1)));
 			die unless($window_switch_positions{$windowPos} eq ('w'.($windowI+1)));
 		}
 		
@@ -170,7 +187,6 @@ foreach my $referenceSequenceID (@sequence_ids)
 			die unless(scalar(@$retrieval_aref) == 1);
 			die unless($retrieval_aref->[0] eq ('w'.$windowI));
 		}
-		
 		
 		my $window_lastPos = (($windowI != $#window_positions) ? $window_positions[$windowI+1] - 1 : $max_pos );
 		
@@ -182,16 +198,22 @@ foreach my $referenceSequenceID (@sequence_ids)
 			$contig_coverage[$window_lastPos],
 			$contig_coverage_nonGap[$window_lastPos],
 		), "\n";
-	}	
+		
+		my $window_idx_key = 'w' . $referenceSequenceID;
+		my $referenceSequence = substr($reference_href->{$referenceSequenceID}, $window_positions[$windowI], $window_lastPos - $window_positions[$windowI] + 1);
+		$sequences_per_window{$window_idx_key} = $referenceSequence;
+	}
 	
+	$n_alignment = 0;
 	foreach my $alignment (@alignments)
 	{
-		next unless(rand() <= 0.001);
-		
+		$n_alignment++;
+		print "\r\t\tProecessing ", $n_alignment, "  ", scalar(@alignments), " ...";
+			
 		my $readID = $alignment->query->name;
 		if(exists $saw_read_IDs{$readID})
 		{
-			warn "Observed more than one alignment for read ID $readID - this should not happen!";
+			die "Observed more than one alignment for read ID $readID - this should not happen!";
 			next;
 		}
 		$saw_read_IDs{$readID}++;
@@ -249,28 +271,38 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		die unless((defined $firstPosition_reference) and (defined $lastPosition_reference));
 		print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $firstPosition_reference, $lastPosition_reference), "\n";
-	}
+	}	
+	print "\n";
 
 	foreach my $windowID (0 .. scalar(@window_positions))
 	{
 		my $window_idx_key = 'w' . $windowID;
 		my $output_fn = 'forMAFFT/' . $referenceSequenceID . '_' . $windowID . '.fa';
-		open(MAFFTOUT, '>', $output_fn) or die "Cannot open $output_fn";
+		my $is_open = 0;
 		foreach my $sequenceID (keys %{$sequences_per_window{$window_idx_key}})
 		{
 			my $sequence_for_emission = $sequences_per_window{$window_idx_key}{$sequenceID};
 			$sequence_for_emission =~ s/[\-_]//g;
 			if(length($sequence_for_emission))
 			{
+				unless($is_open)
+				{
+					open(MAFFTOUT, '>', $output_fn) or die "Cannot open $output_fn";
+					$is_open = 1;
+				}
 				print MAFFTOUT '>', $sequenceID, "\n";
-				print MAFFTOUT $sequences_per_window{$window_idx_key}{$sequenceID}, "\n";
+				print MAFFTOUT $sequence_for_emission, "\n";
 			}
 			else
 			{
 				print ALIGNMENTSONLYGAPS join("\t", $sequenceID, $referenceSequenceID, $windowID), "\n";			
 			}
 		}
-		close(MAFFTOUT);		
+		
+		if($is_open)
+		{
+			close(MAFFTOUT);		
+		}
 	}
 }
 
@@ -297,6 +329,7 @@ sub readFASTA
 		if(substr($line, 0, 1) eq '>')
 		{
 			$currentSequence = substr($line, 1);
+			$currentSequence =~ s/\s.+//;
 		}
 		else
 		{
