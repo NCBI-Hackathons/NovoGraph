@@ -31,9 +31,12 @@ while getopts ":o:f:" opt; do
   esac
 done
 
-#for val in "${INPUTFILES[@]}"; do
-#    echo " - $val"
-#done
+for file in "${INPUTFILES[@]}"; do
+	# ## -op and -ep 
+	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 input_file.fa > output_file.fa 
+
+	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 $file >> $outfile
+done
 
 
 
