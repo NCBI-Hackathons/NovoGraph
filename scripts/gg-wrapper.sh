@@ -58,28 +58,30 @@ BAM2MAFFT.pl --referenceFasta $REFFASTA --BAM $LOCALBAMFILE
 # MAFFT alignment
 # TODO: check the arguments for this path; it might just take two arguments:
 # The output destination for FASTA files, and input directory for FASTA
-./align_mafft.sh -o $OUTFILE $FASTA1 $FASTA2 ... $FASTAN
+FASTADIR=""
+BAMDIR=""
+./align_mafft.sh -i $FASTADIR -o $BAMDIR
 
 # Many FASTA -> Many BAM
 # TODO: The perl script fas2bam.pl needs to be called for each window (ideally
 # in parallel; could just be added to updated version of align_mafft.sh)
-# Almost certainly will be called from within align_mafft.sh (above)
 
 # Many BAM -> single BAM
-$FINALBAM="uberbam.bam"
-$BAMDIRS=""
-# TODO: Insert call to Nancy's code here
-# PSEUDOCALL:
-concatbam.pl -o $FINALBAM -i $BAMDIRS
+FINALBAM="uberbam.bam"
+CONTIGINFO="" # TODO: Formalize this location
+globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGINFO
+# globalize_windowbams.pl --fastadir <path to directory with inputs for MAFFT>
+#                         --msadir <path to directory with outputs from MAFFT>
+#                         --contigs <path to file with contig names/lengths>
 
 ### Step 3: Create graph genome!
-$VCFFILE="myvcf.vcf"
+VCFFILE="myvcf.vcf"
 # BAM to VCF
 # TODO: Insert call to Andrew's code here
 # PSEUDOCALL:
 bam2vcf.pl -b $FINALBAM -o $VCFFILE
 
 # Call vg to convert VCF to vg or gfa format
-$VGOUTFILE="vgoutput.vg"
+VGOUTFILE="vgoutput.vg"
 # TODO: What is the small/x.fa argument? a reference genome?
 vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE
