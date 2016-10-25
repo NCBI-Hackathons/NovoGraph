@@ -19,13 +19,13 @@
   + Single file of local alignments
     + Format: _BAM_ (binary)
 + Tools:
-  + BWA (exists)
-  + **Wrappers** (do not exist)
+  + BWA
+  + Wrappers
     + Collect paths (input and output files) (validate?)
     + Call BWA
 + Status:
   + BWA
-    + Status: _complete_
+    + Status: _complete_ (installed)
   + Wrappers
     + Assignees:
       + Nathan?
@@ -45,16 +45,16 @@
   + Global alignment where each contig has a single alignment
     + Format: _BAM_ (binary)
 + Tools:
-  + **Local To Global Alignment** (does not exist)
-  + **Wrappers**? (do not exist)
+  + Local To Global Alignment
+  + Wrappers
 + Status:
   + Local to Global Alignment
     + Assignees:
       + Evan
       + Aarti
     + Status:
-      + In progress, see NeedlemanWunsch.ph & NW_alignment_scratch.ph in scripts
-      directory on GitHub
+      + In progress, see scripts/NeedlemanWunsch.ph &
+      scripts/NW_alignment_scratch.ph in directory on GitHub
   + Wrappers
     + Assignees:
       + Nathan?
@@ -71,8 +71,7 @@
     + Format: _BAM_ (binary)
 + Tools:
   + MAFFT
-  + **AMC** (does not exist; although some C++ code exists to accomplish part
-    of this)
+  + AMC
     1. Identify window coordinates (start with windows of size ~10kb) in
     alignment file
     2. Extract sequence data for each window
@@ -81,12 +80,12 @@
     5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
     window)
     6. Reassemble the individual BAM MSAs into a single BAM alignment file
-  + **Wrappers** (do not exist)
+  + Wrappers
     + Window size specification?
     + Call AMC
 + Status:
   + MAFFT
-    + Status: complete
+    + Status: _complete_ (installed)
   + AMC
     1. Identify window coordinates
       + Assignees:
@@ -131,8 +130,8 @@
   + Graph representation of variation in reference genome + input contigs
     + Format: _VG_, _GFA_?
 + Tools:
-  + **BAM to VCF** (does not exist)
-  + **Wrapper** (does not exist)
+  + BAM to VCF
+  + Wrapper
     + Convert BAM alignment to VCF
     + Call vg to convert VCF to vg or gfa format
 + Status:
