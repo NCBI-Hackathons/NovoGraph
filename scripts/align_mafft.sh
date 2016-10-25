@@ -25,6 +25,15 @@ while getopts ":o:i:" opt; do
   esac
 done
 
+if [ -z ${INPUTDIRECTORY+x} ]; then 
+	echo "INPUTDIRECTORY is unset"; 
+	exit 1; 
+fi
+
+if [ -z ${OUTFILE+x} ]; then 
+	echo "OUTFILE is unset"; 
+	exit 1; 
+fi
 
 
 
