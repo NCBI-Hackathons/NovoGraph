@@ -9,12 +9,12 @@ usage() {
 while getopts ":o:i:" opt; do
   case "${opt}" in
     o)
-      OUTFILE=${OPTARG}
+      OUTPUT_DIRECTORY=${OPTARG}
       ;;
     i)
-	  INPUTDIRECTORY=$OPTARG
-      if [ ! -r $INPUTDIRECTORY ]; then
-        echo "Input file $INPUTDIRECTORY does not exist or is not readable."
+	  INPUT_DIRECTORY=$OPTARG
+      if [ ! -r $INPUT_DIRECTORY ]; then
+        echo "Input file $INPUT_DIRECTORY does not exist or is not readable."
         usage
       fi
       ;;
@@ -25,13 +25,13 @@ while getopts ":o:i:" opt; do
   esac
 done
 
-if [ -z ${INPUTDIRECTORY+x} ]; then 
-	echo "INPUTDIRECTORY is unset"; 
+if [ -z ${INPUT_DIRECTORY+x} ]; then 
+	echo "INPUT_DIRECTORY is unset"; 
 	exit 1; 
 fi
 
-if [ -z ${OUTFILE+x} ]; then 
-	echo "OUTFILE is unset"; 
+if [ -z ${OUTPUT_DIRECTORY+x} ]; then 
+	echo "OUTPUT_DIRECTORY is unset"; 
 	exit 1; 
 fi
 
@@ -41,7 +41,7 @@ while read line
 do
     INPUTFILES[ $i ]="$line"        
     (( i++ ))
-done < <(ls $INPUTDIRECTORY)
+done < <(ls $INPUT_DIRECTORY)
 
 
 for fullfile in "${INPUTFILES[@]}"; do
@@ -49,8 +49,8 @@ for fullfile in "${INPUTFILES[@]}"; do
   extension="${filename##*.}";
   filename="${filename%.*}";
   
-  outputfile="${INPUTDIRECTORY}/${filename}_aligned.fa";
-  mafft --auto --maxiterate 10 ${INPUTDIRECTORY}/$fullfile > $outputfile
+  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fa";
+  mafft --auto --maxiterate 10 ${INPUT_DIRECTORY}/$fullfile > $outputfile
 done
 
 
