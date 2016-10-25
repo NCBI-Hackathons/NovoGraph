@@ -48,9 +48,16 @@ for fullfile in "${INPUTFILES[@]}"; do
   filename=$(basename "$fullfile");
   extension="${filename##*.}";
   filename="${filename%.*}";
-  
+
+  fullinputfile="${INPUT_DIRECTORY}/$fullfile"  
   outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fa";
-  mafft --auto --maxiterate 10 ${INPUT_DIRECTORY}/$fullfile > $outputfile
+  mafft --auto  ${fullinputfile} > $outputfile
+
+  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
+
+  if (($FILESIZE==0)) ; then 
+     cp -f $fullinputfile $outputfile
+  fi 
 done
 
 
