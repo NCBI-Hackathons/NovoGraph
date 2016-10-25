@@ -1,11 +1,10 @@
-#!/bin/bash
 
 usage() {
   echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>]"
   exit 1
 }
 
-while getopts ":g:c:" opt; do
+while getopts ":g:c:b:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
@@ -21,6 +20,13 @@ while getopts ":g:c:" opt; do
         usage
       fi
       ;;
+    b)
+      BAMFILE=${OPTARG}
+      if [ ! -r $BAMFILE]; then
+        echo "Bath to $BAMFILE does not exist or is not readable."
+        usage
+      fi
+      ;;
     *)
       echo -e "\nUnrecognized option: -${OPTARG}"
       usage
@@ -28,18 +34,5 @@ while getopts ":g:c:" opt; do
   esac
 done
 
-### Step 1: Align all contigs to GRCh38
-# + Call BWA
-# ./gg-01-local.sh -g $INFILE -c $CONTIGDIR
+# do stuff
 
-### Step 1.1: Globally align all contigs
-# + Call Local to Global Alignment
-# ./gg-01.1-local.sh -g $INFILE -c $CONTIGDIR -b <path-to-bamfile>
-
-### Step 2: Divide and conquer multiple sequence alignment
-# + Window size specification?
-# + Call AMC
-
-### Step 3: Create graph genome!
-# + Call BAM to VCF
-# + Call vg to convert VCF to vg or gfa format

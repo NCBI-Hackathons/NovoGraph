@@ -1,0 +1,13 @@
+version: '2'
+services:
+  graphwork:
+    build: .
+    links: 
+      - vg
+    volumes:
+      - "./scripts:/scripts"
+      - "./app:/app"
+  vg:
+    image: adamnovak/vg:latest
+#     volumes:
+#       - "./app:/app"
