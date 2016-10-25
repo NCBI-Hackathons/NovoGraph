@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+Initial presentation doc.
+
+https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing
+=======
 # Graph Genomes
 ## CSHL Hackathon 24-26 October 2016
 
@@ -69,3 +74,4 @@
   + **Wrapper** (does not exist)
     + Convert BAM alignment to VCF
     + Call vg to convert VCF to vg or gfa format
+>>>>>>> 1733d8c37a6547213de819549fd6a81ed55f38f2
