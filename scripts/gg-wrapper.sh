@@ -11,7 +11,7 @@ usage() {
   exit 1
 }
 
-while getopts ":g:c:" opt; do
+while getopts ":g:c:b:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
@@ -27,6 +27,13 @@ while getopts ":g:c:" opt; do
         usage
       fi
       ;;
+    b)
+      BAMFILE=${OPTARG}
+      if [ ! -r $BAMFILE]; then
+        echo "Bath to $BAMFILE does not exist or is not readable."
+        usage
+      fi
+      ;;
     *)
       echo -e "\nUnrecognized option: -${OPTARG}"
       usage
@@ -35,12 +42,12 @@ while getopts ":g:c:" opt; do
 done
 
 ### Step 1: Align all contigs to GRCh38
+# TODO: This is moving outside of our pipeline
 # + Call BWA
 LOCALBAMFILE="localbam"
-./gg-01-local.sh -g $REFFASTA -c $CONTIGDIR
-# TODO: do we need to assign BAM output filename?
+#./gg-01-local.sh -g $REFFASTA -c $CONTIGDIR
 
-### Step 1.1: Globally align all contigs
+### Step 1: Globally align all contigs
 # + Call Local to Global Alignment
 ./gg-01.1-local.sh -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
 
@@ -51,28 +58,30 @@ BAM2MAFFT.pl --referenceFasta $REFFASTA --BAM $LOCALBAMFILE
 # MAFFT alignment
 # TODO: check the arguments for this path; it might just take two arguments:
 # The output destination for FASTA files, and input directory for FASTA
-./align_mafft.sh -o $OUTFILE $FASTA1 $FASTA2 ... $FASTAN
+FASTADIR=""
+BAMDIR=""
+./align_mafft.sh -i $FASTADIR -o $BAMDIR
 
 # Many FASTA -> Many BAM
 # TODO: The perl script fas2bam.pl needs to be called for each window (ideally
 # in parallel; could just be added to updated version of align_mafft.sh)
-# Almost certainly will be called from within align_mafft.sh (above)
 
 # Many BAM -> single BAM
-$FINALBAM="uberbam.bam"
-$BAMDIRS=""
-# TODO: Insert call to Nancy's code here
-# PSEUDOCALL:
-concatbam.pl -o $FINALBAM -i $BAMDIRS
+FINALBAM="uberbam.bam"
+CONTIGINFO="" # TODO: Formalize this location
+globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGINFO
+# globalize_windowbams.pl --fastadir <path to directory with inputs for MAFFT>
+#                         --msadir <path to directory with outputs from MAFFT>
+#                         --contigs <path to file with contig names/lengths>
 
 ### Step 3: Create graph genome!
-$VCFFILE="myvcf.vcf"
+VCFFILE="myvcf.vcf"
 # BAM to VCF
 # TODO: Insert call to Andrew's code here
 # PSEUDOCALL:
 bam2vcf.pl -b $FINALBAM -o $VCFFILE
 
 # Call vg to convert VCF to vg or gfa format
-$VGOUTFILE="vgoutput.vg"
+VGOUTFILE="vgoutput.vg"
 # TODO: What is the small/x.fa argument? a reference genome?
 vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE

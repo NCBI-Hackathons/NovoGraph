@@ -21,7 +21,7 @@ This script reads in a ".fas" file with padded entries and a reference entry rep
 
 =head1 USAGE
 
-fas2bam.pl --fas <path to fasta file with multiple alignment> --ref <reference entry id> --bamheader <path to file containing header for BAM file>
+fas2bam.pl --input <path to fasta file with multiple alignment> --ref <reference entry id> --bamheader <path to file containing header for BAM file> --output <path to write output SAM or BAM file to>
 
 =head1 DESCRIPTION
 
@@ -35,14 +35,15 @@ When fed a multiple sequence alignment in FASTA format and a specification of wh
 
 process_commandline();
 
-my $fas_file = $Opt{'fas'};
+my $input_file = $Opt{'input'};
 my $ref_entry = $Opt{'ref'};
+my $output_file = $Opt{'output'};
 
-my $rh_entry_seqs = read_fas_file($fas_file);
+my $rh_entry_seqs = read_fas_file($input_file);
 
 # check for reference entry:
 if (!$rh_entry_seqs->{$ref_entry}) {
-    die "No entry for reference $ref_entry in $fas_file!\n";
+    die "No entry for reference $ref_entry in $input_file!\n";
 }
 
 my $ref_length = length($rh_entry_seqs->{$ref_entry});
@@ -57,11 +58,15 @@ foreach my $entry (sort keys %{$rh_entry_seqs}) {
     }
 }
 
-my $filebase = $fas_file;
-$filebase =~ s:.*/::; # put it in the current directory
-$filebase =~ s:\.fas$::; # replace file extension
-my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} > $filebase.bam"
-                                    : "> $filebase.sam";
+if (!$output_file) { # create a name from the input file
+    my $filebase = $input_file;
+    $filebase =~ s:.*/::; # put it in the current directory
+    $filebase =~ s:\.fas$::; # replace file extension
+    $output_file = ($Opt{bamheader}) ? "$filebase.bam" : "$filebase.sam";
+}
+
+my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} > $output_file"
+                                    : "> $output_file";
 
 my $sam_fh = FileHandle->new("$sambam_file");
 
@@ -71,7 +76,7 @@ foreach my $entry (sort keys %{$rh_entry_seqs}) {
     next if ($entry eq $ref_entry);
 
     my ($sam_start, $cigar_string, $rs_entryseq, $ra_vars) = parse_alignment($rh_entry_seqs, $entry, $ref_entry);
-    print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t$$rs_entryseq\t*\n";
+    print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t*\t0\t0\t$$rs_entryseq\t*\n";
 }
 
 #------------
@@ -82,7 +87,7 @@ sub process_commandline {
     
     # Set defaults here
     %Opt = ( );
-    GetOptions(\%Opt, qw( ref=s fas=s bamheader=s
+    GetOptions(\%Opt, qw( ref=s input=s bamheader=s output=s
                 manual help+ version
                 verbose 
                 )) || pod2usage(0);
@@ -90,7 +95,7 @@ sub process_commandline {
     if ($Opt{help})    { pod2usage(verbose => $Opt{help}-1); }
     if ($Opt{version}) { die "fas2bam.pl, ", q$Revision: $, "\n"; }
 
-    if (!$Opt{fas}) { die "Must specify input .fas filename with option --fas.\n"; }
+    if (!$Opt{input}) { die "Must specify input .fas filename with option --input.\n"; }
     if (!$Opt{ref}) { die "Must specify reference entry name in .fas file with option --ref.\n"; }
 
 }
@@ -212,7 +217,7 @@ all options, C<--manual> provides complete documentation.
 
 =over 4
 
-=item B<--fas>
+=item B<--input>
 
 The path to a ".fas" file with FASTA-formatted entries that are padded with "-" 
 characters to form a multiple alignment.
