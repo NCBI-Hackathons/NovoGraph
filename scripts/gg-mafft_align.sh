@@ -96,9 +96,9 @@ function align(){
 export -f align
 
 
-#copyEmpty
+copyEmpty
 
-parallel -j 1  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 
