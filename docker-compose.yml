@@ -5,6 +5,6 @@ services:
     volumes:
       - "./app:/app"
   graphwork:
-    build: .
+    build: docker_build
     volumes:
       - "./app:/app"
