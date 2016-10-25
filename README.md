@@ -3,7 +3,9 @@
 
 ## Preliminary description of tools, inputs, and outputs
 ### Problem: Whole genome graph creation from multiple assemblies
+
 [See Initial presentation Google doc here](https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing)
+
 [Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
 
 ## Workflow
