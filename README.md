@@ -23,6 +23,15 @@
   + **Wrappers** (do not exist)
     + Collect paths (input and output files) (validate?)
     + Call BWA
++ Status:
+  + BWA
+    + Status: _complete_
+  + Wrappers
+    + Assignees:
+      + Nathan?
+      + Jeff
+    + Status: in progress
+      + See scripts/gg-01-local.sh in GitHub repo
 
 ### Step 1.1: Globally align all contigs
 + Input:
@@ -38,6 +47,20 @@
 + Tools:
   + **Local To Global Alignment** (does not exist)
   + **Wrappers**? (do not exist)
++ Status:
+  + Local to Global Alignment
+    + Assignees:
+      + Evan
+      + Aarti
+    + Status:
+      + In progress, see NeedlemanWunsch.ph & NW_alignment_scratch.ph in scripts
+      directory on GitHub
+  + Wrappers
+    + Assignees:
+      + Nathan?
+      + Jeff
+    + Status: in progress
+      + See scripts/gg-01.1-local.sh in GitHub repo
 
 ### Step 2: Divide and conquer multiple sequence alignment
 + Input:
@@ -47,6 +70,7 @@
   + Single global multiple sequence alignment
     + Format: _BAM_ (binary)
 + Tools:
+  + MAFFT
   + **AMC** (does not exist; although some C++ code exists to accomplish part
     of this)
     1. Identify window coordinates (start with windows of size ~10kb) in
@@ -54,12 +78,50 @@
     2. Extract sequence data for each window
     3. Convert window to FASTA format
     4. Run MAFFT for each window [could be parallelized]
-    5. Reassemble the individual multiple sequence alignments into a single
-    alignment file
-  + MAFFT
+    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
+    window)
+    6. Reassemble the individual BAM MSAs into a single BAM alignment file
   + **Wrappers** (do not exist)
     + Window size specification?
     + Call AMC
++ Status:
+  + MAFFT
+    + Status: complete
+  + AMC
+    1. Identify window coordinates
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + _Location for any code?_
+    2. Extract sequence data from BAM file
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + _Location for any code?_
+    3. Convert window to FASTA format
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + _Location for any code?_
+    4. Run MAFFT
+      + Assignees:
+        + Nathan
+      + Status: in progress
+        + See scripts/align_mafft.sh in GitHub repo
+    5. Convert each FASTA alignment to BAM
+      + Assignees:
+        + Nancy
+      + Status: _complete_
+        + _Location for any code?_
+    6. Concatenate each window-BAM to single BAM
+      + Assignees:
+        + Nancy
+      + Status: in progress
+        + _Location for any code?_
+  + Wrappers:
+    + Assignees
+      + Jeff?
+    + Status: **not started**
 
 ### Step 3: Create graph genome!
 + Input:
@@ -70,7 +132,16 @@
     + Format: _VG_, _GFA_?
 + Tools:
   + **BAM to VCF** (does not exist)
-  + vg
   + **Wrapper** (does not exist)
     + Convert BAM alignment to VCF
     + Call vg to convert VCF to vg or gfa format
++ Status:
+  + BAM to VCF:
+    + Assignees:
+      + Andrew
+    + Status: in progress
+      + _Location for any code?_
+  + Wrapper:
+    + Assignees:
+      + Jeff
+    + Status: **not started**
