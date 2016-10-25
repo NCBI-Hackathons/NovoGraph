@@ -41,7 +41,6 @@ class AlignmentLibrary {
 //                    ,insertSize
 //                    ,null
 //            )
-            outputSam.
         }
 
 
