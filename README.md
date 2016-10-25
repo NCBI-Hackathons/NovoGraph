@@ -1,16 +1,11 @@
-<<<<<<< HEAD
-
-Initial presentation doc.
-
-[See Google doc here](https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing)
-
-=======
 # Graph Genomes
 ## CSHL Hackathon 24-26 October 2016
 
 ## Preliminary description of tools, inputs, and outputs
 ### Problem: Whole genome graph creation from multiple assemblies
+[See Initial presentation Google doc here](https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing)
 
+## Workflow
 ### Step 1: Align all contigs to GRCh38
 + Input:
   + Reference genome (GRCh38)
@@ -76,4 +71,3 @@ Initial presentation doc.
   + **Wrapper** (does not exist)
     + Convert BAM alignment to VCF
     + Call vg to convert VCF to vg or gfa format
->>>>>>> 1733d8c37a6547213de819549fd6a81ed55f38f2
