@@ -56,8 +56,7 @@ function copyEmpty(){
 	  extension="${filename##*.}";
 	  filename="${filename%.*}";
 
-	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fa";
-#      echo "copying $line to $outputfile"
+	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fas";
 	  cp -f $line $outputfile
 	done 
 	echo "Copied $i files."
@@ -73,11 +72,11 @@ function align(){
   extension="${filename##*.}";
   filename="${filename%.*}";
 
-  outputfile="$3/${filename}_aligned.fa";
+  outputfile="$3/${filename}_aligned.fas";
 
   echo "from $1 to $outputfile"
 
-  mafft --auto  $1 > $outputfile
+  #mafft --reorder --auto  $1 > $outputfile
 
 #  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
 #  if (($FILESIZE==0)) ; then
@@ -89,16 +88,20 @@ function align(){
   fi
 
   bamoutput="$3/$filename.bam"
-  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "config/windowbamheader.txt"
+
+  echo "BAM input $outputfile and output $bamoutput" 
+
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
+  #./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" 
 
 }
 
 export -f align
 
 
-copyEmpty
+# copyEmpty
 
-parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+parallel -j 1  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 

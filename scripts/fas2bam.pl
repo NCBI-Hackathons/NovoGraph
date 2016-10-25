@@ -41,7 +41,7 @@ my $output_file = $Opt{'output'};
 
 my $rh_entry_seqs = read_fas_file($input_file);
 
-# check for reference entry:
+#check for ref entry
 if (!$rh_entry_seqs->{$ref_entry}) {
     die "No entry for reference $ref_entry in $input_file!\n";
 }
