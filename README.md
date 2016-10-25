@@ -145,3 +145,9 @@
     + Assignees:
       + Jeff
     + Status: **not started**
+
+### Step 4: Generate Docker container et al for distribution
++ Assignees:
+  + Nathan
++ Status: in progress
+  + See docker-compose.yml & Dockerfile in top-level of GitHub repo  
