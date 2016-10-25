@@ -70,14 +70,14 @@ for i in range(1, scored_matrix.shape[0]):      # row
 #
 # We do "global alignment", i.e. both sequences are aligned from their first base through their last base
 #
-# (1) Create zero matrices, F and T
-# (2) Compute F and T
+# (1) Create zero matrices, MatrixA and MatrixB
+# (2) Compute MatrixA and MatrixA
 # (3) Find and cache alignment
 #
-# F is "best score" matrix, like scoring_matrix with extra row and column,
+# MatrixA is "best score" matrix, like scoring_matrix with extra row and column,
 #       (scoring_matrx.rows +1, scoring_matrx.cols +1)
 #       ---> this extra entry is the "start" of each sequence
-# Recall there are multiple possible alignments from which a score in F can be derived; create T
+# Recall there are multiple possible alignments from which a score in MatrixA can be derived; create T
 # T is "keep_track" matrix, entry values encode *how* sequences were aligned to get score in F
 #
 # Step (1)
@@ -95,7 +95,20 @@ keep_track_matrix = np.full(shape=(num_rows, num_cols), fill_value=np.NaN) # mat
 # the value entry directly up - the gap penalty
 # the value entry directly left - the gap penalty
 
+########################################################
+########################################################
 
+#
+# inputs: sequence1, sequence2, gap_penalty, scoring_matrix
+# outputs: align_score, align_seq1, align_seq2
+#
+
+def nwAlign(sequence1, sequence2, gap_penalty, scoring_matrix):
+    seq1_length = len(sequence1)
+    seq2_lenght = len(sequence2)
+
+    if sequence1.dtype is not sequence2.dtype:
+        raise TypeError("sequences must have the same data type: %r != %r", % (sequence1.dtype.__name__, sequence2.dtype.__name__))
 
 
 
