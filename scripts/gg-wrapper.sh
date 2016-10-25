@@ -46,8 +46,7 @@ LOCALBAMFILE="localbam"
 
 ### Step 2: Divide and conquer multiple sequence alignment
 # Call BAM2MAFFT for window identification, extraction, and FASTA conversion
-# TODO: need to update BAM2MAFFT.pl so it accepts the two arguments
-perl BAM2MAFFT.pl $REFFASTA $LOCALBAMFILE
+perl BAM2MAFFT.pl --referenceFasta $REFFASTA --BAM $LOCALBAMFILE
 
 # MAFFT alignment
 # TODO: check the arguments for this path; it might just take two arguments:
@@ -55,9 +54,9 @@ perl BAM2MAFFT.pl $REFFASTA $LOCALBAMFILE
 ./align_mafft.sh -o $OUTFILE $FASTA1 $FASTA2 ... $FASTAN
 
 # Many FASTA -> Many BAM
-$BAMDIR="inputbamdir"
-# TODO: Check arguments
-perl fas2bam.pl $OUTFILE $BAMDIR
+# TODO: The perl script fas2bam.pl needs to be called for each window (ideally
+# in parallel; could just be added to updated version of align_mafft.sh)
+# perl fas2bam.pl --fas $OUTFILE --ref "ref" --bamheader $BAMHEADER
 
 # Many BAM -> single BAM
 $FINALBAM="finalbam.bam"
