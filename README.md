@@ -92,17 +92,17 @@
       + Assignees:
         + Alex
       + Status: in progress
-        + _Location for any code?_
+        + BAM2MAFFT.pl in top-level of GitHub repo
     2. Extract sequence data from BAM file
       + Assignees:
         + Alex
       + Status: in progress
-        + _Location for any code?_
+        + BAM2MAFFT.pl in top-level of GitHub repo
     3. Convert window to FASTA format
       + Assignees:
         + Alex
       + Status: in progress
-        + _Location for any code?_
+        + BAM2MAFFT.pl in top-level of GitHub repo
     4. Run MAFFT
       + Assignees:
         + Nathan
@@ -150,4 +150,4 @@
 + Assignees:
   + Nathan
 + Status: in progress
-  + See docker-compose.yml & Dockerfile in top-level of GitHub repo  
+  + See docker-compose.yml & Dockerfile in top-level of GitHub repo
