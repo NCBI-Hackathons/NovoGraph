@@ -5,13 +5,7 @@ use Bio::DB::Sam;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
-
-unless(-e 'forMAFFT')
-{
-	mkdir('forMAFFT') or die "Cannot mkdir forMAFFT directory";
-}
-
-use Set::IntervalTree;
+$| = 1;
 
 my $referenceFasta;
 my $BAM;
@@ -19,27 +13,26 @@ my $BAM;
 $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
 $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
 GetOptions (
- 'referenceFasta:s' => \$referenceFasta, 
- 'BAM:s' => \$BAM, 
+	'referenceFasta:s' => \$referenceFasta, 
+	'BAM:s' => \$BAM, 
 );
-
-{
-	my $max_pos = 100;
-	my @window_positions = (10, 20, 30);	
-	my %window_switch_positions;	
-}
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
+unless(-e 'forMAFFT')
+{
+	mkdir('forMAFFT') or die "Cannot mkdir forMAFFT directory";
+}
+
 my $reference_href = readFASTA($referenceFasta);
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
 my $windows_info_fn = 'forMAFFT/_windowsInfo';
 open(WINDOWS, '>', $windows_info_fn) or die "Cannot open $windows_info_fn";
-print WINDOWS join("\t", "referenceContigID", "windowI", "firstPos_relative_to_ref", "lastPos_relative_to_ref"), "\n";
+print WINDOWS join("\t", "referenceContigID", "windowI", "firstPos_relative_to_ref", "lastPos_relative_to_ref", "lastPos_BAMcoverage", "lastPos_BAMcoverage_nonGap"), "\n";
 
 my $alignments_info_fn = 'forMAFFT/_alignments';
 open(ALIGNMENTS, '>', $alignments_info_fn) or die "Cannot open $alignments_info_fn";
@@ -53,6 +46,8 @@ my %saw_read_IDs;
 my @sequence_ids = $sam->seq_ids();
 foreach my $referenceSequenceID (@sequence_ids)
 {	
+	print "Processing $referenceSequenceID", "\n";
+	
 	next unless(defined $reference_href->{$referenceSequenceID});
 
 	my @alignments = $sam->get_features_by_location(-seq_id => $referenceSequenceID);
@@ -132,15 +127,19 @@ foreach my $referenceSequenceID (@sequence_ids)
 		$potentialWindowPos = $selectedWindowPos;
 	}
 	
+	print "Window starting positions (first window starting at 0 is implicit):\n";
+	print join("\n", map {' - ' . $_} @window_positions), "\n";
+	die unless($#window_positions >= 0);
+	
 	my $intervalTree_windows = Set::IntervalTree->new;	
 	my %window_switch_positions;
 	my $max_pos = $#contig_coverage;
 	$window_switch_positions{$window_positions[0]} = 1;
-	$intervalTree_windows->insert('w'.0,0,$window_positions[0]);
+	$intervalTree_windows->insert('w0', 0, $window_positions[0]);
 	$window_switch_positions{$window_positions[0]} = 'w1';
 	for(my $windowI = 1; $windowI <= $#window_positions; $windowI++)
 	{
-		$intervalTree_windows->insert('w'.$windowI,$window_positions[$windowI-1],$window_positions[$windowI]);
+		$intervalTree_windows->insert('w'.$windowI, $window_positions[$windowI-1], $window_positions[$windowI]);
 		$window_switch_positions{$window_positions[$windowI]} = 'w'.($windowI+1);
 		# print "Insert ", $window_positions[$windowI-1], " ", $window_positions[$windowI], " as $windowI\n";
 	}
@@ -172,12 +171,18 @@ foreach my $referenceSequenceID (@sequence_ids)
 			die unless($retrieval_aref->[0] eq ('w'.$windowI));
 		}
 		
-		print WINDOWS join("\t", $referenceSequenceID, $windowI + 1, $window_positions[$windowI], (($windowI != $#window_positions) ? $window_positions[$windowI+1] - 1 : $max_pos )), "\n";
-	}
-	
-	print Dumper(\@window_positions, $#contig_coverage), "\n";
-	
-	die unless($#window_positions >= 0);
+		
+		my $window_lastPos = (($windowI != $#window_positions) ? $window_positions[$windowI+1] - 1 : $max_pos );
+		
+		print WINDOWS join("\t",
+			$referenceSequenceID,
+			$windowI + 1,
+			$window_positions[$windowI],
+			$window_lastPos,
+			$contig_coverage[$window_lastPos],
+			$contig_coverage_nonGap[$window_lastPos],
+		), "\n";
+	}	
 	
 	foreach my $alignment (@alignments)
 	{
