@@ -9,7 +9,10 @@
 [Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
 
 ## Workflow
-### Step 1: Align all contigs to GRCh38
+### Step 0: Align all contigs to GRCh38
+_This step is outside of our formalized pipeline. Users will be responsible for
+running BWA (or equivalent tool) to produce BAM alignment from a reference
+genome and additional assemblies_
 + Input:
   + Reference genome (GRCh38)
     + Format: _FASTA_ (text)
@@ -20,23 +23,14 @@
     + Format: _BAM_ (binary)
 + Tools:
   + BWA
-    + Status: _complete_ (installed)
-  + Wrappers
-    + Collect paths (input and output files) (validate?)
-    + Call BWA
-    + Assignees:
-      + Nathan?
-      + Jeff
-    + Status: in progress
-      + scripts/gg-01-local.sh on GitHub
 
-### Step 1.1: Globally align all contigs
+### Step 1: Globally align all contigs
 + Input:
   + Reference genome (GRCh38)
     + Format: _FASTA_ (text)
   + Individual contigs
     + Format: _FASTA_ (text)
-  + Local alignment (output of step 1)
+  + Local alignment (output of step 0)
     + Format: _BAM_ (binary)
 + Output:
   + Global alignment where each contig has a single alignment
@@ -58,7 +52,7 @@
 
 ### Step 2: Divide and conquer multiple sequence alignment
 + Input:
-  + Global alignment of all contigs (output of step 1.1)
+  + Global alignment of all contigs (output of step 1)
     + Format: _BAM_ (binary)
 + Output:
   + Single global multiple sequence alignment
