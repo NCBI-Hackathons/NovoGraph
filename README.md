@@ -31,7 +31,7 @@
       + Nathan?
       + Jeff
     + Status: in progress
-      + See scripts/gg-01-local.sh in GitHub repo
+      + scripts/gg-01-local.sh on GitHub
 
 ### Step 1.1: Globally align all contigs
 + Input:
@@ -53,14 +53,14 @@
       + Evan
       + Aarti
     + Status:
-      + In progress, see scripts/NeedlemanWunsch.ph &
-      scripts/NW_alignment_scratch.ph in directory on GitHub
+      + In progress
+      + scripts/NeedlemanWunsch.ph & scripts/NW_alignment_scratch.ph on GitHub
   + Wrappers
     + Assignees:
       + Nathan?
       + Jeff
     + Status: in progress
-      + See scripts/gg-01.1-local.sh in GitHub repo
+      + scripts/gg-01.1-local.sh on GitHub
 
 ### Step 2: Divide and conquer multiple sequence alignment
 + Input:
@@ -106,12 +106,12 @@
       + Assignees:
         + Nathan
       + Status: in progress
-        + See scripts/align_mafft.sh in GitHub repo
+        + scripts/align_mafft.sh on GitHub
     5. Convert each FASTA alignment to BAM
       + Assignees:
         + Nancy
       + Status: _complete_
-        + _Location for any code?_
+        + scripts/fas2bam.pl
     6. Concatenate each window-BAM to single BAM
       + Assignees:
         + Nancy
@@ -149,4 +149,4 @@
 + Assignees:
   + Nathan
 + Status: in progress
-  + See docker-compose.yml & Dockerfile in top-level of GitHub repo
+  + docker-compose.yml & Dockerfile in top-level of GitHub repo
