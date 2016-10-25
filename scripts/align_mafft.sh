@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [-o <path-to-output-file>] -f [input fasta file] -f [input fasta file 2] "
+  echo "Usage: $0 [ -i <path to input files>  -o <path to output file>  ]  "
   exit 1
 }
 
@@ -36,10 +36,10 @@ if [ -z ${OUTPUT_DIRECTORY+x} ]; then
 fi
 
 echo "Files to process"
-INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1" | awk -F':' '{ print $1 }' ))
+INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1"  | awk -F':' '{ print $1 }' | grep ".fa"  ))
 
 echo "Reference Only"
-FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep  ":1" | awk -F':' '{ print $1 }' ))
+FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
 
 
 echo "Files to process: ${#INPUTFILES[@]}"
@@ -59,27 +59,44 @@ function copyEmpty(){
 #      echo "copying $line to $outputfile"
 	  cp -f $line $outputfile
 	done 
+	echo "Copied $i files."
 }
 
-copyEmpty 
-
-echo "Copied $i files."
+#copyEmpty 
 
 function align(){
+
+ echo $1 $2 $3
+
   fullfile=$1 
   filename=$(basename "$fullfile");
   extension="${filename##*.}";
   filename="${filename%.*}";
 
-  fullinputfile="${INPUT_DIRECTORY}/$fullfile"  
-  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fa";
-  mafft --auto  ${fullinputfile} > $outputfile
+  outputfile="$3/${filename}_aligned.fa";
+
+  echo "from $1 to $outputfile"
+
+  mafft --auto  $1 > $outputfile
+
+#  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
+#  if (($FILESIZE==0)) ; then
+#     cp -f $1 $outputfile
+#  fi
+
+  if [ $? -eq 1 ]; then
+     cp -f $1 $outputfile
+  fi
+
+#  if [ "$RESULT" eq "1" ]; then 
+#       cp -f $1 $outputfile
+#  fi 
 
 }
+export -f align 
 
-#for fullfile in "${INPUTFILES[@]}"; do
-#  parallel -j 4 align {} ::: $fullfile
-#done
+
+parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 
