@@ -35,7 +35,7 @@ for file in "${INPUTFILES[@]}"; do
 	# ## -op and -ep 
 	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 input_file.fa > output_file.fa 
 
-	# mafft --auto --thread 12 --reorder aligned --maxiterate 5 $file >> $outfile
+	mafft --globalpair --thread 12 --reorder aligned --maxiterate 1000 $file >> $outfile
 done
 
 
