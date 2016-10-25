@@ -11,7 +11,7 @@ usage() {
   exit 1
 }
 
-while getopts ":g:c:" opt; do
+while getopts ":g:c:b:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
@@ -27,6 +27,13 @@ while getopts ":g:c:" opt; do
         usage
       fi
       ;;
+    b)
+      BAMFILE=${OPTARG}
+      if [ ! -r $BAMFILE]; then
+        echo "Bath to $BAMFILE does not exist or is not readable."
+        usage
+      fi
+      ;;
     *)
       echo -e "\nUnrecognized option: -${OPTARG}"
       usage
@@ -35,12 +42,12 @@ while getopts ":g:c:" opt; do
 done
 
 ### Step 1: Align all contigs to GRCh38
+# TODO: This is moving outside of our pipeline
 # + Call BWA
 LOCALBAMFILE="localbam"
-./gg-01-local.sh -g $REFFASTA -c $CONTIGDIR
-# TODO: do we need to assign BAM output filename?
+#./gg-01-local.sh -g $REFFASTA -c $CONTIGDIR
 
-### Step 1.1: Globally align all contigs
+### Step 1: Globally align all contigs
 # + Call Local to Global Alignment
 ./gg-01.1-local.sh -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
 
