@@ -5,35 +5,36 @@ usage() {
   exit 1
 }
 
-INFILE=""
-CONTIGDIR="."
-
 while getopts ":g:c:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
-      # do test for file exists
+      if [ ! -r $INFILE ]; then
+        echo "Input file $INFILE does not exist or it is not readable."
+        usage
+      fi
       ;;
     c)
       CONTIGDIR=${OPTARG}
-      # do test for directory exists
+      if [ ! -r $CONTIGDIR ]; then
+        echo "Contig directory $CONTIGDIR does not exist or is not readable."
+        usage
+      fi
       ;;
     *)
-      echo -e "\nUnrecognized option: ${OPTARG}"
+      echo -e "\nUnrecognized option: -${OPTARG}"
       usage
       ;;
   esac
 done
 
-echo "$INFILE"
-echo "$CONTIGDIR"
-
 ### Step 1: Align all contigs to GRCh38
-# + Collect paths (input and output files) (validate?)
 # + Call BWA
+# ./gg-01-local.sh -g $INFILE -c $CONTIGDIR
 
 ### Step 1.1: Globally align all contigs
 # + Call Local to Global Alignment
+# ./gg-01.1-local.sh -g $INFILE -c $CONTIGDIR -b <path-to-bamfile>
 
 ### Step 2: Divide and conquer multiple sequence alignment
 # + Window size specification?
