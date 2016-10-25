@@ -61,13 +61,14 @@ perl fas2bam.pl $OUTFILE $BAMDIR
 
 # Many BAM -> single BAM
 $FINALBAM="finalbam.bam"
-
+# TODO: Insert call to Nancy's code here
 
 ### Step 3: Create graph genome!
 $VCFFILE="myvcf.vcf"
 # BAM to VCF
-
+# TODO: Insert call to Andrew's code here
 
 # Call vg to convert VCF to vg or gfa format
 $VGOUTFILE="vgoutput.vg"
+# TODO: What is the small/x.fa argument? a reference genome?
 vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE
