@@ -9,12 +9,11 @@ $| = 1;
 
 my $referenceFasta;
 my $BAM;
-
-$referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
-$BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
+my $outputDirectory = 'forMafft2';
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'BAM:s' => \$BAM, 
+	'outputDirectory:s' => \$outputDirectory,	
 );
 
 die "Please specify --BAM" unless($BAM);
@@ -22,23 +21,23 @@ die "Please specify --referenceFasta" unless($referenceFasta);
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
-unless(-e 'forMAFFT')
+unless((-e $outputDirectory) and (-d $outputDirectory))
 {
-	mkdir('forMAFFT') or die "Cannot mkdir forMAFFT directory";
+	mkdir($outputDirectory) or die "Cannot mkdir $outputDirectory directory";
 }
 
 my $reference_href = readFASTA($referenceFasta);
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
-my $windows_info_fn = 'forMAFFT/_windowsInfo';
+my $windows_info_fn =  $outputDirectory . '/_windowsInfo';
 open(WINDOWS, '>', $windows_info_fn) or die "Cannot open $windows_info_fn";
 print WINDOWS join("\t", "referenceContigID", "windowI", "firstPos_relative_to_ref", "lastPos_relative_to_ref", "lastPos_BAMcoverage", "lastPos_BAMcoverage_nonGap"), "\n";
 
-my $alignments_info_fn = 'forMAFFT/_alignments';
+my $alignments_info_fn = $outputDirectory . '/_alignments';
 open(ALIGNMENTS, '>', $alignments_info_fn) or die "Cannot open $alignments_info_fn";
 print ALIGNMENTS join("\t", "alignedSequenceID", "referenceContigID", "firstPositions_reference", "lastPosition_reference"), "\n";
 
-my $alignments_gaps_info_fn = 'forMAFFT/_alignments_inWindow_onlyGaps';
+my $alignments_gaps_info_fn = $outputDirectory . '/_alignments_inWindow_onlyGaps';
 open(ALIGNMENTSONLYGAPS, '>', $alignments_gaps_info_fn) or die "Cannot open $alignments_gaps_info_fn";
 print ALIGNMENTSONLYGAPS join("\t", "alignedSequenceID", "referenceContigID", "windowI"), "\n";
 
@@ -48,44 +47,52 @@ foreach my $referenceSequenceID (@sequence_ids)
 {	
 	next unless($referenceSequenceID eq 'chr1');
 	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
-	
+	die "Length discrepancy between supplied FASTA reference and BAM index: " . $sam->length($referenceSequenceID) . " vs " . length($reference_href->{$referenceSequenceID}) unless($sam->length($referenceSequenceID) == length($reference_href->{$referenceSequenceID}));
 	next unless(defined $reference_href->{$referenceSequenceID});
 
-	my @alignments = $sam->get_features_by_location(-seq_id => $referenceSequenceID);
+	# print "\tRegion $referenceSequenceID, have ", scalar(@alignments), " alignments.\n";
 	
-	print "\tRegion $referenceSequenceID, have ", scalar(@alignments), " alignments.\n";
-
 	my %sequences_per_window;
 	my @window_positions;
 	my @contig_coverage = ((0) x length($reference_href->{$referenceSequenceID}));
 	my @contig_coverage_nonGap = ((0) x scalar(@contig_coverage));
-	my $n_alignment = 0;
-	foreach my $alignment (@alignments)
-	{
-		$n_alignment++;		
-		print "\r\t\tProecessing ", $n_alignment, "  ", scalar(@alignments), " ...";
 		
-		my $alignment_start_pos = $alignment->start;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
-		# print $ref, "\n", $query, "\n\n";
-		die unless(length($ref) == length($query));
-		my $rel_idx = -1;	
-		for(my $i = 0; $i < length($ref); $i++)
+	my @alignmentExtractionWindows = get_windows_for_refLength(length($reference_href->{$referenceSequenceID}));
+	for(my $alignmentExtractionWindowI = 0; $alignmentExtractionWindowI <= $#alignmentExtractionWindows; $alignmentExtractionWindowI++)
+	{
+		my @alignmentExtractionWindow = @{$alignmentExtractionWindows[$alignmentExtractionWindowI]};
+		
+		my @alignments = $sam->get_features_by_location(-seq_id => $referenceSequenceID, -start => $alignmentExtractionWindow[0], -end => $alignmentExtractionWindow[1]);
+	
+		my $n_alignment = 0;
+		foreach my $alignment (@alignments)
 		{
-			my $C_ref = substr($ref, $i, 1);
-			my $C_query = substr($query, $i, 1);
-			if($C_ref ne '-')
-			{
-				$rel_idx++;
-			}
+			$n_alignment++;		
+			print "\r\t\tProcessing ", $n_alignment, "/", scalar(@alignments), " alignments in window ", ($alignmentExtractionWindowI+1), "/", scalar(@alignmentExtractionWindows), "...   ";
+			next unless(($alignment->start >= $alignmentExtractionWindow[0]) and ($alignment->start <= $alignmentExtractionWindow[1]));
 			
-			if($rel_idx >= 0)
+			my $alignment_start_pos = $alignment->start;
+			my ($ref,$matches,$query) = $alignment->padded_alignment;
+			# print $ref, "\n", $query, "\n\n";
+			die unless(length($ref) == length($query));
+			my $rel_idx = -1;	
+			for(my $i = 0; $i < length($ref); $i++)
 			{
-				$contig_coverage[$alignment_start_pos + $rel_idx]++;
-				if($C_query ne '-')
+				my $C_ref = substr($ref, $i, 1);
+				my $C_query = substr($query, $i, 1);
+				if($C_ref ne '-')
 				{
-					$contig_coverage_nonGap[$alignment_start_pos + $rel_idx]++;
-				}				
+					$rel_idx++;
+				}
+				
+				if($rel_idx >= 0)
+				{
+					$contig_coverage[$alignment_start_pos + $rel_idx]++;
+					if($C_query ne '-')
+					{
+						$contig_coverage_nonGap[$alignment_start_pos + $rel_idx]++;
+					}				
+				}
 			}
 		}
 	}
@@ -159,10 +166,12 @@ foreach my $referenceSequenceID (@sequence_ids)
 	$intervalTree_windows->insert($last_windowID_for_tree, $window_positions[$#window_positions], $max_pos+1);
 	# print "Insert ", $window_positions[$#window_positions], " ", $max_pos+1, " as $last_windowID_for_tree\n";
 	
-	print WINDOWS join("\t", $referenceSequenceID, 0, 0, $window_positions[0] - 1), "\n";
+	my $firstWindow_lastPos = $window_positions[0] - 1;
+	print WINDOWS join("\t", $referenceSequenceID, 0, 0, $firstWindow_lastPos, $contig_coverage[$firstWindow_lastPos], $contig_coverage_nonGap[$firstWindow_lastPos]), "\n";
+	
 	my $first_window_idx_key = 'w0';
 	my $first_window_referenceSequence = substr($reference_href->{$referenceSequenceID}, 0, $window_positions[0]);
-	$sequences_per_window{$first_window_idx_key} = $first_window_referenceSequence;
+	$sequences_per_window{$first_window_idx_key}{ref} = $first_window_referenceSequence;
 	
 	for(my $windowI = 0; $windowI <= $#window_positions; $windowI++)
 	{
@@ -199,85 +208,94 @@ foreach my $referenceSequenceID (@sequence_ids)
 			$contig_coverage_nonGap[$window_lastPos],
 		), "\n";
 		
-		my $window_idx_key = 'w' . $referenceSequenceID;
+		my $window_idx_key = 'w' . ($windowI + 1);
 		my $referenceSequence = substr($reference_href->{$referenceSequenceID}, $window_positions[$windowI], $window_lastPos - $window_positions[$windowI] + 1);
-		$sequences_per_window{$window_idx_key} = $referenceSequence;
+		$sequences_per_window{$window_idx_key}{ref} = $referenceSequence;
 	}
 	
-	$n_alignment = 0;
-	foreach my $alignment (@alignments)
+	
+	for(my $alignmentExtractionWindowI = 0; $alignmentExtractionWindowI <= $#alignmentExtractionWindows; $alignmentExtractionWindowI++)
 	{
-		$n_alignment++;
-		print "\r\t\tProecessing ", $n_alignment, "  ", scalar(@alignments), " ...";
-			
-		my $readID = $alignment->query->name;
-		if(exists $saw_read_IDs{$readID})
-		{
-			die "Observed more than one alignment for read ID $readID - this should not happen!";
-			next;
-		}
-		$saw_read_IDs{$readID}++;
+		my @alignmentExtractionWindow = @{$alignmentExtractionWindows[$alignmentExtractionWindowI]};
 		
-		my $alignment_start_pos = $alignment->start;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
-		die unless(length($ref) == length($query));
-		my $rel_idx = -1;	
-		my $firstPosition_reference;
-		my $lastPosition_reference;
-		my $currentWindow;
-		my $unaccountedSequence;
-		for(my $i = 0; $i < length($ref); $i++)
+		my @alignments = $sam->get_features_by_location(-seq_id => $referenceSequenceID, -start => $alignmentExtractionWindow[0], -end => $alignmentExtractionWindow[1]);
+	
+		my $n_alignment = 0;
+		foreach my $alignment (@alignments)
 		{
-			my $C_ref = substr($ref, $i, 1);
-			my $C_query = substr($query, $i, 1);
-			if($C_ref ne '-')
+			$n_alignment++;
+			print "\r\t\tProcessing ", $n_alignment, "/", scalar(@alignments), " alignments in window ", ($alignmentExtractionWindowI+1), "/", scalar(@alignmentExtractionWindows), "...   ";
+			next unless(($alignment->start >= $alignmentExtractionWindow[0]) and ($alignment->start <= $alignmentExtractionWindow[1]));
+
+			my $readID = $alignment->query->name;
+			if(exists $saw_read_IDs{$readID})
 			{
-				$rel_idx++;
+				die "Observed more than one alignment for read ID $readID - this should not happen!";
+				next;
 			}
+			$saw_read_IDs{$readID}++;
 			
-			if($rel_idx >= 0)
+			my $alignment_start_pos = $alignment->start;
+			my ($ref,$matches,$query) = $alignment->padded_alignment;
+			die unless(length($ref) == length($query));
+			my $rel_idx = -1;	
+			my $firstPosition_reference;
+			my $lastPosition_reference;
+			my $currentWindow;
+			my $unaccountedSequence;
+			for(my $i = 0; $i < length($ref); $i++)
 			{
-				my $position_along_reference = $alignment_start_pos + $rel_idx;
-				$firstPosition_reference = $position_along_reference unless(defined $firstPosition_reference);
-				$lastPosition_reference = $position_along_reference;
-				
-				if(not defined $currentWindow)
+				my $C_ref = substr($ref, $i, 1);
+				my $C_query = substr($query, $i, 1);
+				if($C_ref ne '-')
 				{
-					my $result_windows = $intervalTree_windows->fetch($position_along_reference,$position_along_reference+1);
-					die unless(scalar(@$result_windows) == 1);
-					$currentWindow = $result_windows->[0];
+					$rel_idx++;
+				}
+				
+				if($rel_idx >= 0)
+				{
+					my $position_along_reference = $alignment_start_pos + $rel_idx;
+					$firstPosition_reference = $position_along_reference unless(defined $firstPosition_reference);
+					$lastPosition_reference = $position_along_reference;
+					
+					if(not defined $currentWindow)
+					{
+						my $result_windows = $intervalTree_windows->fetch($position_along_reference,$position_along_reference+1);
+						die unless(scalar(@$result_windows) == 1);
+						$currentWindow = $result_windows->[0];
+					}
+					else
+					{
+						if(exists $window_switch_positions{$position_along_reference})
+						{
+							$currentWindow = $window_switch_positions{$position_along_reference};
+						}
+					}
+						
+					if($unaccountedSequence)
+					{
+						$sequences_per_window{$currentWindow}{$readID} .= $unaccountedSequence;
+						$unaccountedSequence = '';
+					}
+					
+					$sequences_per_window{$currentWindow}{$readID} .= $C_query;				
 				}
 				else
 				{
-					if(exists $window_switch_positions{$position_along_reference})
-					{
-						$currentWindow = $window_switch_positions{$position_along_reference};
-					}
+					$unaccountedSequence .= $C_query;
 				}
-					
-				if($unaccountedSequence)
-				{
-					$sequences_per_window{$currentWindow}{$readID} .= $unaccountedSequence;
-					$unaccountedSequence = '';
-				}
-				
-				$sequences_per_window{$currentWindow}{$readID} .= $C_query;				
 			}
-			else
-			{
-				$unaccountedSequence .= $C_query;
-			}
-		}
-		
-		die unless((defined $firstPosition_reference) and (defined $lastPosition_reference));
-		print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $firstPosition_reference, $lastPosition_reference), "\n";
-	}	
+			
+			die unless((defined $firstPosition_reference) and (defined $lastPosition_reference));
+			print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $firstPosition_reference, $lastPosition_reference), "\n";
+		}	
+	}
 	print "\n";
 
 	foreach my $windowID (0 .. scalar(@window_positions))
 	{
 		my $window_idx_key = 'w' . $windowID;
-		my $output_fn = 'forMAFFT/' . $referenceSequenceID . '_' . $windowID . '.fa';
+		my $output_fn = $outputDirectory . '/' . $referenceSequenceID . '_' . $windowID . '.fa';
 		my $is_open = 0;
 		foreach my $sequenceID (keys %{$sequences_per_window{$window_idx_key}})
 		{
@@ -341,3 +359,33 @@ sub readFASTA
 	return \%R;
 }
 
+sub get_windows_for_refLength
+{
+	my $refLength = shift;
+	die unless(defined $refLength);
+	my $desiredWindowLength = 100000;
+	
+	if($refLength <= $desiredWindowLength)
+	{
+		return ([1, $refLength]);
+	}
+	
+	my @forReturn;
+	my $currentEnd = $desiredWindowLength;
+	while($currentEnd < $refLength)
+	{
+		push(@forReturn, [$currentEnd - $desiredWindowLength + 1, $currentEnd]);
+		$currentEnd += $desiredWindowLength;
+	}
+	if($currentEnd > $refLength)
+	{
+		$currentEnd = $refLength;
+	}
+	die if($forReturn[$#forReturn][1] == $currentEnd);
+	
+	my $lastWindowStart = $forReturn[$#forReturn][1] + 1;
+	die unless($lastWindowStart <= $currentEnd);
+	push(@forReturn, [$lastWindowStart, $currentEnd]);
+	
+	return @forReturn;
+}

@@ -20,13 +20,10 @@
     + Format: _BAM_ (binary)
 + Tools:
   + BWA
+    + Status: _complete_ (installed)
   + Wrappers
     + Collect paths (input and output files) (validate?)
     + Call BWA
-+ Status:
-  + BWA
-    + Status: _complete_ (installed)
-  + Wrappers
     + Assignees:
       + Nathan?
       + Jeff
@@ -46,9 +43,6 @@
     + Format: _BAM_ (binary)
 + Tools:
   + Local To Global Alignment
-  + Wrappers
-+ Status:
-  + Local to Global Alignment
     + Assignees:
       + Evan
       + Aarti
@@ -71,53 +65,43 @@
     + Format: _BAM_ (binary)
 + Tools:
   + MAFFT
+    + Status: _complete_ (installed)
   + AMC
     1. Identify window coordinates (start with windows of size ~10kb) in
     alignment file
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     2. Extract sequence data for each window
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     3. Convert window to FASTA format
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
     4. Run MAFFT for each window [could be parallelized]
-    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
-    window)
-    6. Reassemble the individual BAM MSAs into a single BAM alignment file
-  + Wrappers
-    + Window size specification?
-    + Call AMC
-+ Status:
-  + MAFFT
-    + Status: _complete_ (installed)
-  + AMC
-    1. Identify window coordinates
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + BAM2MAFFT.pl in top-level of GitHub repo
-    2. Extract sequence data from BAM file
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + BAM2MAFFT.pl in top-level of GitHub repo
-    3. Convert window to FASTA format
-      + Assignees:
-        + Alex
-      + Status: in progress
-        + BAM2MAFFT.pl in top-level of GitHub repo
-    4. Run MAFFT
       + Assignees:
         + Nathan
       + Status: in progress
         + scripts/align_mafft.sh on GitHub
-    5. Convert each FASTA alignment to BAM
+    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
+    window)
       + Assignees:
         + Nancy
       + Status: _complete_
         + scripts/fas2bam.pl
-    6. Concatenate each window-BAM to single BAM
+    6. Reassemble the individual BAM MSAs into a single BAM alignment file
       + Assignees:
         + Nancy
       + Status: in progress
         + _Location for any code?_
-  + Wrappers:
+  + Wrappers
+    + Window size specification?
+    + Call AMC
     + Assignees
       + Jeff?
     + Status: **not started**
@@ -131,16 +115,13 @@
     + Format: _VG_, _GFA_?
 + Tools:
   + BAM to VCF
-  + Wrapper
-    + Convert BAM alignment to VCF
-    + Call vg to convert VCF to vg or gfa format
-+ Status:
-  + BAM to VCF:
     + Assignees:
       + Andrew
     + Status: in progress
       + _Location for any code?_
-  + Wrapper:
+  + Wrapper
+    + Convert BAM alignment to VCF
+    + Call vg to convert VCF to vg or gfa format
     + Assignees:
       + Jeff
     + Status: **not started**
