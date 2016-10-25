@@ -8,8 +8,8 @@ while getopts ":g:c:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
-      if [ ! -r $INFILE ]; then
-        echo "Input file $INFILE does not exist or it is not readable."
+      if [ ! -r $REFFASTA ]; then
+        echo "Input file $REFFASTA does not exist or it is not readable."
         usage
       fi
       ;;
@@ -27,4 +27,4 @@ while getopts ":g:c:" opt; do
   esac
 done
 
-# do stuff
+# TODO: Call to BWA to create a BAM file

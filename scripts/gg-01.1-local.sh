@@ -8,8 +8,8 @@ while getopts ":g:c:b:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
-      if [ ! -r $INFILE ]; then
-        echo "Input file $INFILE does not exist or it is not readable."
+      if [ ! -r $REFFASTA ]; then
+        echo "Input file $REFFASTA does not exist or it is not readable."
         usage
       fi
       ;;
