@@ -126,6 +126,11 @@ sub read_fas_file {
     }
     close FAS;
 
+    if ($current_entry && $current_seq) {
+        $seq_entry_hash{$current_entry} = $current_seq;
+        #print "$current_seq\n";
+    }
+
     return {%seq_entry_hash};
 }
 
