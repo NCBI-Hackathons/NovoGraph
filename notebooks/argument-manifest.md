@@ -4,12 +4,12 @@
   + Coders: Biederstedt & Jajoo
   + scripts/NWAM_01.py
     + Arguments:
-      + <parameter name/flag>
+      + [parameter name/flag]
         + Description: FASTA file of reference genome
-      + <parameter name/flag>
+      + [parameter name/flag]
         + Description: Directory of directories with FASTA files of contigs;
         one directory corresponds to one assembly **TODO**: Check
-      + <parameter name/flag>
+      + [parameter name/flag]
         + Description: BAM alignment from BWA? **TODO**: Check
 2. Multiple Sequence alignment
   1. Windowing
@@ -20,7 +20,7 @@
       + Arguments:
         + --referenceFasta
           + Description: FASTA file of reference genome
-        + <parameter name/flag> **TODO**: Check this - is it necessary?
+        + [parameter name/flag] **TODO**: Check this - is it necessary?
           + Description: Directory of directories with FASTA files of contigs;
           one directory corresponds to one assembly **TODO**: Check
         + --BAM
@@ -86,5 +86,5 @@
           + Description: **TODO**: what is this 'small/x.fa'
         + -v
           + Description: VCF file of aligned assemblies (product of 3.1)
-        + <no flag>
+        + [no flag]
           + Description: Name of output graph file
