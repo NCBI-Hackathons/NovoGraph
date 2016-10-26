@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO: pass in number of procs and threads
 usage() {
   echo "Usage: $0 [ -i <path to input files>  -o <path to output file>  ]  "
   exit 1
@@ -55,29 +56,27 @@ function copyEmpty(){
 	  extension="${filename##*.}";
 	  filename="${filename%.*}";
 
-	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fa";
-#      echo "copying $line to $outputfile"
+	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fas";
 	  cp -f $line $outputfile
 	done 
 	echo "Copied $i files."
 }
 
-#copyEmpty 
 
 function align(){
 
  echo $1 $2 $3
 
-  fullfile=$1 
+  fullfile=$1
   filename=$(basename "$fullfile");
   extension="${filename##*.}";
   filename="${filename%.*}";
 
-  outputfile="$3/${filename}_aligned.fa";
+  outputfile="$3/${filename}_aligned.fas";
 
   echo "from $1 to $outputfile"
 
-  mafft --auto  $1 > $outputfile
+  #mafft --reorder --auto  $1 > $outputfile
 
 #  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
 #  if (($FILESIZE==0)) ; then
@@ -88,15 +87,21 @@ function align(){
      cp -f $1 $outputfile
   fi
 
-#  if [ "$RESULT" eq "1" ]; then 
-#       cp -f $1 $outputfile
-#  fi 
+  bamoutput="$3/$filename.bam"
+
+  echo "BAM input $outputfile and output $bamoutput" 
+
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
+  #./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" 
 
 }
-export -f align 
+
+export -f align
 
 
-parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+# copyEmpty
+
+parallel -j 1  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 
