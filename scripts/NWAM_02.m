@@ -79,11 +79,11 @@ while Stop == 0
         lenPotential = sum(PotentialDiag);
         if lenPotential ==0 
             PathExtension(ExtensionPathIndx(1)) = 0;
-        else
-            PossiblePath(ExtensionPathIndx(1)+lenPotential:nPossiblePath+lenPotential-1) = PossiblePath(ExtensionPathIndx(1)+1:nPossiblePath) ;
-            trash = repmat(PossiblePath{ExtensionPathIndx(1)},lenPotential,1);
-            trash = [trash find(PotentialDiag==1)];
-            [row,col] = size(trash);
+        else   # [ [1], [2], [3] ]
+            PossiblePath(ExtensionPathIndx(1)+lenPotential:nPossiblePath+lenPotential-1) = PossiblePath(ExtensionPathIndx(1)+1:nPossiblePath) ; # EXTEND! # [ [1], [2], [2], [3]]
+            trash = repmat(PossiblePath{ExtensionPathIndx(1)},lenPotential,1);  # repmat() --> [[1], [1]]
+            trash = [trash find(PotentialDiag==1)];  # find [[1 3], [1 4]]
+            [row,col] = size(trash);  # replaces here, outputs [[1 3], [1 4], [2], [3]]
             PossiblePath(ExtensionPathIndx(1):ExtensionPathIndx(1)+lenPotential-1) = mat2cell(trash,repmat(1,1,lenPotential),col);
         end
     else
