@@ -102,3 +102,12 @@
     		  + Description: Show progress on STDERR
         + [no flag]
           + Description: Name of output graph file
+
+# QC scripts
+1. Comparing two FASTA files
+   + Coder: Dilthey
+   + scripts/compareTwoFASTAs.pl
+     + Example call: `./compareTwoFASTAs.pl --f1 /home/devsci7/globalize_windowbams/global_multiple_alignments.frombam.fasta --f2 /home/data/contigs/AllContigs.fa`
+     + Arguments:
+       + --f1 File 1 for comparison (kept in memory)
+       + --f2 File 2 for comparison (read iteratively)
