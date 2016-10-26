@@ -55,6 +55,7 @@ RUN apt-get -qq update && \
 # RUN mkdir /app
 COPY scripts /app/scripts/
 COPY config /app/config/
+COPY doc /app/doc/
 
 
 
