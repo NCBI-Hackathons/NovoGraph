@@ -36,7 +36,7 @@ if($paranoid)
 	$reads_href = readFASTA($readsFasta, 1);
 }
 
-my @out_headerfields = qw/readID firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference $alignment_reference alignment_read alignment_read/;
+my @out_headerfields = qw/readID chromosome firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference alignment_read/;
 		
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
 print OUT join("\t", @out_headerfields), "\n";
@@ -44,24 +44,45 @@ print OUT join("\t", @out_headerfields), "\n";
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 my $iterator = $sam->features(-iterator=>1);
 
+my %processedReadIDs;
+my $runningReadID;
 while(my $alignment = $iterator->next_seq)
 {
+	my $readID = $alignment->query->name;
+	if($runningReadID ne $readID)
+	{
+		if($runningReadID)
+		{
+			die "Ordering constrains violated - we want a BAM ordered by read ID - violating read ID $readID" if($processedReadIDs{$readID});
+			$processedReadIDs{$runningReadID}++;
+		}
+		$runningReadID = $readID;
+	}
 	my $read_href = convertAlignmentToHash($alignment);	
-	print OUT join("\t", map {die unless(defined $read_href->{$_}); $read_href->{$_}} @out_headerfields), "\n";
+	
+	if($read_href)
+	{
+		print OUT join("\t", map {die "Field $_ undefined" unless(defined $read_href->{$_}); $read_href->{$_}} @out_headerfields), "\n";
+	}
 }
 
 
 sub convertAlignmentToHash
 {
 	my $inputAlignment = shift;
-    
+	
+	return undef if($inputAlignment->unmapped);
 	
 	my $readID = $inputAlignment->query->name;
+	my $chromosome = $inputAlignment->seq_id;
 	my $firstPos_reference = $inputAlignment->start;
 	my $lastPos_reference;
-	my $firstPos_read;
+	my $firstPos_read = 0;
 	my $lastPos_read;
 	my $strand = $inputAlignment->strand;
+	die unless(($strand == 1) or ($strand == -1));
+	$strand = ($strand == 1) ? '+' : '-';
+	
 	my $n_matches = 0;
 	my $n_mismatches = 0;
 	my $n_insertions = 0;
@@ -75,12 +96,24 @@ sub convertAlignmentToHash
 	{
 		my $number = $1;
 		my $action = $2;
+		if(($action eq 'H') or ($action eq 'S'))
+		{
+			$firstPos_read += $number;
+			$cigar =~ s/^(\d+)([MIDHS])//;
+		}
+		else
+		{
+			last;
+		}
+	}
 		
-		
-		
+	my ($ref, $matches, $query) = $inputAlignment->padded_alignment;
+	unless(defined $ref)
+	{
+		warn "No reference sequence for $chromosome?";
+		return undef;
 	}
 	
-	my ($ref, $matches, $query) = $inputAlignment->padded_alignment;
 	$alignment_reference = $ref;
 	$alignment_read = $query;
 	
@@ -128,8 +161,32 @@ sub convertAlignmentToHash
 	die unless(defined $runningPos_read);
 	$n_gaps = $n_insertions + $n_deletions;
 	
+	if($paranoid)
+	{
+		die "Missing reference sequence for $chromosome" unless(exists $reference_href->{$chromosome});
+		my $supposed_reference_sequence = substr($reference_href->{$chromosome}, $firstPos_reference, $lastPos_reference - $firstPos_reference + 1);
+		
+		die "Missing read sequence for $readID" unless(exists $reads_href->{$readID});
+		my $read_sequence = $reads_href->{$readID};
+		if($strand eq '-')
+		{
+			$read_sequence = reverseComplement($read_sequence);
+		}
+		my $supposed_read_sequence = substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1);
+		
+		my $alignment_reference_noGaps = $alignment_reference;
+		$alignment_reference_noGaps =~ s/\-//g;
+		
+		my $alignment_read_noGaps = $alignment_read;
+		$alignment_read_noGaps =~ s/\-//g;
+		
+		die "Mismatch reference" unless($alignment_reference_noGaps eq $supposed_reference_sequence);
+		die "Mismatch query" unless($alignment_read_noGaps eq $supposed_read_sequence);
+	}
+	
 	return {
 		readID => $readID,
+		chromosome => $chromosome,
 		firstPos_reference => $firstPos_reference,
 		lastPos_reference => $lastPos_reference,
 		firstPos_read => $firstPos_read,
