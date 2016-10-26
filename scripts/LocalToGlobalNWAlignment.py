@@ -75,11 +75,11 @@ def globalPath(startContig, lenghtContig, start, end):
         if lenPotential == 0:
             pathExtension[0][extensionPathIndx[0][0]] =  0
         else
-            possiblePath.append(possiblePath[extensionPathIndx[0][0] + 1:nPossiblePath])
-                            #array([[0],[1],[2],[3],[4],[5],[6],[7],[8]])
+            
             pathToAppend = possiblePath[extensionPathIndx[0][0]]  # array([0])
+            newPathToAdd = [];
             for i in range(0, lenPotential-1):  # lenPotential=1; for i in #output== 'range(0, 0)':
-                possiblePath[extensionPathIndx[0][0] + i] = np.append(pathToAppend, potentialDiagIndx[i])  #pathToAppend
+                newPathToAdd.append(np.append(pathToAppend, potentialDiagIndx[i]) )   #pathToAppend
 
              """
                  PossiblePath(ExtensionPathIndx(1)+lenPotential:nPossiblePath+lenPotential-1) = PossiblePath(ExtensionPathIndx(1)+1:nPossiblePath) ; # EXTEND! # [ [1], [2], [2], [3]]
@@ -88,7 +88,8 @@ def globalPath(startContig, lenghtContig, start, end):
                  [row,col] = size(trash);  # replaces here, outputs [[1 3], [1 4], [2], [3]]
                  PossiblePath(ExtensionPathIndx(1):ExtensionPathIndx(1)+lenPotential-1) = mat2cell(trash,repmat(1,1,lenPotential),col);
              """
-
+           del possiblePath[extensionPathIndx[0][0]]
+           possiblePath = possiblePath[0:extensionPathIndx[0][0]]+newPathToAdd+possiblePath[extensionPathIndx[0][0]:]
 
         else
             break # stop = True
