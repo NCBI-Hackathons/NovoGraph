@@ -40,7 +40,7 @@ echo "Files to process"
 INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1$"  | awk -F':' '{ print $1 }' | grep ".fa"  ))
 
 echo "Reference Only"
-FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1$"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
+#FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1$"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
 
 
 echo "Files to process: ${#INPUTFILES[@]}"
@@ -96,7 +96,7 @@ function align(){
 
   #echo "BAM input $outputfile and output $bamoutput"
 
-  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt" &
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt" 
 
 }
 
@@ -104,7 +104,13 @@ export -f align
 
 # copyEmpty
 
-parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+# parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+
+for INPUT_FILE in ${INPUTFILES[@]}
+do 
+  align $INPUT_FILE $INPUT_DIRECTORY $OUTPUT_DIRECTORY ;
+done 
+
 
 
 
