@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.24748737"
-     inkscape:cx="167.42649"
-     inkscape:cy="2255.5707"
+     inkscape:zoom="0.35"
+     inkscape:cx="460.97497"
+     inkscape:cy="2590.109"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,7 +70,7 @@
          sodipodi:role="line"
          id="tspan8167"
          x="163.51546"
-         y="369.53183">Step 1: Join </tspan><tspan
+         y="369.53183">Step 1.2: Join </tspan><tspan
          sodipodi:role="line"
          x="163.51546"
          y="394.53183"
@@ -473,7 +473,7 @@
            id="text4214-2-8"
            y="-323.95276"
            x="382.61407"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
            xml:space="preserve"><tspan
              y="-323.95276"
              x="382.61407"
@@ -2449,7 +2449,7 @@
          sodipodi:role="line"
          id="tspan8135"
          x="168.40182"
-         y="26.104382">Step 0.1: Do </tspan><tspan
+         y="26.104382">Step 1.1: Do </tspan><tspan
          sodipodi:role="line"
          x="168.40182"
          y="51.104382"

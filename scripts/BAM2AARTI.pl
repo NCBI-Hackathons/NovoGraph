@@ -56,7 +56,11 @@ my $runningReadID;
 my %printed_complete_sequence;
 while(my $alignment = $iterator->next_seq)
 {
-	last if($alignment->seq_id ne 'chr1');
+	if($alignment->seq_id ne 'chr1')
+	{
+		warn "For testing purposes, stop after chr1";
+		last;
+	}
 	
 	my $readID = $alignment->query->name;
 	if($runningReadID ne $readID)
