@@ -70,17 +70,24 @@
   1. BAM to VCF:
     + Coder: Olson
     + scripts/BAM2VCF.pl
-      + Example call: `BAM2VCF.pl --BAM data/bams/uberbam.bam --referenceFasta data/reference/GRCh38.fa --header yes samples samples.txt | bgzip -c >
+      + Example call: `BAM2VCF.pl --BAM data/bams/uberbam.bam --referenceFasta
+      data/reference/GRCh38.fa --header yes --samples samples.txt | bgzip -c >
       data/vcf/final.vcf.gz ; tabix -p vcf data/vcf/final.vcf.gz`
       + Arguments:
         + --BAM
           + Description: BAM file (the file produced by 2.3)
         + --referenceFasta
           + Description: Name of indexed reference genome fasta file
-		+ --samples
-		  + Description: Name of list of samples (one per line)
-		+ --header
-		  + Description: Include a VCF header if this is truthy (premature optimization)
+        + --header
+          + Description: Include a VCF header if this is truthy (premature optimization)
+    		+ --samples
+    		  + Description: Name of list of samples (one per line)
+        + -c
+          + Description: Skip lines with a comment character (#)
+        + -p
+          + Description: Set input format (in this case, vcf)
+        + [no flag]
+          + Description: Name of vcf file for tabix call
   2. VCF to VG
     + vg (no custom scripts)
       + Example call: `vg construct -r data/reference/GRCh38.fa -v data/vcf/final.vcf.gz -p >
@@ -90,7 +97,7 @@
           + Description: Reference genome fasta file
         + -v
           + Description: tabix indexed VCF file of aligned assemblies (product of 3.1)
-		+ -p
-		  + Descriptoin: Show progress on STDERR
+    		+ -p
+    		  + Description: Show progress on STDERR
         + [no flag]
           + Description: Name of output graph file
