@@ -2,7 +2,7 @@
 
 use strict;
 use Bio::DB::Sam;
-use Getopt::Long;   
+use Getopt::Long;
 use Data::Dumper;
 $| = 1;
 
@@ -12,7 +12,7 @@ my $outputDirectory = 'forVG';
 my $output;
 
 GetOptions (
-  'outputDirectory:s' => \$outputDirectory,	
+  'outputDirectory:s' => \$outputDirectory,
   'output:s' => \$output,
   'referenceFasta:s' => \$referenceFasta,
 	'BAM:s' => \$BAM
@@ -41,6 +41,6 @@ for my $seqName ($sam->seq_ids()) {
   push @pieces, "$pieceDirectory/*.vcf.gz";
 }
 #my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $output\n";
-my @outformat = 'vcf';
-my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p @outformat\n";
+my $outformat = 'vcf';
+my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $outformat\n";
 system($cmd);
