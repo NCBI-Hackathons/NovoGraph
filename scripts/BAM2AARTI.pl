@@ -4,12 +4,15 @@ use strict;
 use Data::Dumper;
 use Bio::DB::Sam;
 use Getopt::Long;   
+$| = 1;
 
+# Example command:
+# To check correctness of INPUT for mafft:
+# 	./BAM2AARTI.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa
 
 my $referenceFasta;
 my $BAM;
 my $outputFile = 'forAarti.txt';
-my $paranoid = 1;
 my $readsFasta;
 my $lenientOrder = 1;
 
@@ -20,25 +23,26 @@ GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'BAM:s' => \$BAM, 
 	'outputFile:s' => \$outputFile,	
-	'paranoid:s' => \$paranoid,	
 	'readsFasta:s' => \$readsFasta,	
 	'lenientOrder:s' => \$lenientOrder,	
 );
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
+die "Please specify --readsFasta" unless($readsFasta);
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
+die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
 
-my $reference_href;
-my $reads_href;
-if($paranoid)
-{
-	$reference_href = readFASTA($referenceFasta, 0);
-	# $reads_href = readFASTA($readsFasta, 1);
-}
+print "Read $referenceFasta\n";
+my $reference_href = readFASTA($referenceFasta, 0);
+print "\tdone.\n";
 
-my @out_headerfields = qw/readID chromosome firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference alignment_read/;
+print "Read $readsFasta\n";
+my $reads_href = readFASTA($readsFasta, 0);
+print "\tdone.\n";
+
+my @out_headerfields = qw/readID chromosome firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference alignment_read completeReadSequence_plus completeReadSequence_minus/;
 		
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
 print OUT join("\t", @out_headerfields), "\n";
@@ -49,8 +53,11 @@ my $iterator = $sam->features(-iterator=>1);
 my $warnedAboutOrder;
 my %processedReadIDs;
 my $runningReadID;
+my %printed_complete_sequence;
 while(my $alignment = $iterator->next_seq)
 {
+	last if($alignment->seq_id ne 'chr1');
+	
 	my $readID = $alignment->query->name;
 	if($runningReadID ne $readID)
 	{
@@ -77,10 +84,35 @@ while(my $alignment = $iterator->next_seq)
 	
 	if($read_href)
 	{
+		if($printed_complete_sequence{$readID})
+		{
+			$read_href->{completeReadSequence_plus} = '';
+			$read_href->{completeReadSequence_minus} = '';
+		}
+		else
+		{
+			die unless($reads_href->{$readID});
+			$read_href->{completeReadSequence_plus} = $reads_href->{$readID};
+			$read_href->{completeReadSequence_minus} = reverseComplement($reads_href->{$readID});
+			$printed_complete_sequence{$readID}++;
+		}
+		
 		print OUT join("\t", map {die "Field $_ undefined" unless(defined $read_href->{$_}); $read_href->{$_}} @out_headerfields), "\n";
 	}
 }
 
+my $sorted_outputFile = $outputFile.'.sorted';
+my $sort_cmd = qq(sort $outputFile > $sorted_outputFile);
+if(system($sort_cmd))
+{
+	die "Failed during command: $sort_cmd";
+}
+unless(-e $sorted_outputFile)
+{
+	die "Expected output file $sorted_outputFile not existing";
+}
+
+print "\n\nProduced output file $sorted_outputFile";
 
 sub convertAlignmentToHash
 {
@@ -109,26 +141,71 @@ sub convertAlignmentToHash
 	my $alignment_read;
 	
 	my $cigar  = $inputAlignment->cigar_str;
+	my $remove_softclipping_front = 0;
+	my $remove_softclipping_back = 0;	
 	while($cigar =~ /^(\d+)([MIDHS])/)
 	{
 		my $number = $1;
 		my $action = $2;
+		$cigar =~ s/^(\d+)([MIDHS])//;		
 		if(($action eq 'H') or ($action eq 'S'))
 		{
 			$firstPos_read += $number;
-			$cigar =~ s/^(\d+)([MIDHS])//;
+			if($action eq 'S')
+			{
+				$remove_softclipping_front += $number;
+			}
 		}
 		else
 		{
 			last;
 		}
 	}
-		
+	
+	{
+		my $cigar  = $inputAlignment->cigar_str;
+		while($cigar =~ /(\d+)([MIDHS])$/)
+		{
+			my $number = $1;
+			my $action = $2;
+			$cigar =~ s/(\d+)([MIDHS])$//;					
+			if(($action eq 'H') or ($action eq 'S'))
+			{
+				if($action eq 'S')
+				{
+					$remove_softclipping_back += $number; 
+				}
+			}
+			else
+			{
+				last;
+			}
+		}	
+	}
+	
 	my ($ref, $matches, $query) = $inputAlignment->padded_alignment;
 	unless(defined $ref)
 	{
 		warn "No reference sequence for $chromosome?";
 		return undef;
+	}
+	
+	if($remove_softclipping_front)
+	{
+		my $softclip_remove_ref = substr($ref, 0, $remove_softclipping_front);
+		die "Weird softclipping for read" unless($softclip_remove_ref =~ /^\-+$/);
+		substr($ref, 0, $remove_softclipping_front) = '';
+		substr($query, 0, $remove_softclipping_front) = '';
+	}
+
+	if($remove_softclipping_back)
+	{
+		my $softclip_remove_ref = substr($ref, length($ref) - $remove_softclipping_back);
+		die unless(length($softclip_remove_ref) == $remove_softclipping_back);
+		
+		die "Weird softclipping for read" unless($softclip_remove_ref =~ /^\-+$/);
+		substr($ref, length($ref) - $remove_softclipping_back) = '';
+		substr($query, length($query) - $remove_softclipping_back) = '';
 	}
 	
 	$alignment_reference = $ref;
@@ -176,46 +253,71 @@ sub convertAlignmentToHash
 	
 	die unless(defined $lastPos_reference);
 	die unless(defined $runningPos_read);
+	$lastPos_read--;
+	die unless($lastPos_read >= $firstPos_read);
+	
 	$n_gaps = $n_insertions + $n_deletions;
 	
-	if($paranoid)
+	die "Missing reference sequence for $chromosome" unless(exists $reference_href->{$chromosome});
+	my $supposed_reference_sequence = substr($reference_href->{$chromosome}, $firstPos_reference, $lastPos_reference - $firstPos_reference + 1);
+	
+	unless(exists $reads_href->{$readID})
 	{
-		die "Missing reference sequence for $chromosome" unless(exists $reference_href->{$chromosome});
-		my $supposed_reference_sequence = substr($reference_href->{$chromosome}, $firstPos_reference, $lastPos_reference - $firstPos_reference + 1);
-		
-		# die "Missing read sequence for $readID" unless(exists $reads_href->{$readID});
-		my $read_sequence = $reads_href->{$readID};
-		if($strand eq '-')
-		{
-			$read_sequence = reverseComplement($read_sequence);
-		}
-		my $supposed_read_sequence = substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1);
-		
-		my $alignment_reference_noGaps = $alignment_reference;
-		$alignment_reference_noGaps =~ s/\-//g;
-		
-		my $alignment_read_noGaps = $alignment_read;
-		$alignment_read_noGaps =~ s/\-//g;
-		
-		if(index($supposed_reference_sequence, "N") == -1)
-		{
-			unless($alignment_reference_noGaps eq $supposed_reference_sequence)
-			{
-				print $ref, "\n";
-				print $query, "\n";
-				print "\$inputAlignment->start: ", $inputAlignment->start, "\n";
-				print "REF: ", $alignment_reference_noGaps, "\n";
-				print "RE2: ", substr($reference_href->{$chromosome}, $firstPos_reference - 10, 20), "\n";
-				print "ALG: ", $supposed_reference_sequence, "\n";
-				print "\n\n\n";
-				exit;
-				die "Mismatch reference";
-			}
-			print "Ref ok!\n";
-		}
-		#print "Ref ok!\n";
-		#die "Mismatch query" unless($alignment_read_noGaps eq $supposed_read_sequence);
+		warn "Missing read sequence for $readID";
+		return undef;
 	}
+	
+	my $read_sequence = $reads_href->{$readID};
+	if($strand eq '-')
+	{
+		$read_sequence = reverseComplement($read_sequence);
+	}
+	my $supposed_read_sequence = substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1);
+	
+	my $alignment_reference_noGaps = $alignment_reference;
+	$alignment_reference_noGaps =~ s/\-//g;
+	
+	my $alignment_read_noGaps = $alignment_read;
+	$alignment_read_noGaps =~ s/\-//g;
+	
+	if(index($supposed_reference_sequence, "N") == -1)
+	{
+		unless($alignment_reference_noGaps eq $supposed_reference_sequence)
+		{
+			print "Reference mismatch for read $readID\n";
+			print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
+			print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";			
+			print "\t", $ref, "\n";
+			print "\t", $query, "\n";
+			print "\t", "\$inputAlignment->start: ", $inputAlignment->start, "\n";
+			print "\t", "REF: ", $alignment_reference_noGaps, "\n";
+			print "\t", "RE2: ", substr($reference_href->{$chromosome}, $firstPos_reference - 10, 20), "\n";
+			print "\t", "ALG: ", $supposed_reference_sequence, "\n";
+			print "\t", "strand: ", $strand, "\n";			
+			print "\n";
+			return undef;
+		}
+
+		unless($alignment_read_noGaps eq $supposed_read_sequence)
+		{
+			print "Sequence mismatch for read $readID\n";
+
+			print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
+			print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";
+			print "\t", "lastPos_read: ", $lastPos_read, "\n";
+			print "\t", "firstPos_read: ", $firstPos_read, "\n";
+			print "\t", "alignment_read_noGaps : ", $alignment_read_noGaps, "\n";
+			print "\t", "supposed_read_sequence: ", $supposed_read_sequence, "\n\n";
+			print "\t", "alignment_ref : ", $ref, "\n";
+			print "\t", "alignment_query: ", $query, "\n";
+			print "\t", "strand: ", $strand, "\n";
+			print "\n";
+			
+			return undef;
+		}
+	}
+	
+	die "Mismatch query" unless($alignment_read_noGaps eq $supposed_read_sequence);
 	
 	return {
 		readID => $readID,
@@ -249,7 +351,7 @@ sub convertAlignmentToHash
 	# die $readID;
 # }
  
- sub readFASTA
+sub readFASTA
 {
 	my $file = shift;	
 	my $keepCompleteIdentier = shift;
