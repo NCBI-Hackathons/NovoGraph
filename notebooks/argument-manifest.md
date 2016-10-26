@@ -1,16 +1,30 @@
 # Arguments for each step of pipeline
 
 1. Local to Global
-  + Coders: Biederstedt & Jajoo
-  + scripts/NWAM_01.py
-    + Arguments:
-      + [parameter name/flag]
-        + Description: FASTA file of reference genome
-      + [parameter name/flag]
-        + Description: Directory of directories with FASTA files of contigs;
-        one directory corresponds to one assembly **TODO**: Check
-      + [parameter name/flag]
-        + Description: BAM alignment from BWA? **TODO**: Check
+  1. Pre-processing
+     + Coder: Dilthey
+     + scripts/BAM2MAFFT.pl
+       + Example call: ./BAM2MAFFT.pl --BAM /home/data/alignments/statistics/SevenGenomesGlobalAligns.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa
+       + Arguments:
+         + --BAM
+            + Description: input BAM file, produced by BWA
+         + --referenceFasta
+           + Description: Reference file used to produce the BAM. If GRCh37/38, no ALTs!
+         + --paranoid 0/1
+           + Description: Check that the emitted sequence coordinates and alignments are concordant with the input sequences that went into the BAM. Memory-intensive!
+         + --readsFasta
+            + Description: If --paranoid 1, path to FASTA with sequences that went into the BAM
+  + 2. Local to global	   
+    + Coders: Biederstedt & Jajoo
+    + scripts/NWAM_01.py
+      + Arguments:
+        + [parameter name/flag]
+          + Description: FASTA file of reference genome
+        + [parameter name/flag]
+          + Description: Directory of directories with FASTA files of contigs;
+          one directory corresponds to one assembly **TODO**: Check
+        + [parameter name/flag]
+          + Description: BAM alignment from BWA? **TODO**: Check
 2. Multiple Sequence alignment
   1. Windowing
     + Coder: Dilthey
