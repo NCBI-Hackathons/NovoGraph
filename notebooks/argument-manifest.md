@@ -109,5 +109,5 @@
    + scripts/compareTwoFASTAs.pl
      + Example call: `./compareTwoFASTAs.pl --f1 /home/devsci7/globalize_windowbams/global_multiple_alignments.frombam.fasta --f2 /home/data/contigs/AllContigs.fa`
      + Arguments:
-       + --f1 File 1 for comparison (kept in memory)
+       + --f1 File 1 for comparison (kept in memory)  
        + --f2 File 2 for comparison (read iteratively)
