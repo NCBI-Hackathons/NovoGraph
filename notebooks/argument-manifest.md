@@ -42,9 +42,9 @@
         data/bams --ref "ref" --bamheader "./config/windowbam.header.txt"`
         + Arguments:
           + --input
-            + Description: Name of input FASTA file **TODO**: Check
+            + Description: Name of input FASTA file produced by MAFFT
           + --output
-            + Description: Name of output BAM file **TODO**: Check
+            + Description: Name of output BAM file
           + --ref
             + Description: String identifier for reference sequence, defaults to
             "ref"
@@ -55,17 +55,23 @@
     + Coder: Hansen
     + scripts/globalize_windowbams.pl
       + Example call: `globalize_windowbams.pl --fastadir data/fastas --msadir
-      data/bams --contigs data/contiginfo.txt`
+      data/bams --contigs data/contiginfo.txt` --bamheader config/GRCh38_header.fai --output global_msa.bam
       + Arguments:
         + --fastadir
-          + Description: path to directory with inputs for MAFFT (**TODO**:
-            same as 2.2.1 argument -i?)
+          + Description: path to directory with inputs for MAFFT (this is the
+            same as argument -i fed to gg-align_mafft.sh - see 2.2.1)
         + --msadir
-          + Description: path to directory with outputs from MAFFT (**TODO**:
-            same as 2.2.1 argument -o?)
+          + Description: path to directory with outputs from fas2bam.pl (files
+            are assumed to be named "chr#_#.bam".  This directory is the same
+            as the output directory fed to gg-align_mafft.sh as -o - see 2.2.1)
         + --contigs
-          + Description: path to file with contig names/lengths (**TODO**
-            where/what?)
+          + Description: path to file with contig names/lengths (This file
+            can be obtained from Alex's contig info file which is used by
+            Evan and Aarti's software.)
+        + --output
+          + Description: path to where a bamfile should be written
+        + --bamheader
+          + Description: path to a header file for the entire genome
 3. Graph genome
   1. BAM to VCF:
     + Coder: Olson
