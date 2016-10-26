@@ -7,7 +7,7 @@
 # 2016-10-25
 
 usage() {
-  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>]"
+  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>] [-s <path-to-list-of-samples>]"
   exit 1
 }
 
@@ -27,10 +27,10 @@ while getopts ":g:c:b:" opt; do
         usage
       fi
       ;;
-    b)
-      BAMFILE=${OPTARG}
-      if [ ! -r $BAMFILE]; then
-        echo "Bath to $BAMFILE does not exist or is not readable."
+    s)
+      SAMPLESFILE=${OPTARG}
+      if [ ! -r $SAMPLESFILE]; then
+        echo "Path to $SAMPLESFILE does not exist or is not readable."
         usage
       fi
       ;;
@@ -74,14 +74,11 @@ globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGI
 #                         --contigs <path to file with contig names/lengths>
 
 ### Step 3: Create graph genome!
-VCFFILE="myvcf.vcf"
-# BAM to VCF
-# TODO: Insert call to Andrew's code here
-# PSEUDOCALL:
-BAM2VCF.pl -b $FINALBAM -o $VCFFILE
-
+VCFFILE="myvcf.vcf.gz"
+# BAM to bgzipped VCF
+BAM2VCF.pl --BAM $FINALBAM --referenceFasta $REFFASTA --header please --samples $SAMPLESFILE | bgzip -c > $VCFFILE
+# index with tabix
+tabix -p vcf $VCFFILE
 # Call vg to convert VCF to vg or gfa format
 VGOUTFILE="vgoutput.vg"
-# TODO: What is the small/x.fa argument? a reference genome?
-# PSEUDOCALL:
-vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE
+vg construct -r $REFFASTA -v $VCFFILE > $VGOUTFILE
