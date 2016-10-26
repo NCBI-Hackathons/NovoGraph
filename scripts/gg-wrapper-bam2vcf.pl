@@ -40,21 +40,29 @@ my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 my @sequence_ids = $sam->seq_ids();
 my @sequence_lengths = @{$sam->header->target_len};
 
-
-my %pieces;
 for(my $i=0;$i<@sequence_ids;$i++) {
-  my $pieceDirectory = "$outputDirectory/$sequence_ids[$i]";
+  my $name = $sequence_ids[$i];
+  my $length = $sequence_lengths[$i];
+
+  # check if there are alignments
+  my @alignments = $sam->features(-seq_id => $name);
+  next unless (@alignments);
+
+  my $pieceDirectory = "$outputDirectory/$name";
   unless((-e $pieceDirectory) and (-d $pieceDirectory)) {
     mkdir($pieceDirectory) or die "cannot mkdir $pieceDirectory";
   }
-  for(my $j=1;$j<$sequence_lengths[$i];$j+=$window) {
+  for(my $j=1;$j<$length;$j+=$window) {
     my $end = $j+$window;
-    if ($end > $sequence_lengths[$i]) {
-      $end = $sequence_lengths[$i];
+    if ($end > $length) {
+      $end = $length;
     }
+    @alignments = $sam->features(-seq_id => $name, -start => $j, -end => $end);
+    next unless (@alignments);
+
     my $padded_j = sprintf("%09d", $j);
     my $outFile = "$pieceDirectory/$padded_j.vcf.gz";
-    print "$script --BAM $BAM --referenceFasta $referenceFasta --samples $samples --name $sequence_ids[$i] --start $j --end $end | bgzip -c > $outFile\n";
+    print "$script --BAM $BAM --referenceFasta $referenceFasta --samples $samples --name $name --start $j --end $end | bgzip -c > $outFile\n";
   }
 }
 

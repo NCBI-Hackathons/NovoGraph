@@ -30,10 +30,14 @@ unless((-e $outputDirectory) and (-d $outputDirectory))
 
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
-my @sequence_ids = $sam->seq_ids();
 my @pieces;
-for(my $i=0;$i<@sequence_ids;$i++) {
-  my $pieceDirectory = "$outputDirectory/$sequence_ids[$i]";
+for my $seqName ($sam->seq_ids()) {
+
+  # check if there are alignments
+  my @alignments = $sam->features(-seq_id => $seqName);
+  next unless (@alignments);
+
+  my $pieceDirectory = "$outputDirectory/$seqName";
   push @pieces, "$pieceDirectory/*.vcf.gz";
 }
 #my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $output\n";

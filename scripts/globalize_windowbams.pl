@@ -57,6 +57,7 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
 
         my $rh_window_contig_alignments = read_windowbam_add_offset($bam, $entry, $offset);
 
+        my $no_contigs = keys %current_contigs;
         foreach my $contig (keys %{$rh_window_contig_alignments}) {
             if ($current_contigs{$contig}) {
                 $current_contigs{$contig} = combine_contig_alignments($current_contigs{$contig},
@@ -79,12 +80,12 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
                 }
             }
             else {
-                print STDERR "Still waiting for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
+                #print STDERR "Still waiting for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
             }
         }
     }
     my $no_left_over = keys %current_contigs;
-    print "$no_left_over contigs left over!\n";
+    print STDERR "$no_left_over contigs left over for $entry!\n" if ($no_left_over);
 }
 
 close $sam_fh;

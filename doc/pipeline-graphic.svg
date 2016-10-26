@@ -25,11 +25,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994948"
-     inkscape:cx="452.04794"
-     inkscape:cy="3028.8108"
+     inkscape:zoom="0.35"
+     inkscape:cx="460.97497"
+     inkscape:cy="2590.109"
      inkscape:document-units="px"
-     inkscape:current-layer="g5311"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="744"
@@ -70,7 +70,7 @@
          sodipodi:role="line"
          id="tspan8167"
          x="163.51546"
-         y="369.53183">Step 1: Join </tspan><tspan
+         y="369.53183">Step 1.2: Join </tspan><tspan
          sodipodi:role="line"
          x="163.51546"
          y="394.53183"
@@ -2449,7 +2449,7 @@
          sodipodi:role="line"
          id="tspan8135"
          x="168.40182"
-         y="26.104382">Step 0.1: Do </tspan><tspan
+         y="26.104382">Step 1.1: Do </tspan><tspan
          sodipodi:role="line"
          x="168.40182"
          y="51.104382"
