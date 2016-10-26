@@ -15,13 +15,15 @@
   1. Windowing
     + Coder: Dilthey
     + scripts/BAM2MAFFT.pl
+      + Example call: `BAM2MAFFT.pl --referenceFasta data/fastas/GRCh38.fas
+      --BAM data/bams/bam-from-bwa.bam`
       + Arguments:
-        + <parameter name/flag>
+        + --referenceFasta
           + Description: FASTA file of reference genome
-        + <parameter name/flag>
+        + <parameter name/flag> **TODO**: Check this - is it necessary?
           + Description: Directory of directories with FASTA files of contigs;
           one directory corresponds to one assembly **TODO**: Check
-        + <parameter name/flag>
+        + --BAM
           + Description: BAM alignment from BWA? **TODO**: Check
   2. Multiple Sequence Alignment via MAFFT
     1. MAFFT
@@ -68,7 +70,8 @@
   1. BAM to VCF:
     + Coder: Olson
     + scripts/BAM2VCF.pl
-      + Example call:
+      + Example call: `BAM2VCF.pl -b data/bams/uberbam.bam -o
+      data/vcf/final.vcf`
       + Arguments:
         + -b
           + Description: BAM file (the file produced by 2.3)
@@ -76,3 +79,12 @@
           + Description: Name of output VCF file
   2. VCF to GFA
     + vg (no custom scripts)
+      + Example call: `vg construct -r small/x.fa -v data/vcf/final.vcf >
+      data/graph/graph.gfa`
+      + Arguments:
+        + -r
+          + Description: **TODO**: what is this 'small/x.fa'
+        + -v
+          + Description: VCF file of aligned assemblies (product of 3.1)
+        + <no flag>
+          + Description: Name of output graph file
