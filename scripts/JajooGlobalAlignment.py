@@ -27,26 +27,36 @@ def globalPath(startContig,lenghtContig,start,end):
     # end
     # stop
     # stop
-    start = np.random.rand(10000, size=(10,2))
-    end   = np.random.rand(10000, size=(10,2))
+    start = np.random.randint(10000, size=(10,2))
+    end   = np.random.randint(10000, size=(10,2))
+    score = np.random.randint(10000, size=(10,1))
     stop = 0
-    ndiag = len(start)
-    PossiblePath = numpy.array([[x] for x in range(0,ndiag-1)])
-    PathExtension = numpy.ones((1,ndiag))
-    while Stop == 0:
-        ExtensionPathIndx = numpy.nonzero(PathExtension[0]==1)
-        nPossiblePath = len(PossiblePath);
-        if ExtensionPathIndx:
-        PresentPath = PossiblePath[ExtensionPathIndx[0][0]]
-        PresentDiagEnd = End[PresentPath[-1],:]
-        PotentialDiag = numpy.logical_and(Start[:,1]>PresentDiagEnd[1] ,  Start[:,0] > PresentDiagEnd[0])
-        PotentialDiagIndx = [i for i, x in enumerate(PotentialDiag) if x]
-        lenPotential = PotentialDiag.sum()
-        if lenPotential==0:
-            PathExtension[0][ExtensionPathIndx[0][0]] =  0
+    
+    # reindex
+    trash = start[:, 0]
+    trash = trash.ravel().argsort()
+    start = start[trash, :]
+    end   = end[trash, :]
+    score = score[trash, :]
+
+    ndiag = len(start)     # based on definition above `size=(10,2)`, len(start) = 10 always
+    possiblePath = np.array([[x] for x in range(0, ndiag-1)])
+        # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8]])
+    pathExtension = np.ones((1, ndiag), dtype=int)  # array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+    while stop == 0:
+        extensionPathIndx = np.nonzero(pathExtension[0]==1)   # (array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),)
+        nPossiblePath = len(possiblePath)  # len() = 9
+        if extensionPathIndx:
+            presentPath = possiblePath[extensionPathIndx[0][0]] # array([0])
+            presentDiagEnd = end[presentPath[-1],:]             # takes first pair from end
+            potentialDiag = np.logical_and(start[:,1] > presentDiagEnd[1] ,  start[:,0] > presentDiagEnd[0])
+            potentialDiagIndx = [i for i, x in enumeratepPotentialDiag) if x]
+            lenPotential = potentialDiag.sum()
+        if lenPotential == 0:
+            pathExtension[0][extensionPathIndx[0][0]] =  0
         else
-            PossiblePath[range(ExtensionPathIndx[0][0]+lenPotential,nPossiblePath+lenPotential-1)] =PossiblePath[ExtensionPathIndx[0][0]+1:nPossiblePath]
-            PathToAppend = PossiblePath[ExtensionPathIndx[0][0]]
+            possiblePath[range(extensionPathIndx[0][0]+lenPotential, nPossiblePath+lenPotential - 1)] = PossiblePath[extensionPathIndx[0][0] + 1:nPossiblePath]
+            pathToAppend = PossiblePath[ExtensionPathIndx[0][0]]
             for i in range(0,lenPotential-1):
                 PossiblePath[ExtensionPathIndx[0][0]+i] = np.append(PathToAppend,PotentialDiagIndx[i])
         else
