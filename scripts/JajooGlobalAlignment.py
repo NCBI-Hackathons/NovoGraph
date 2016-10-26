@@ -23,11 +23,11 @@ import numpy as np
 
 def globalPath(startContig, lenghtContig, start, end):
     # parameter explanation
-    # start
-    # end
-    # stop
-    # stop
-    start = np.random.randint(10000, size=(10,2))
+    # start --- start coordinate of contig X
+    # end --- length of contig X
+    # start ---
+    # end ---
+    
     """
         print(start)
         
@@ -44,41 +44,52 @@ def globalPath(startContig, lenghtContig, start, end):
         [7259, 6283]])
         
     """
+    start = np.random.randint(10000, size=(10,2))
     trash = start[:, 0]                             # takes the first "column" of `start`
     # array([ 413, 1800,  331, 8910,  837, 9660, 2167, 5997, 3104, 7259])
     end   = np.random.randint(10000, size=(10,2))
     score = np.random.randint(10000, size=(10,1))
-    stop = 0
+    stop == False
     
     # reindex
     trash = trash.ravel().argsort()  # trash MUST be a numpy array
     start = start[trash, :]
     end   = end[trash, :]
     score = score[trash, :]
+    
 
     ndiag = len(start)     # based on definition above `size=(10,2)`, len(start) = 10 always
-    possiblePath = np.array([[x] for x in range(0, ndiag-1)] # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8]])
+    possiblePath = np.array([[x] for x in range(0, ndiag)]) # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8],[9])
                             # list partition --- create an array of arrays #### in MATLAB, num2cell()
     pathExtension = np.ones((1, ndiag), dtype=int)  # array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
-    while stop == True:
+    while stop == False:
         extensionPathIndx = np.nonzero(pathExtension[0]==1)   # (array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),)
-        nPossiblePath = len(possiblePath)  # len() = 9
+        nPossiblePath = len(possiblePath)  # len() = 10
         if extensionPathIndx:
-            presentPath = possiblePath[extensionPathIndx[0][0]] # array([0])
-            presentDiagEnd = end[presentPath[-1],:]             # takes first pair from end, s.t. end = np.random.randint(10000, size=(10,2))
-            potentialDiag = np.logical_and(start[:,1] > presentDiagEnd[1] ,  start[:,0] > presentDiagEnd[0]) # e.g. array([False,  True, False, False, False, False, False, False, False, False], dtype=bool)
+            presentPath = possiblePath[extensionPathIndx[0][0]] # array([0]) --- THIS IS THE START ELEMENT OF extensionPathIndx
+            presentDiagEnd = end[presentPath[-1],:]             # takes first pair from end, s.t. end = np.random.randint(10000, size=(10,2)); array([7133, 5983])
+            potentialDiag = np.logical_and(start[:,1] > presentDiagEnd[1] ,  start[:,0] > presentDiagEnd[0])
+            # e.g. array([False,  True, False, False, False, False, False, False, False, False], dtype=bool)
             potentialDiagIndx = [i for i, x in enumerate(potentialDiag) if x] # [1]
-            lenPotential = potentialDiag.sum() # 1
+            lenPotential = np.sum(potentialDiag) # 1
         if lenPotential == 0:
             pathExtension[0][extensionPathIndx[0][0]] =  0
         else
-            possiblePath[range(extensionPathIndx[0][0]+lenPotential, nPossiblePath+lenPotential - 1)] = possiblePath[extensionPathIndx[0][0] + 1:nPossiblePath]
+            possiblePath[range(extensionPathIndx[0][0] + lenPotential, nPossiblePath + lenPotential - 1)] = possiblePath[extensionPathIndx[0][0] + 1:nPossiblePath]
                             #array([[0],[1],[2],[3],[4],[5],[6],[7],[8]])
             pathToAppend = possiblePath[extensionPathIndx[0][0]]  # array([0])
             for i in range(0, lenPotential-1):  # lenPotential=1; for i in #output== 'range(0, 0)':
                 possiblePath[extensionPathIndx[0][0] + i] = np.append(pathToAppend, potentialDiagIndx[i])  #pathToAppend
+
+             """
+                 PossiblePath(ExtensionPathIndx(1)+lenPotential:nPossiblePath+lenPotential-1) = PossiblePath(ExtensionPathIndx(1)+1:nPossiblePath) ; # EXTEND! # [ [1], [2], [2], [3]]
+                 trash = repmat(PossiblePath{ExtensionPathIndx(1)},lenPotential,1);  # repmat() --> [[1], [1]]
+                 trash = [trash find(PotentialDiag==1)];  # find [[1 3], [1 4]]
+                 [row,col] = size(trash);  # replaces here, outputs [[1 3], [1 4], [2], [3]]
+                 PossiblePath(ExtensionPathIndx(1):ExtensionPathIndx(1)+lenPotential-1) = mat2cell(trash,repmat(1,1,lenPotential),col);
+             """
         else
-            stop = False
+            break # stop = True
 
 
     nPossiblePath = len(possiblePath)  # always 9
