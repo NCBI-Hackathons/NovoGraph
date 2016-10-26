@@ -22,6 +22,8 @@ die "Please specify --f2" unless($f2);
 die "--f1 $f1 not existing" unless(-e $f1);
 die "--f2 $f2 not existing" unless(-e $f2);
 
+print "Loading f1 into memory, then iteratively process f2...\n";
+
 my $f1_href = readFASTA($f1);
 
 my $f1_exclusive = 0;
