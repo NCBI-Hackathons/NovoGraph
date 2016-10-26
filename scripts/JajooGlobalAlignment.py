@@ -49,7 +49,7 @@ def globalPath(startContig, lenghtContig, start, end):
     # array([ 413, 1800,  331, 8910,  837, 9660, 2167, 5997, 3104, 7259])
     end   = np.random.randint(10000, size=(10,2))
     score = np.random.randint(10000, size=(10,1))
-    stop == False
+  
     
     # reindex
     trash = trash.ravel().argsort()  # trash MUST be a numpy array
@@ -59,7 +59,7 @@ def globalPath(startContig, lenghtContig, start, end):
     
 
     ndiag = len(start)     # based on definition above `size=(10,2)`, len(start) = 10 always
-    possiblePath = np.array([[x] for x in range(0, ndiag)]) # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8],[9])
+    possiblePath = list(np.array([[x] for x in range(0, ndiag)])) # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8],[9])
                             # list partition --- create an array of arrays #### in MATLAB, num2cell()
     pathExtension = np.ones((1, ndiag), dtype=int)  # array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
     while stop == False:
@@ -75,7 +75,7 @@ def globalPath(startContig, lenghtContig, start, end):
         if lenPotential == 0:
             pathExtension[0][extensionPathIndx[0][0]] =  0
         else
-            possiblePath[range(extensionPathIndx[0][0] + lenPotential, nPossiblePath + lenPotential - 1)] = possiblePath[extensionPathIndx[0][0] + 1:nPossiblePath]
+            possiblePath.append(possiblePath[extensionPathIndx[0][0] + 1:nPossiblePath])
                             #array([[0],[1],[2],[3],[4],[5],[6],[7],[8]])
             pathToAppend = possiblePath[extensionPathIndx[0][0]]  # array([0])
             for i in range(0, lenPotential-1):  # lenPotential=1; for i in #output== 'range(0, 0)':
@@ -88,6 +88,8 @@ def globalPath(startContig, lenghtContig, start, end):
                  [row,col] = size(trash);  # replaces here, outputs [[1 3], [1 4], [2], [3]]
                  PossiblePath(ExtensionPathIndx(1):ExtensionPathIndx(1)+lenPotential-1) = mat2cell(trash,repmat(1,1,lenPotential),col);
              """
+
+
         else
             break # stop = True
 
