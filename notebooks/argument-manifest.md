@@ -87,8 +87,9 @@
           + Description: Name of indexed reference genome fasta file
         + --window
           + Description: Size of window for parallelization (try 100000)
-		+ --samples
-		  + Description: Name of list of samples (one per line)
+    		+ --samples
+    		  + Description: Name of list of samples [assemblies] (one per line) an
+          example of this is in examples/list_of_assemblies.txt
   2. VCF to VG
     + vg (no custom scripts)
       + Example call: `vg construct -r data/reference/GRCh38.fa -v data/vcf/final.vcf.gz -p >
