@@ -7,11 +7,11 @@
 # 2016-10-25
 
 usage() {
-  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>]"
+  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>] [-s <path-to-list-of-samples>] [-j <number of parallel jobs>]"
   exit 1
 }
 
-while getopts ":g:c:b:" opt; do
+while getopts ":g:c:s:j:" opt; do
   case "${opt}" in
     g)
       INFILE=${OPTARG}
@@ -27,10 +27,17 @@ while getopts ":g:c:b:" opt; do
         usage
       fi
       ;;
-    b)
-      BAMFILE=${OPTARG}
-      if [ ! -r $BAMFILE]; then
-        echo "Bath to $BAMFILE does not exist or is not readable."
+    s)
+      SAMPLESFILE=${OPTARG}
+      if [ ! -r $SAMPLESFILE]; then
+        echo "Path to $SAMPLESFILE does not exist or is not readable."
+        usage
+      fi
+      ;;
+    j)
+      JOBS=${OPTARG}
+      if [ ! $JOBS]; then
+        echo "jobs param not specified"
         usage
       fi
       ;;
@@ -74,14 +81,12 @@ globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGI
 #                         --contigs <path to file with contig names/lengths>
 
 ### Step 3: Create graph genome!
-VCFFILE="myvcf.vcf"
-# BAM to VCF
-# TODO: Insert call to Andrew's code here
-# PSEUDOCALL:
-BAM2VCF.pl -b $FINALBAM -o $VCFFILE
+VCFFILE="vgInput.vcf.gz"
+# BAM to bgzipped VCF in parallel windows of 100000
+scripts/gg-wrapper-bam2vcf.pl --script scripts/BAM2VCF.pl --BAM $FINALBAM --referenceFasta $REFFASTA --samples $SAMPLESFILE --window 100000 | parallel -j $JOBS
+# concatenate vcf files and index with tabix
+scripts/gg-wrapper-vcf-concat.pl --BAM $FINALBAM --referenceFasta $REFFASTA --output $VCFFILE
 
 # Call vg to convert VCF to vg or gfa format
 VGOUTFILE="vgoutput.vg"
-# TODO: What is the small/x.fa argument? a reference genome?
-# PSEUDOCALL:
-vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE
+vg construct -r $REFFASTA -v $VCFFILE > $VGOUTFILE

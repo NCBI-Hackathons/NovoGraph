@@ -155,7 +155,7 @@ sub parse_alignment {
             $flat_cigar .= 'M';
             $entry_seq .= uc($next_entrybase);
         }
-        elsif ($next_entrybase eq '-') {
+        elsif (($next_entrybase eq '-')  && ($next_refbase ne '-')){
             if (!$match_seen_yet) {
                 $start_pos++;
             }
@@ -163,9 +163,12 @@ sub parse_alignment {
                 $flat_cigar .= 'D';
             }
         }
-        elsif ($next_refbase eq '-') {
+        elsif (($next_refbase eq '-') && ($next_entrybase ne '-')) {
             $flat_cigar .= 'I';
             $entry_seq .= uc($next_entrybase);
+        }
+        else {
+            $flat_cigar .= 'P';
         }
         ($next_entrybase, $next_refbase) = (chop $reverseentryseq, chop $reverserefseq);
     }
