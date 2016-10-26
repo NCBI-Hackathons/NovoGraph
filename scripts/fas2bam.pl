@@ -17,7 +17,7 @@ fas2bam.pl - script to convert a multiple alignment (including a reference entry
 
 =head1 SYNOPSIS
 
-This script reads in a ".fas" file with padded entries and a reference entry representing a multiple alignment (as produced by MAFFT, for example).  It then writes a BAM (by default) or SAM file with the alignments of each non-reference entry to the reference.
+This script reads in an MSA file with padded entries and a reference entry representing a multiple alignment (as produced by MAFFT, for example).  It then writes a BAM (by default) or SAM file with the alignments of each non-reference entry to the reference.
 
 =head1 USAGE
 
@@ -61,7 +61,6 @@ foreach my $entry (sort keys %{$rh_entry_seqs}) {
 if (!$output_file) { # create a name from the input file
     my $filebase = $input_file;
     $filebase =~ s:.*/::; # put it in the current directory
-    $filebase =~ s:\.fas$::; # replace file extension
     $output_file = ($Opt{bamheader}) ? "$filebase.bam" : "$filebase.sam";
 }
 
@@ -95,8 +94,8 @@ sub process_commandline {
     if ($Opt{help})    { pod2usage(verbose => $Opt{help}-1); }
     if ($Opt{version}) { die "fas2bam.pl, ", q$Revision: $, "\n"; }
 
-    if (!$Opt{input}) { die "Must specify input .fas filename with option --input.\n"; }
-    if (!$Opt{ref}) { die "Must specify reference entry name in .fas file with option --ref.\n"; }
+    if (!$Opt{input}) { die "Must specify input filename with option --input.\n"; }
+    if (!$Opt{ref}) { die "Must specify the name of the reference entry in the input file with option --ref.\n"; }
 
 }
 
@@ -106,7 +105,7 @@ sub read_fas_file {
     my %seq_entry_hash = ();
     my ($current_entry, $current_seq);
     open FAS, $file
-        or die "Couldn\'t open .fas file $file: $!\n";
+        or die "Couldn\'t open file $file: $!\n";
     while (<FAS>) {
         if (/^\>\s*(\S+)(\s+.*){0,1}$/) {
             my ($id, $desc) = ($1, $2);
@@ -219,7 +218,7 @@ all options, C<--manual> provides complete documentation.
 
 =item B<--input>
 
-The path to a ".fas" file with FASTA-formatted entries that are padded with "-" 
+The path to an MSA file with FASTA-formatted entries that are padded with "-" 
 characters to form a multiple alignment.
 
 =item B<--ref>
