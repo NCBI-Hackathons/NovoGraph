@@ -1,8 +1,12 @@
-mport numpy as np
+#!/usr/bin/python3
+
+#
+# JGA
+# Jajaoo Global Alignment algorithm
+#
+
+import numpy as np
 import random
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # 
 def GlobalPath(StartContig,LenghtContig,Start,End):
