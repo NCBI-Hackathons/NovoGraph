@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="380.51242"
-     inkscape:cy="3081.2578"
+     inkscape:zoom="0.24748737"
+     inkscape:cx="167.42649"
+     inkscape:cy="2255.5707"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -60,6 +60,29 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(81.732283,339.14251)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="163.51546"
+       y="369.53183"
+       id="text8165"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8167"
+         x="163.51546"
+         y="369.53183">Step 1: Join </tspan><tspan
+         sodipodi:role="line"
+         x="163.51546"
+         y="394.53183"
+         id="tspan8169">pairwise alignments </tspan><tspan
+         sodipodi:role="line"
+         x="163.51546"
+         y="419.53183"
+         id="tspan8171">into single FASTA </tspan><tspan
+         sodipodi:role="line"
+         x="163.51546"
+         y="444.53183"
+         id="tspan8173">file</tspan></text>
     <rect
        style="opacity:1;fill:#e6e6e6;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:1, 2;stroke-dashoffset:0;stroke-opacity:1"
        id="rect7941-7"
@@ -498,29 +521,7 @@
          x="168.40182"
          y="-132.11726"
          id="tspan8107">each assembly</tspan></text>
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5339-8"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(34.345187,372.87651)"><flowRegion
-         id="flowRegion5341-5"><rect
-           id="rect5343-6"
-           width="210.11177"
-           height="86.873138"
-           x="134.3503"
-           y="-367.91226" /></flowRegion><flowPara
-         id="flowPara5345-1">Step 0.1: Do pairwise alignment against reference</flowPara></flowRoot>    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5339-8-1"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(29.810377,716.27466)"><flowRegion
-         id="flowRegion5341-5-5"><rect
-           id="rect5343-6-9"
-           width="210.11177"
-           height="105.05589"
-           x="134.3503"
-           y="-367.91226" /></flowRegion><flowPara
-         id="flowPara5345-1-8">Step 1: Join pairwise alignments into single FASTA file</flowPara></flowRoot>    <g
+    <g
        transform="translate(3.7858773,269.39823)"
        id="g5220-4">
       <path
@@ -700,18 +701,7 @@
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
     </g>
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5339-8-1-8"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(17.700246,990.5615)"><flowRegion
-         id="flowRegion5341-5-5-9"><rect
-           id="rect5343-6-9-6"
-           width="210.11177"
-           height="105.05589"
-           x="134.3503"
-           y="-367.91226" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4">Step 2.1: Identify windows and extract one fasta file for each window</flowPara></flowRoot>    <g
+    <g
        transform="translate(3.7858773,475.44132)"
        id="g5220-4-3">
       <text
@@ -995,18 +985,7 @@
            x="524.05505"
            y="626.77802">window03.fas</tspan></text>
     </g>
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5339-8-1-8-2"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(17.700246,1509.8741)"><flowRegion
-         id="flowRegion5341-5-5-9-1"><rect
-           id="rect5343-6-9-6-0"
-           width="210.11177"
-           height="105.05589"
-           x="134.3503"
-           y="-367.91226" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5">Step 2.2.1: Perform multiple sequence alignment for each window</flowPara></flowRoot>    <g
+    <g
        transform="translate(3.7858773,806.25469)"
        id="g5220-4-3-1">
       <text
@@ -1290,18 +1269,7 @@
            x="524.05505"
            y="626.77802">window03.fas</tspan></text>
     </g>
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5339-8-1-8-2-6"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(17.700246,1843.8741)"><flowRegion
-         id="flowRegion5341-5-5-9-1-7"><rect
-           id="rect5343-6-9-6-0-5"
-           width="210.11177"
-           height="105.05589"
-           x="134.3503"
-           y="-367.91226" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5-6">Step 2.2.2: Convert all alignment FASTA output files to BAM format</flowPara></flowRoot>    <g
+    <g
        id="g6597">
       <text
          sodipodi:linespacing="125%"
@@ -1585,18 +1553,7 @@
            x="522.75793"
            y="1767.0327">window03.bam</tspan></text>
     </g>
-    <flowRoot
-       transform="translate(17.700232,2165.9925)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       id="flowRoot5339-8-1-8-2-6-8"
-       xml:space="preserve"><flowRegion
-         id="flowRegion5341-5-5-9-1-7-3"><rect
-           y="-367.91226"
-           x="134.3503"
-           height="105.05589"
-           width="210.11177"
-           id="rect5343-6-9-6-0-5-8" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5-6-0">Step 2.3: Concatenate all alignments into single BAM file</flowPara></flowRoot>    <g
+    <g
        id="g6688">
       <text
          sodipodi:linespacing="125%"
@@ -1830,18 +1787,7 @@
        d="m 501.70929,946.93699 2.49477,-70 26.00004,70"
        id="path6764"
        inkscape:connector-curvature="0" />
-    <flowRoot
-       transform="translate(17.700232,2470.2782)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       id="flowRoot5339-8-1-8-2-6-8-3"
-       xml:space="preserve"><flowRegion
-         id="flowRegion5341-5-5-9-1-7-3-8"><rect
-           y="-367.91226"
-           x="134.3503"
-           height="105.05589"
-           width="210.11177"
-           id="rect5343-6-9-6-0-5-8-0" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5-6-0-4">Step 3.1: Convert BAM file to VCF (in parallel)</flowPara></flowRoot>    <g
+    <g
        transform="translate(0,270.28575)"
        id="g6688-7">
       <text
@@ -2056,32 +2002,21 @@
            x="349.72183"
            y="2089.1511">vginput.vcf</tspan></text>
     </g>
-    <flowRoot
-       transform="translate(17.700232,2749.9721)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       id="flowRoot5339-8-1-8-2-6-8-3-7"
-       xml:space="preserve"><flowRegion
-         id="flowRegion5341-5-5-9-1-7-3-8-9"><rect
-           y="-367.91226"
-           x="134.3503"
-           height="105.05589"
-           width="210.11177"
-           id="rect5343-6-9-6-0-5-8-0-3" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5-6-0-4-9">Step 3.2: Use vg to convert VCF to graph genome</flowPara></flowRoot>    <text
+    <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="103.78586"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15px;line-height:125%;font-family:Verdana;-inkscape-font-specification:'Verdana Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="89.785858"
        y="2508.1206"
        id="text4214-9-0-0-1-8-4-6-8"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4216-7-4-4-0-7-0-8-3"
-         x="103.78586"
+         x="89.785858"
          y="2508.1206">ALL THE</tspan><tspan
          sodipodi:role="line"
-         x="103.78586"
+         x="89.785858"
          y="2526.8706"
-         id="tspan7367">GENOMES</tspan></text>
+         id="tspan7367">GENOMES!!!</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text5821-3-0-2-8-2-9"
@@ -2459,18 +2394,7 @@
         </g>
       </g>
     </g>
-    <flowRoot
-       transform="translate(17.700232,2934.2355)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       id="flowRoot5339-8-1-8-2-6-8-3-7-1"
-       xml:space="preserve"><flowRegion
-         id="flowRegion5341-5-5-9-1-7-3-8-9-3"><rect
-           y="-367.91226"
-           x="134.3503"
-           height="70.770164"
-           width="500.11182"
-           id="rect5343-6-9-6-0-5-8-0-3-8" /></flowRegion><flowPara
-         id="flowPara5345-1-8-4-5-6-0-4-9-0">Each assembly is now a complete, acyclic path through the graph genome</flowPara></flowRoot>    <path
+    <path
        style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:1, 2;stroke-dashoffset:0;stroke-opacity:1"
        d="M 468.92773 141.81641 L 468.92773 187.86523 L 447.71094 187.86523 L 480.71484 212.17383 L 513.71875 187.86523 L 491.78516 187.86523 L 491.78516 141.81641 L 468.92773 141.81641 z "
        transform="translate(-81.732283,-339.14251)"
@@ -2515,5 +2439,169 @@
        style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:1, 2;stroke-dashoffset:0;stroke-opacity:1"
        d="m 387.19545,2387.2058 0,46.0488 -21.21679,0 33.0039,24.3086 33.00391,-24.3086 -21.93359,0 0,-46.0488 -22.85743,0 z"
        id="rect7982-9-7-9-37" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="168.40182"
+       y="26.104382"
+       id="text8133"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8135"
+         x="168.40182"
+         y="26.104382">Step 0.1: Do </tspan><tspan
+         sodipodi:role="line"
+         x="168.40182"
+         y="51.104382"
+         id="tspan8137">pairwise alignment </tspan><tspan
+         sodipodi:role="line"
+         x="168.40182"
+         y="76.104385"
+         id="tspan8139">against reference</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="151.5811"
+       y="643.33038"
+       id="text8199"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8201"
+         x="151.5811"
+         y="643.33038">Step 2.1: Identify </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="668.33038"
+         id="tspan8203">windows and extract </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="693.33038"
+         id="tspan8205">one fasta file for </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="718.33038"
+         id="tspan8207">each window</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="151.5811"
+       y="1162.6429"
+       id="text8233"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8235"
+         x="151.5811"
+         y="1162.6429">Step 2.2.1: Perform </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="1187.6429"
+         id="tspan8237">multiple sequence </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="1212.6429"
+         id="tspan8239">alignment for each </tspan><tspan
+         sodipodi:role="line"
+         x="151.5811"
+         y="1237.6429"
+         id="tspan8241">window</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="151.40532"
+       y="1497.0922"
+       id="text8267"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8269"
+         x="151.40532"
+         y="1497.0922">Step 2.2.2: Convert </tspan><tspan
+         sodipodi:role="line"
+         x="151.40532"
+         y="1522.0922"
+         id="tspan8271">all alignment FASTA </tspan><tspan
+         sodipodi:role="line"
+         x="151.40532"
+         y="1547.0922"
+         id="tspan8273">output files to BAM </tspan><tspan
+         sodipodi:role="line"
+         x="151.40532"
+         y="1572.0922"
+         id="tspan8275">format</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="151.75687"
+       y="1819.2106"
+       id="text8301"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8303"
+         x="151.75687"
+         y="1819.2106">Step 2.3: </tspan><tspan
+         sodipodi:role="line"
+         x="151.75687"
+         y="1844.2106"
+         id="tspan8305">Concatenate all </tspan><tspan
+         sodipodi:role="line"
+         x="151.75687"
+         y="1869.2106"
+         id="tspan8307">alignments into </tspan><tspan
+         sodipodi:role="line"
+         x="151.75687"
+         y="1894.2106"
+         id="tspan8309">single BAM file</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="152.04984"
+       y="2123.4963"
+       id="text8335"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8337"
+         x="152.04984"
+         y="2123.4963">Step 3.1: Convert </tspan><tspan
+         sodipodi:role="line"
+         x="152.04984"
+         y="2148.4963"
+         id="tspan8339">BAM file to VCF (in </tspan><tspan
+         sodipodi:role="line"
+         x="152.04984"
+         y="2173.4963"
+         id="tspan8341">parallel)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="151.76663"
+       y="2403.0925"
+       id="text8367"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8369"
+         x="151.76663"
+         y="2403.0925">Step 3.2: Use vg to </tspan><tspan
+         sodipodi:role="line"
+         x="151.76663"
+         y="2428.0925"
+         id="tspan8371">convert VCF to </tspan><tspan
+         sodipodi:role="line"
+         x="151.76663"
+         y="2453.0925"
+         id="tspan8373">graph genome</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="150.70218"
+       y="2587.0044"
+       id="text8399"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8401"
+         x="150.70218"
+         y="2587.0044">Each assembly is now a complete, acyclic path </tspan><tspan
+         sodipodi:role="line"
+         x="150.70218"
+         y="2612.0044"
+         id="tspan8403">through the graph genome</tspan></text>
   </g>
 </svg>
