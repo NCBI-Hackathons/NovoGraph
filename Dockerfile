@@ -49,7 +49,7 @@ RUN cp /app/bin/vg /usr/bin
 ## VG END 
 
 RUN apt-get -qq update && \ 
-    apt-get --no-install-recommends -y install python3 mafft samtools parallel && \ 
+    apt-get --no-install-recommends -y install python3 mafft samtools parallel vcftools && \ 
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # RUN mkdir /app
