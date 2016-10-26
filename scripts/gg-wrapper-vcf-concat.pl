@@ -36,5 +36,7 @@ for(my $i=0;$i<@sequence_ids;$i++) {
   my $pieceDirectory = "$outputDirectory/$sequence_ids[$i]";
   push @pieces, "$pieceDirectory/*.vcf.gz";
 }
-my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $output\n";
+#my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $output\n";
+my @outformat = 'vcf';
+my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p @outformat\n";
 system($cmd);
