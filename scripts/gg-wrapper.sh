@@ -7,7 +7,7 @@
 # 2016-10-25
 
 usage() {
-  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>]"
+  echo "Usage: $0 [-g <path-to-reference-genome>] [-c <path-to-contigs>] [-s <path-to-list-of-samples>]"
   exit 1
 }
 
@@ -27,10 +27,10 @@ while getopts ":g:c:b:" opt; do
         usage
       fi
       ;;
-    b)
-      BAMFILE=${OPTARG}
-      if [ ! -r $BAMFILE]; then
-        echo "Bath to $BAMFILE does not exist or is not readable."
+    s)
+      SAMPLESFILE=${OPTARG}
+      if [ ! -r $SAMPLESFILE]; then
+        echo "Path to $SAMPLESFILE does not exist or is not readable."
         usage
       fi
       ;;
@@ -49,22 +49,21 @@ LOCALBAMFILE="localbam"
 
 ### Step 1: Globally align all contigs
 # + Call Local to Global Alignment
-./gg-01.1-local.sh -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
+# TODO: Update with a real Call
+# PSEUDOCALL
+scripts/NWAM_01.py -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
+#./gg-01.1-local.sh -g $REFFASTA -c $CONTIGDIR -b $LOCALBAMFILE
 
 ### Step 2: Divide and conquer multiple sequence alignment
 # Call BAM2MAFFT for window identification, extraction, and FASTA conversion
 BAM2MAFFT.pl --referenceFasta $REFFASTA --BAM $LOCALBAMFILE
 
 # MAFFT alignment
-# TODO: check the arguments for this path; it might just take two arguments:
-# The output destination for FASTA files, and input directory for FASTA
+# Many FASTA -> Many BAM
 FASTADIR=""
 BAMDIR=""
-./align_mafft.sh -i $FASTADIR -o $BAMDIR
-
-# Many FASTA -> Many BAM
-# TODO: The perl script fas2bam.pl needs to be called for each window (ideally
-# in parallel; could just be added to updated version of align_mafft.sh)
+# TODO: Will ultimately also pass number of processors & number of threads
+./gg-align_mafft.sh -i $FASTADIR -o $BAMDIR
 
 # Many BAM -> single BAM
 FINALBAM="uberbam.bam"
@@ -75,13 +74,11 @@ globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGI
 #                         --contigs <path to file with contig names/lengths>
 
 ### Step 3: Create graph genome!
-VCFFILE="myvcf.vcf"
-# BAM to VCF
-# TODO: Insert call to Andrew's code here
-# PSEUDOCALL:
-bam2vcf.pl -b $FINALBAM -o $VCFFILE
-
+VCFFILE="myvcf.vcf.gz"
+# BAM to bgzipped VCF
+BAM2VCF.pl --BAM $FINALBAM --referenceFasta $REFFASTA --header please --samples $SAMPLESFILE | bgzip -c > $VCFFILE
+# index with tabix
+tabix -p vcf $VCFFILE
 # Call vg to convert VCF to vg or gfa format
 VGOUTFILE="vgoutput.vg"
-# TODO: What is the small/x.fa argument? a reference genome?
-vg construct -r small/x.fa -v $VCFFILE > $VGOUTFILE
+vg construct -r $REFFASTA -v $VCFFILE > $VGOUTFILE

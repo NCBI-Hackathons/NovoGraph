@@ -26,14 +26,14 @@ while getopts ":o:i:" opt; do
   esac
 done
 
-if [ -z ${INPUT_DIRECTORY+x} ]; then 
-	echo "INPUT_DIRECTORY is unset"; 
-	exit 1; 
+if [ -z ${INPUT_DIRECTORY+x} ]; then
+	echo "INPUT_DIRECTORY is unset";
+	exit 1;
 fi
 
-if [ -z ${OUTPUT_DIRECTORY+x} ]; then 
-	echo "OUTPUT_DIRECTORY is unset"; 
-	exit 1; 
+if [ -z ${OUTPUT_DIRECTORY+x} ]; then
+	echo "OUTPUT_DIRECTORY is unset";
+	exit 1;
 fi
 
 echo "Files to process"
@@ -60,10 +60,10 @@ function copyEmpty(){
 	  cp -f $line $outputfile
 	  bamoutput="${OUTPUT_DIRECTORY}/${filename}.bam";
 
-	  #echo "non-alignment BAM input $outputfile and output $bamoutput" 
+	  #echo "non-alignment BAM input $outputfile and output $bamoutput"
 	  #echo "./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref 'ref' --bamheader './scripts/windowbam.header.txt'"
 	  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
-	done 
+	done
 	echo "Copied $i files."
 }
 
@@ -94,9 +94,9 @@ function align(){
 
   bamoutput="$3/$filename.bam"
 
-  #echo "BAM input $outputfile and output $bamoutput" 
+  #echo "BAM input $outputfile and output $bamoutput"
 
-  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt"
 
 }
 

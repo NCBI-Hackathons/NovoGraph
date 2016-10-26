@@ -45,12 +45,13 @@ my %saw_read_IDs;
 my @sequence_ids = $sam->seq_ids();
 foreach my $referenceSequenceID (@sequence_ids)
 {	
-	next unless($referenceSequenceID =~ /chr/);
+	next unless($referenceSequenceID =~ /chr[XY\d]+/);
 	unless(exists $reference_href->{$referenceSequenceID})
 	{
 		warn "No reference sequence for $referenceSequenceID";
 		next;
 	}
+	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
 
 	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
 	die "Length discrepancy between supplied FASTA reference and BAM index: " . $sam->length($referenceSequenceID) . " vs " . length($reference_href->{$referenceSequenceID}) unless($sam->length($referenceSequenceID) == length($reference_href->{$referenceSequenceID}));
