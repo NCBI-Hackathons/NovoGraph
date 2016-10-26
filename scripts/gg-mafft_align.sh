@@ -81,7 +81,7 @@ function align(){
 
   echo "from $1 to $outputfile"
 
-  mafft --reorder --auto  $1 > $outputfile
+  mafft --thread -1 --reorder --auto  $1 > $outputfile
 
 #  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
 #  if (($FILESIZE==0)) ; then
