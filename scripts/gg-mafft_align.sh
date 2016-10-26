@@ -13,7 +13,7 @@ while getopts ":o:i:" opt; do
       OUTPUT_DIRECTORY=${OPTARG}
       ;;
     i)
-	  INPUT_DIRECTORY=$OPTARG
+      INPUT_DIRECTORY=$OPTARG
       if [ ! -r $INPUT_DIRECTORY ]; then
         echo "Input file $INPUT_DIRECTORY does not exist or is not readable."
         usage
@@ -37,10 +37,10 @@ if [ -z ${OUTPUT_DIRECTORY+x} ]; then
 fi
 
 echo "Files to process"
-INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1"  | awk -F':' '{ print $1 }' | grep ".fa"  ))
+INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1$"  | awk -F':' '{ print $1 }' | grep ".fa"  ))
 
 echo "Reference Only"
-FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
+FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1$"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
 
 
 echo "Files to process: ${#INPUTFILES[@]}"
@@ -58,6 +58,11 @@ function copyEmpty(){
 
 	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fas";
 	  cp -f $line $outputfile
+	  bamoutput="${OUTPUT_DIRECTORY}/${filename}.bam";
+
+	  #echo "non-alignment BAM input $outputfile and output $bamoutput" 
+	  #echo "./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref 'ref' --bamheader './scripts/windowbam.header.txt'"
+	  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
 	done 
 	echo "Copied $i files."
 }
@@ -89,7 +94,7 @@ function align(){
 
   bamoutput="$3/$filename.bam"
 
-  echo "BAM input $outputfile and output $bamoutput" 
+  #echo "BAM input $outputfile and output $bamoutput" 
 
   ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
 
@@ -98,7 +103,7 @@ function align(){
 export -f align
 
 
-# copyEmpty
+copyEmpty
 
 parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
