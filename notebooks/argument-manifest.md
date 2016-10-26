@@ -69,25 +69,20 @@
 3. Graph genome
   1. BAM to VCF:
     + Coder: Olson
-    + scripts/BAM2VCF.pl
-      + Example call: `BAM2VCF.pl --BAM data/bams/uberbam.bam --referenceFasta
-      data/reference/GRCh38.fa --header yes --samples samples.txt | bgzip -c >
-      data/vcf/final.vcf.gz ; tabix -p vcf data/vcf/final.vcf.gz`
+    + scripts/gg-wrapper-bam2vcf.pl
+      + Example call: `gg-wrapper-bam2vcf.pl --script BAM2VCF.pl --BAM data/bams/uberbam.bam --referenceFasta
+      data/reference/GRCh38.fa --window 100000 --samples samples.txt | parallel -j 8`
       + Arguments:
+	    + --script
+		  + The perl script that does the work
         + --BAM
           + Description: BAM file (the file produced by 2.3)
         + --referenceFasta
           + Description: Name of indexed reference genome fasta file
-        + --header
-          + Description: Include a VCF header if this is truthy (premature optimization)
-    		+ --samples
-    		  + Description: Name of list of samples (one per line)
-        + -c
-          + Description: Skip lines with a comment character (#)
-        + -p
-          + Description: Set input format (in this case, vcf)
-        + [no flag]
-          + Description: Name of vcf file for tabix call
+        + --window
+          + Description: Size of window for parallelization (try 100000)
+		+ --samples
+		  + Description: Name of list of samples (one per line)
   2. VCF to VG
     + vg (no custom scripts)
       + Example call: `vg construct -r data/reference/GRCh38.fa -v data/vcf/final.vcf.gz -p >

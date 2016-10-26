@@ -9,13 +9,15 @@ $| = 1;
 my $referenceFasta;
 my $samples;
 my $BAM;
-my $wantHeader;
+my ($regionName,$regionStart,$regionEnd);
 
 GetOptions (
   'referenceFasta:s' => \$referenceFasta,
   'samples:s' => \$samples,
 	'BAM:s' => \$BAM, 
-  'header:s' => \$wantHeader
+  'name:s' => \$regionName,
+  'start:i' => \$regionStart,
+  'end:i' => \$regionEnd
 );
 
 die "Please specify --BAM" unless($BAM);
@@ -24,15 +26,7 @@ die "Please specify --referenceFasta" unless($referenceFasta);
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--samples $samples not existing" unless(-e $samples);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
-
-#
-#
-# unless(-e 'forVG')
-# {
-#   mkdir('forVG') or die "Cannot mkdir forVG directory";
-# }
-
-my $fai = Bio::DB::Sam::Fai->load($referenceFasta);
+die "please specify a region with --name, --start, --end" unless ($regionName and $regionStart and $regionEnd);
 
 my @samples;
 open(my $fh, "<", $samples);
@@ -42,49 +36,43 @@ while (<$fh>) {
 }
 close $fh;
 
-if ($wantHeader) {
-  printHeader();
-}
+printHeader();
 
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
-my @sequence_ids = $sam->seq_ids();
-foreach my $referenceSequenceID (@sequence_ids)
-{
-  my $snp_caller = sub {
-    my ($seqid,$pos,$p) = @_; # $pos is 1-based
-    my $refbase = $sam->segment($seqid,$pos,$pos)->dna;
-    my %base2name;
-    for my $pileup (@$p) {
-      my $b = $pileup->alignment;
-      my $qname = $b->query->name;
-      my $indel = $pileup->indel;
-      my $qbase  = substr($b->qseq,$pileup->qpos,1);
-      # If this column is an indel, return a positive integer for an insertion
-      # relative to the reference, a negative integer for a deletion relative
-      # to the reference, or 0 for no indel at this column.
+my $snp_caller = sub {
+  my ($seqid,$pos,$p) = @_; # $pos is 1-based
+  ($seqid eq $regionName and $pos >= $regionStart and $pos <= $regionEnd) or return;
+  my $refbase = $sam->segment($seqid,$pos,$pos)->dna;
+  my %base2name;
+  for my $pileup (@$p) {
+    my $b = $pileup->alignment;
+    my $qname = $b->query->name;
+    my $indel = $pileup->indel;
+    my $qbase  = substr($b->qseq,$pileup->qpos,1);
+    # If this column is an indel, return a positive integer for an insertion
+    # relative to the reference, a negative integer for a deletion relative
+    # to the reference, or 0 for no indel at this column.
 
-      my $key = $qbase;
-      if ($indel>0) {
-        $key = substr($b->qseq,$pileup->qpos,1+$indel);
-      }
-      elsif ($indel<0) {
-        $key = $refbase;
-        $refbase = $sam->segment($seqid,$pos,$pos-$indel)->dna;
-      }
-      my ($sample) = $qname =~ m/(.+?)\./;
-      $base2name{$key}{$sample}=$qbase;
-      # print join("\t", $seqid,$pos,$refbase,$sample,$qname,$indel,$key),"\n";
+    my $key = $qbase;
+    if ($indel>0) {
+      $key = substr($b->qseq,$pileup->qpos,1+$indel);
     }
-    outputVCF($seqid,$pos,$refbase,\%base2name) if (scalar keys %base2name > 1);
-  };
+    elsif ($indel<0) {
+      $key = $refbase;
+      $refbase = $sam->segment($seqid,$pos,$pos-$indel)->dna;
+    }
+    my ($sample) = $qname =~ m/(.+?)\./;
+    $base2name{$key}{$sample}=$qbase;
+    # print join("\t", $seqid,$pos,$refbase,$sample,$qname,$indel,$key),"\n";
+  }
+  outputVCF($regionName,$pos,$refbase,\%base2name) if (scalar keys %base2name > 1);
+};
 
-  $sam->pileup($referenceSequenceID, $snp_caller);
-}
+$sam->pileup("$regionName:$regionStart-$regionEnd", $snp_caller);
 
 sub outputVCF {
   my ($seqid,$pos,$ref,$variation) = @_;
-
   my @altAlleles;
   my %sample2alt;
   for my $alt (keys %$variation) {
