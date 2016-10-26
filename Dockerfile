@@ -52,7 +52,7 @@ RUN apt-get -qq update && \
     apt-get --no-install-recommends -y install python3 mafft samtools parallel && \ 
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN mkdir /app
+# RUN mkdir /app
 COPY scripts /app/scripts/
 COPY config /app/config/
 
