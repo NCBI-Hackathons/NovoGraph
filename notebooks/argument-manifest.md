@@ -32,9 +32,9 @@
         + Example call: `./gg-align_mafft.sh -i data/fastas -o data/bams`
         + Arguments:
           + -i
-            + Description: path to FASTA input files **TODO**: Check
+            + Description: path to FASTA input files.
           + -o
-            + Description: path to output files **TODO**: Check
+            + Description: path to output aligned FASTA and BAMS.
     2. FASTA to BAM
       + Coder: Hansen
       + scripts/fas2bam.pl (called by scripts/gg-align_mafft.sh)
