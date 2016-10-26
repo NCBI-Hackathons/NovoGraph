@@ -42,5 +42,5 @@ for my $seqName ($sam->seq_ids()) {
 }
 #my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $output\n";
 my $outformat = 'vcf';
-my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $outformat\n";
+my $cmd = "vcf-concat @pieces | bgzip -c > $output; tabix -p $outformat $output\n";
 system($cmd);
