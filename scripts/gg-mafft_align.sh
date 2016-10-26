@@ -62,7 +62,7 @@ function copyEmpty(){
 
 	  #echo "non-alignment BAM input $outputfile and output $bamoutput"
 	  #echo "./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref 'ref' --bamheader './scripts/windowbam.header.txt'"
-	  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt" &
+	  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt" 
 	done
 	echo "Copied $i files."
 }
