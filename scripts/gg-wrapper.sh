@@ -83,10 +83,27 @@ globalize_windowbams.pl --fastadir $FASTADIR --msadir $BAMDIR --contigs $CONTIGI
 ### Step 3: Create graph genome!
 VCFFILE="vgInput.vcf.gz"
 # BAM to bgzipped VCF in parallel windows of 100000
+# FINALBAM="/home/devsci7/globalize_windowbams/global_multiple_alignments.sort.bam"
+# REFFASTA="/home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa"
+# SAMPLESFILE="/home/devsci4/Graph_Genomes_CSHL/examples/list_of_assemblies.txt"
+# JOBS=8
 scripts/gg-wrapper-bam2vcf.pl --script scripts/BAM2VCF.pl --BAM $FINALBAM --referenceFasta $REFFASTA --samples $SAMPLESFILE --window 100000 | parallel -j $JOBS
 # concatenate vcf files and index with tabix
+# FINALBAM="/home/devsci7/globalize_windowbams/global_multiple_alignments.sort.bam"
+# REFFASTA="/home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa"
+# VCFFILE="/home/devsci4/Graph_Genomes_CSHL/examples/vgInput.vcf.gz"
 scripts/gg-wrapper-vcf-concat.pl --BAM $FINALBAM --referenceFasta $REFFASTA --output $VCFFILE
 
 # Call vg to convert VCF to vg or gfa format
 VGOUTFILE="vgoutput.vg"
+# REFFASTA="/home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa"
+# VCFFILE="/home/devsci4/Graph_Genomes_CSHL/examples/vgInput.vcf.gz"
+# VGOUTFILE="/home/devsci4/Graph_Genomes_CSHL/examples/vgoutput.vg"
+# vg/bin/vg construct -r $REFFASTA -v $VCFFILE > $VGOUTFILE
+# TODO: Call above returns:
+# parsedAlternates: alignment does not start with match over padded sequence
+# 11M2D9M
+# ZZZZZZZZZZQTTZZZZZZZZZZ
+# ZZZZZZZZZZQZZZZZZZZZ
+
 vg construct -r $REFFASTA -v $VCFFILE > $VGOUTFILE
