@@ -40,22 +40,22 @@ my $msadir = $Opt{'msadir'};
 my $contigs_file = $Opt{'contigs'};
 my $output_file = $Opt{'output'};
 
-my $rh_windowinfo = read_windowbams_info($fastadir, $msadir); # hashed by entry, then sorted lists of hashes to bam paths ("bam") and offset positions ("offset")
+my $rh_windowinfo = read_windowbams_info($fastadir, $msadir); # hashed by ref entry, then sorted lists of hashes to bam paths ("bam") and offset positions ("offset")
 my $rh_contiglength = read_contigs_file($contigs_file); # contig lengths hashed by contig name
 
 my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} > $output_file"
                                     : "> $output_file";
 
-my $sam_fh = FileHandle->new(">$sambam_file");
+my $sam_fh = FileHandle->new("$sambam_file");
                    
 foreach my $entry (sort keys %{$rh_windowinfo}) {
-    my %current_contigs = (); # if contig lengths are right, this will never get too big
+    my %current_contigs = (); # Contigs that aren't "finished" yet.  If contig lengths are right, this will never get too big
 
     foreach my $rh_baminfo (@{$rh_windowinfo->{$entry}}) {
         my $bam = $rh_baminfo->{bam};
         my $offset = $rh_baminfo->{offset};
 
-        my $rh_window_contig_alignments = offset_windowbam($bam, $entry, $offset);
+        my $rh_window_contig_alignments = read_windowbam_add_offset($bam, $entry, $offset);
 
         foreach my $contig (keys %{$rh_window_contig_alignments}) {
             if ($current_contigs{$contig}) {
@@ -66,12 +66,25 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
                 $current_contigs{$contig} = $rh_window_contig_alignments->{$contig};
             }
 
-            if (length($current_contigs{$contig}->{seq})==$rh_contiglength->{$contig}) {
-                print_sam_entry($sam_fh, $current_contigs{$contig});
-                delete $current_contigs{$contig};
+            my $expected_contig_length = $rh_contiglength->{$contig};
+            my $current_contig_length = length($current_contigs{$contig}->{seq});
+            if ($expected_contig_length==$current_contig_length) {
+                if (($current_contigs{$contig}) && ($current_contigs{$contig}->{cigar} ne '*')) {
+                    print STDERR "Printing SAM entry for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
+                    print_sam_entry($sam_fh, $current_contigs{$contig});
+                    delete $current_contigs{$contig};
+                }
+                else {
+                    print STDERR "Skipping alignment for $contig--no cigar string\n";
+                }
+            }
+            else {
+                print STDERR "Still waiting for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
             }
         }
     }
+    my $no_left_over = keys %current_contigs;
+    print "$no_left_over contigs left over!\n";
 }
 
 close $sam_fh;
@@ -106,12 +119,18 @@ sub read_windowbams_info {
     my %entry_hash = ();
     open WINDOWS, "$fastadir/_windowsInfo"
         or die "Couldn\'t open $fastadir/_windowsInfo: $!\n";
+    my ($lastentry, $laststart); # make sure sorted!
     while (<WINDOWS>) {
         next if (/^referenceContigID/);
         if (/^(\S+)\s(\d+)\s(\d+)\s(\d+)/) {
             my ($entry, $windowid, $start, $end) = ($1, $2, $3, $4);
-            push @{$entry_hash{$entry}}, {bam => "$msadir/$entry\_$windowid\_aligned.fa.bam", 
+            push @{$entry_hash{$entry}}, {bam => "$msadir/$entry\_$windowid.bam", 
                                           offset => $start};
+            if ($lastentry && ($entry eq $lastentry) && ($start < $laststart)) {
+                die "Windows in _windowInfo are unsorted! ($entry:$start is less than $laststart)\n";
+            }
+            $lastentry = $entry;
+            $laststart = $start;
         }
         else {
             die "Illegal format in _windowsInfo file:\n$_";
@@ -142,19 +161,23 @@ sub read_contigs_file {
     return {%contig_length};
 }
 
-sub offset_windowbam {
+sub read_windowbam_add_offset {
     my $bamfile = shift;
     my $entry = shift;
     my $offset = shift;
 
-    my $samtools_view_cmd = "samtools view $bamfile | "; 
-    my $fh = FileHandle->new($samtools_view_cmd); # assume SAM format for now
-
     my %aligns = ();
+    if (!(-e ($bamfile))) {
+        return {%aligns};
+    }
+
+    my $samtools_view_cmd = "samtools view $bamfile | "; 
+    my $fh = FileHandle->new($samtools_view_cmd); # assume BAM format for now
+
     while (<$fh>) {
-        if (/^(\S+)\t(\d+)\t(\S+)\t(\d+)\t(\d+)\t(\S+)\t(\S+)\t(\S+)/) {
+        if (/^(\S+)\t(\d+)\t(\S+)\t(\d+)\t(\d+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)/) {
             my ($contig, $flag, $refentry, $position, $mapqual, $cigar, $seq, $qual) = 
-                ($1, $2, $3, $4, $5, $6, $7, $8);
+                ($1, $2, $3, $4, $5, $6, $10, $11);
             my $globalpos = $position + $offset;
             my $final_covered_pos = calc_final_refpos($globalpos, $cigar);
             $aligns{$contig} = {contig => $contig,
@@ -171,6 +194,30 @@ sub offset_windowbam {
     close $fh;
 
     return {%aligns};
+}
+
+sub calc_final_refpos {
+    my $pos = shift;
+    my $orig_cigar = shift;
+    my $cigar = $orig_cigar;
+
+    my $thispos = $pos - 1;
+    while ($cigar) {
+        my ($nbases, $nextop) = ($cigar =~ s/^(\d+)([MIDSHP])//) ? ($1, $2) : (undef, undef);
+        if (!$nbases) {
+            die "Unparsable cigar string $orig_cigar!\n";
+        }
+
+        if ($nextop eq 'M') {
+            $thispos += $nbases;
+        }
+        if ($nextop eq 'D') {
+            $thispos += $nbases;
+        }
+    }
+
+    return $thispos;
+    
 }
 
 sub combine_contig_alignments {
@@ -193,6 +240,12 @@ sub combine_contig_alignments {
 
     my $combined_cigar = $cigar1;
     my $deleted_length = $pos2 - $finalpos1 - 1;
+
+    if ($deleted_length < 0) {
+        print "Contig $contig REF $refentry:$globalpos-$finalpos1, then $refentry:$pos2-$finalpos2\n";
+        die "Something wrong!\n";
+    }
+ 
     if ($deleted_length) {
         $combined_cigar .= $deleted_length.'D';
     }
@@ -216,14 +269,17 @@ sub print_sam_entry {
 
     my $contig = $rh_align->{contig};
     my $flag = $rh_align->{flag};
-    my $entry = $rh_align->{entry};
+    my $entry = $rh_align->{refentry};
     my $pos = $rh_align->{pos};
     my $mapqual = $rh_align->{mapqual};
     my $cigar = $rh_align->{cigar};
     my $seq = $rh_align->{seq};
     my $qual = $rh_align->{qual};
 
-    print $fh "$contig\t$flag\t$entry\t$pos\t$mapqual\t$cigar\t$seq\t$qual\n"; 
+    if ($cigar !~ /^[\dMIDSHP]+$/) {
+        die "Invalid cigar string $cigar\n";
+    }
+    print $fh "$contig\t$flag\t$entry\t$pos\t$mapqual\t$cigar\t*\t0\t0\t$seq\t$qual\n"; 
 }
 
 __END__
