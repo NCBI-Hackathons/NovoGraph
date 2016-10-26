@@ -76,7 +76,7 @@ function align(){
 
   echo "from $1 to $outputfile"
 
-  #mafft --reorder --auto  $1 > $outputfile
+  mafft --reorder --auto  $1 > $outputfile
 
 #  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
 #  if (($FILESIZE==0)) ; then
@@ -92,7 +92,6 @@ function align(){
   echo "BAM input $outputfile and output $bamoutput" 
 
   ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt"
-  #./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" 
 
 }
 
@@ -101,7 +100,7 @@ export -f align
 
 # copyEmpty
 
-parallel -j 1  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 
 
