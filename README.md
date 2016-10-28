@@ -23,6 +23,8 @@ Nancy Hansen (NIH)
 
 Jeff Oliver (ASU)
 
+Andrew Olsen (CSHL)
+
 
 ## Workflow
 ### Step 0: Align all contigs to GRCh38
