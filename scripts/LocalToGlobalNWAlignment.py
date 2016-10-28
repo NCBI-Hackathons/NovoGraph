@@ -83,6 +83,7 @@ def globalPath(startContig, lenghtContig, start, end):
                 newPathToAdd.append(np.append(pathToAppend, potentialDiagIndx[i]) )   #pathToAppend
 
              """
+                 From Aarti's MATLAB code
                  PossiblePath(ExtensionPathIndx(1)+lenPotential:nPossiblePath+lenPotential-1) = PossiblePath(ExtensionPathIndx(1)+1:nPossiblePath) ; # EXTEND! # [ [1], [2], [2], [3]]
                  trash = repmat(PossiblePath{ExtensionPathIndx(1)},lenPotential,1);  # repmat() --> [[1], [1]]
                  trash = [trash find(PotentialDiag==1)];  # find [[1 3], [1 4]]
