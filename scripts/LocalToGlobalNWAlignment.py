@@ -20,6 +20,21 @@
 
 import numpy as np
 
+# simulated data
+start = np.random.randint(10000, size=(10,2))
+trash = start[:, 0]                             # takes the first "column" of `start`
+# array([ 413, 1800,  331, 8910,  837, 9660, 2167, 5997, 3104, 7259])
+end   = np.random.randint(10000, size=(10,2))
+score = np.random.randint(10000, size=(10,1))
+  
+    
+# reindex
+trash = trash.ravel().argsort()  # trash MUST be a numpy array
+start = start[trash, :]
+end   = end[trash, :]
+score = score[trash, :]
+    
+
 
 def globalPath(startContig, lenghtContig, start, end):
     # parameter explanation
@@ -44,20 +59,6 @@ def globalPath(startContig, lenghtContig, start, end):
         [7259, 6283]])
         
     """
-    start = np.random.randint(10000, size=(10,2))
-    trash = start[:, 0]                             # takes the first "column" of `start`
-    # array([ 413, 1800,  331, 8910,  837, 9660, 2167, 5997, 3104, 7259])
-    end   = np.random.randint(10000, size=(10,2))
-    score = np.random.randint(10000, size=(10,1))
-  
-    
-    # reindex
-    trash = trash.ravel().argsort()  # trash MUST be a numpy array
-    start = start[trash, :]
-    end   = end[trash, :]
-    score = score[trash, :]
-    
-
     ndiag = len(start)     # based on definition above `size=(10,2)`, len(start) = 10 always
     possiblePath = list(np.array([[x] for x in range(0, ndiag)])) # possiblePath = array([[0],[1],[2],[3],[4],[5],[6],[7],[8],[9])
                             # list partition --- create an array of arrays #### in MATLAB, num2cell()
@@ -105,14 +106,10 @@ def globalPath(startContig, lenghtContig, start, end):
                             # newScore = sum
         newScore[i] = (np.sum(score[path])-(pathStarts[0,0]-startPositionContig) - np.sum(pathStarts[1:,0]-pathEnds[0:-1,0])
                            - np.sum(pathStarts[1:,1]-pathEnds[0:-1,1])+ endPositionContig-pathEnds[-1,0]))
-
-
-"""
-    def main():
     
     
-    if __name__ == "__main__":
-    main()
+if __name__ == "__main__":
+    globalPath(startContig, lenghtContig, start, end)
  
-"""
+
 
