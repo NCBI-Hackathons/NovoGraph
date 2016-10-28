@@ -141,5 +141,9 @@ genome and additional assemblies_
 ### Step 4: Generate Docker container et al for distribution
 + Assignees:
   + Nathan
-+ Status: in progress
-  + docker-compose.yml & Dockerfile in top-level of GitHub repo
++ Status: Done and working, but will need to be updated as code changes and there is a release
+  + Dockerfile in top-level of GitHub repo
+  + Publicly hosted here: https://hub.docker.com/r/ncbihackathons/graph_genomes_cshl/
+  + docker run -it ncbihackathons/graph_genomes_cshl 
+    + contents in /app/scripts/ 
+    + Mount local volumes remotely use the -v option according to here https://docs.docker.com/engine/tutorials/dockervolumes/
