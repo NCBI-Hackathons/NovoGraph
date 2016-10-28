@@ -8,6 +8,17 @@
 
 [Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
 
+
+# Contributors 
+
+Evan Biederstedt (NYGC)
+Alexander Dilthey (NIH)
+Nathan Dunn (LBNL)
+Aarti Jajoo (Baylor)
+Nancy Hansen (NIH)
+Jeff Oliver (ASU)
+
+
 ## Workflow
 ### Step 0: Align all contigs to GRCh38
 _This step is outside of our formalized pipeline. Users will be responsible for
