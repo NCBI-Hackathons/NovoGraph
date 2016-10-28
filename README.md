@@ -12,10 +12,15 @@
 # Contributors 
 
 Evan Biederstedt (NYGC)
+
 Alexander Dilthey (NIH)
+
 Nathan Dunn (LBNL)
+
 Aarti Jajoo (Baylor)
+
 Nancy Hansen (NIH)
+
 Jeff Oliver (ASU)
 
 
