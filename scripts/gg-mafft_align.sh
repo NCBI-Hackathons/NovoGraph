@@ -2,22 +2,26 @@
 
 # TODO: pass in number of procs and threads
 usage() {
-  echo "Usage: $0 [ -i <path to input files>  -o <path to output file>  ]  "
+  echo "Usage: $0 [ -i <path to input files to grep>  -o <path to output file>  ]  "
   exit 1
 }
 
 
 while getopts ":o:i:" opt; do
   case "${opt}" in
-    o)
-      OUTPUT_DIRECTORY=${OPTARG}
+     o)
+      OUTPUT_DIRECTORY=$OPTARG
+      if [ ! -r $OUTPUT_DIRECTORY ]; then
+        echo "Output file $OUTPUT_DIRECTORY does not exist or is not readable."
+        usage
+      fi
       ;;
     i)
       INPUT_DIRECTORY=$OPTARG
-      if [ ! -r $INPUT_DIRECTORY ]; then
-        echo "Input file $INPUT_DIRECTORY does not exist or is not readable."
-        usage
-      fi
+#      if [ ! -r $INPUT_DIRECTORY ]; then
+#        echo "Input file $INPUT_DIRECTORY does not exist or is not readable."
+#        usage
+#      fi
       ;;
     *)
       echo -e "\nUnrecognized option: -${OPTARG}"
@@ -36,65 +40,33 @@ if [ -z ${OUTPUT_DIRECTORY+x} ]; then
 	exit 1;
 fi
 
-echo "Files to process"
-INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1$"  | awk -F':' '{ print $1 }' | grep ".fa"  ))
 
-echo "Reference Only"
-#FILES_TO_IGNORE=($( grep -r -c "^>" $INPUT_DIRECTORY | grep ":1$"  | awk -F':' '{ print $1 }'| grep ".fa"   ))
+echo "INPUT DIRECTORY: $INPUT_DIRECTORY"
+echo "OUTPUT DIRECTORY: $OUTPUT_DIRECTORY"
+
+INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1$"  | awk -F':' '{ print $1 }' ))
 
 
 echo "Files to process: ${#INPUTFILES[@]}"
-echo "Files to ignore: ${#FILES_TO_IGNORE[@]}"
-
-
-function copyEmpty(){
-	i=0
-	for line in "${FILES_TO_IGNORE[@]}"
-	do
-	  ((++i))
-	  filename=$(basename "$line");
-	  extension="${filename##*.}";
-	  filename="${filename%.*}";
-
-	  outputfile="${OUTPUT_DIRECTORY}/${filename}_aligned.fas";
-	  cp -f $line $outputfile
-	  bamoutput="${OUTPUT_DIRECTORY}/${filename}.bam";
-
-	  #echo "non-alignment BAM input $outputfile and output $bamoutput"
-	  #echo "./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref 'ref' --bamheader './scripts/windowbam.header.txt'"
-	  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./scripts/windowbam.header.txt" 
-	done
-	echo "Copied $i files."
-}
-
 
 function align(){
 
- echo $1 $2 $3
+ echo input_file $1 input_directory $2 output_directory $3 and 4 $4
 
   fullfile=$1
   filename=$(basename "$fullfile");
   extension="${filename##*.}";
   filename="${filename%.*}";
 
-  outputfile="$3/${filename}_aligned.fas";
+  outputfile="$4/${filename}_aligned.fas";
 
   echo "from $1 to $outputfile"
 
   mafft --thread -1 --reorder --auto  $1 > $outputfile
 
-#  FILESIZE=$(du -sb $outputfile| awk '{ print $1 }')
-#  if (($FILESIZE==0)) ; then
-#     cp -f $1 $outputfile
-#  fi
+  bamoutput="$4/$filename.bam"
 
-  if [ $? -eq 1 ]; then
-     cp -f $1 $outputfile
-  fi
-
-  bamoutput="$3/$filename.bam"
-
-  #echo "BAM input $outputfile and output $bamoutput"
+  echo "BAM input $outputfile and output $bamoutput"
 
   ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt" 
 
