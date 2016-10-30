@@ -11,7 +11,7 @@
 
 # Contributors 
 
-Evan Biederstedt (NYGC)
+Evan Biederstedt (NYGC, WCM)
 
 Alexander Dilthey (NIH)
 
