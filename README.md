@@ -9,7 +9,7 @@
 [Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
 
 
-# Contributors 
+# Contributors
 
 Evan Biederstedt (NYGC, WCM)
 
@@ -21,7 +21,7 @@ Aarti Jajoo (Baylor)
 
 Nancy Hansen (NIH)
 
-Jeff Oliver (ASU)
+Jeff Oliver (Arizona)
 
 Andrew Olsen (CSHL)
 
@@ -144,6 +144,6 @@ genome and additional assemblies_
 + Status: Done and working, but will need to be updated as code changes and there is a release
   + Dockerfile in top-level of GitHub repo
   + Publicly hosted here: https://hub.docker.com/r/ncbihackathons/graph_genomes_cshl/
-  + docker run -it ncbihackathons/graph_genomes_cshl 
-    + contents in /app/scripts/ 
+  + docker run -it ncbihackathons/graph_genomes_cshl
+    + contents in /app/scripts/
     + Mount local volumes remotely use the -v option according to here https://docs.docker.com/engine/tutorials/dockervolumes/
