@@ -49,7 +49,7 @@ INPUTFILES=($( grep -r -c "^>" $INPUT_DIRECTORY | grep -v ":1$"  | awk -F':' '{ 
 
 echo "Files to process: ${#INPUTFILES[@]}"
 
-function align(){
+function convert_to_bam(){
 
  echo input_file $1 input_directory $2 output_directory $3 and 4 $4
 
@@ -62,24 +62,23 @@ function align(){
 
   echo "from $1 to $outputfile"
 
-  mafft --thread -1 --reorder --auto  $1 > $outputfile
+#  mafft --thread -1 --reorder --auto  $1 > $outputfile
 
-#  bamoutput="$4/$filename.bam"
+  bamoutput="$4/$filename.bam"
 
 #  echo "BAM input $outputfile and output $bamoutput"
 
-#  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt" 
+  ./scripts/fas2bam.pl --input $outputfile --output $bamoutput --ref "ref" --bamheader "./config/windowbam.header.txt" 
 
 }
 
-export -f align
+export -f convert_to_bam
 
 # copyEmpty
 
 # parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
-
-parallel -j 8  align ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
+parallel -j 8  convert_to_bam ::: ${INPUTFILES[@]} ::: $INPUT_DIRECTORY ::: $OUTPUT_DIRECTORY
 
 #for INPUT_FILE in ${INPUTFILES[@]}
 #do 
