@@ -106,7 +106,7 @@ def globalPath(startContig, lenghtContig, start, end,score):
      
     
 if __name__ == "__main__":
-    globalPath(startContig, lengthContig, start, end,score)
+    globalPath(startContig, lengthContig, start, end, score)
  
 
 
