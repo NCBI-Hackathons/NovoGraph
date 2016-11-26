@@ -106,6 +106,9 @@ while(my $alignment = $iterator->next_seq)
 }
 
 my $sorted_outputFile = $outputFile.'.sorted';
+die "Implement this properly - first line issue!";
+# sed '1d' AartiInput > AartiInput.forSort
+
 my $sort_cmd = qq(sort $outputFile > $sorted_outputFile);
 if(system($sort_cmd))
 {

@@ -5,14 +5,18 @@ use Bio::DB::Sam;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
+use File::Path;
+
 $| = 1;
 
 # Example command
-# ./BAM2MAFFT.pl --BAM /home/data/alignments/statistics/SevenGenomesGlobalAligns.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa
+# ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
+ 
 
 my $referenceFasta;
 my $BAM;
-my $outputDirectory = 'forMafft3';
+my $outputDirectory;
+my $inputTruncatedReads;
 my $readsFasta;
 my $paranoid = 1;
 GetOptions (
@@ -21,14 +25,21 @@ GetOptions (
 	'outputDirectory:s' => \$outputDirectory,	
 	'paranoid:s' => \$paranoid,	
 	'readsFasta:s' => \$readsFasta,	
+	'inputTruncatedReads:s' => \$inputTruncatedReads,	
 );
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
+die "Please specify --inputTruncatedReads" unless($inputTruncatedReads);
+die "Please specify --outputDirectory" unless($outputDirectory);
 
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
+die "--inputTruncatedReads $inputTruncatedReads not existing" unless(-e $inputTruncatedReads);
+
+die "Security check - $outputDirectory will be deleted" unless($outputDirectory =~ /mafft/i);
+rmtree($outputDirectory);
 unless((-e $outputDirectory) and (-d $outputDirectory))
 {
 	mkdir($outputDirectory) or die "Cannot mkdir $outputDirectory directory";
@@ -45,18 +56,29 @@ if($paranoid)
 my $reference_href = readFASTA($referenceFasta);
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
+my %truncatedReads;
+open(TRUNCATED, '<', $inputTruncatedReads) or die "Cannot open $inputTruncatedReads";
+while(<TRUNCATED>)
+{
+	my $line = $_;
+	chomp($line);
+	$truncatedReads{$line}++;
+}
+
+close(TRUNCATED);
 my $windows_info_fn =  $outputDirectory . '/_windowsInfo';
 open(WINDOWS, '>', $windows_info_fn) or die "Cannot open $windows_info_fn";
-print WINDOWS join("\t", "referenceContigID", "windowI", "firstPos_relative_to_ref", "lastPos_relative_to_ref", "lastPos_BAMcoverage", "lastPos_BAMcoverage_nonGap"), "\n";
+print WINDOWS join("\t", "referenceContigID", "chrDir", "windowI", "firstPos_relative_to_ref", "lastPos_relative_to_ref", "lastPos_BAMcoverage", "lastPos_BAMcoverage_nonGap"), "\n";
 
 my $alignments_info_fn = $outputDirectory . '/_alignments';
 open(ALIGNMENTS, '>', $alignments_info_fn) or die "Cannot open $alignments_info_fn";
-print ALIGNMENTS join("\t", "alignedSequenceID", "referenceContigID", "firstPositions_reference", "lastPosition_reference"), "\n";
+print ALIGNMENTS join("\t", "alignedSequenceID", "referenceContigID", "chrDir", "firstPositions_reference", "lastPosition_reference"), "\n";
 
 my $alignments_gaps_info_fn = $outputDirectory . '/_alignments_inWindow_onlyGaps';
 open(ALIGNMENTSONLYGAPS, '>', $alignments_gaps_info_fn) or die "Cannot open $alignments_gaps_info_fn";
-print ALIGNMENTSONLYGAPS join("\t", "alignedSequenceID", "referenceContigID", "windowI"), "\n";
+print ALIGNMENTSONLYGAPS join("\t", "alignedSequenceID", "referenceContigID", "chrDir", "windowI"), "\n";
 
+my %saw_ref_IDs;
 my %saw_read_IDs;
 my @sequence_ids = $sam->seq_ids();
 foreach my $referenceSequenceID (@sequence_ids)
@@ -69,6 +91,11 @@ foreach my $referenceSequenceID (@sequence_ids)
 	}
 	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
 
+	my $chrDir = $referenceSequenceID;
+	$chrDir =~ s/\W//g;
+	die "Duplicate directory $chrDir?" if(exists $saw_ref_IDs{$chrDir});
+	mkdir( $outputDirectory . '/' . $chrDir) or die "Cannot mkdir $chrDir";
+	
 	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
 	die "Length discrepancy between supplied FASTA reference and BAM index: " . $sam->length($referenceSequenceID) . " vs " . length($reference_href->{$referenceSequenceID}) unless($sam->length($referenceSequenceID) == length($reference_href->{$referenceSequenceID}));
 	next unless(defined $reference_href->{$referenceSequenceID});
@@ -87,8 +114,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 		# todo
 		if($n_alignment > 100)
 		{
-			warn "For testing purposes, stop after chr1";
-			last;
+			#warn "For testing purposes, stop after chr1";
+			#last;
 		}
 			
 		$n_alignment++;		
@@ -202,7 +229,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 	# print "Insert ", $window_positions[$#window_positions], " ", $max_pos+1, " as $last_windowID_for_tree\n";
 	
 	my $firstWindow_lastPos = $window_positions[0] - 1;
-	print WINDOWS join("\t", $referenceSequenceID, 0, 0, $firstWindow_lastPos, $contig_coverage[$firstWindow_lastPos], $contig_coverage_nonGap[$firstWindow_lastPos]), "\n";
+	print WINDOWS join("\t", $referenceSequenceID, $chrDir, 0, 0, $firstWindow_lastPos, $contig_coverage[$firstWindow_lastPos], $contig_coverage_nonGap[$firstWindow_lastPos]), "\n";
 	
 	my $first_window_idx_key = 'w0';
 	my $first_window_referenceSequence = substr($reference_href->{$referenceSequenceID}, 0, $window_positions[0]);
@@ -236,6 +263,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		print WINDOWS join("\t",
 			$referenceSequenceID,
+			$chrDir, 
 			$windowI + 1,
 			$window_positions[$windowI],
 			$window_lastPos,
@@ -322,7 +350,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		}
 		
 		die unless((defined $firstPosition_reference) and (defined $lastPosition_reference));
-		print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $firstPosition_reference, $lastPosition_reference), "\n";
+		print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $chrDir, $firstPosition_reference, $lastPosition_reference), "\n";
 	}	
 	print "\n";
 
@@ -332,7 +360,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		my %sequenceID_not_seen = map {$_ => 1} keys %runningSequencesForReconstruction;
 		
 		my $window_idx_key = 'w' . $windowID;
-		my $output_fn = $outputDirectory . '/' . $referenceSequenceID . '_' . $windowID . '.fa';
+		my $output_fn = $outputDirectory . '/' . $chrDir . '/' . $referenceSequenceID . '_' . $windowID . '.fa';
 		my $is_open = 0;
 		foreach my $sequenceID (keys %{$sequences_per_window{$window_idx_key}})
 		{
@@ -353,7 +381,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 			}
 			else
 			{
-				print ALIGNMENTSONLYGAPS join("\t", $sequenceID, $referenceSequenceID, $windowID), "\n";			
+				print ALIGNMENTSONLYGAPS join("\t", $sequenceID, $referenceSequenceID, $chrDir, $windowID), "\n";			
 			}
 		}
 		
@@ -381,10 +409,13 @@ foreach my $referenceSequenceID (@sequence_ids)
 			}
 			else
 			{
-				print "Disagreement for $sequenceID\n";
-				print "\t", "length(\$trueSequence)", ": ", length($trueSequence), "\n";
-				print "\t", "length(\$supposedSequence)", ": ", length($supposedSequence), "\n";
-				die;
+				if(not exists $truncatedReads{$sequenceID})
+				{
+					print "Disagreement for $sequenceID\n";
+					print "\t", "length(\$trueSequence)", ": ", length($trueSequence), "\n";
+					print "\t", "length(\$supposedSequence)", ": ", length($supposedSequence), ", ", substr($supposedSequence, 0, 10), "\n";
+					#die;
+				}
 			}
 			delete($runningSequencesForReconstruction{$sequenceID});
 		}

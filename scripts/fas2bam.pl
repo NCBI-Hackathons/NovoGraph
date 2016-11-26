@@ -30,6 +30,12 @@ When fed a multiple sequence alignment in FASTA format and a specification of wh
 =cut
 
 #------------
+# Debug
+#------------
+
+my $last_call_read_fas_file_read_nucleotides = 0;
+
+#------------
 # Begin MAIN 
 #------------
 
@@ -43,7 +49,8 @@ my $rh_entry_seqs = read_fas_file($input_file);
 
 #check for ref entry
 if (!$rh_entry_seqs->{$ref_entry}) {
-    die "No entry for reference $ref_entry in $input_file!\n";
+	my $l_references = join("\n", map {"'" . $_ . "'"} keys %$rh_entry_seqs);
+    die "No entry for reference $ref_entry in $input_file - read $last_call_read_fas_file_read_nucleotides sequence characters - have the following references:\n".$l_references;
 }
 
 my $ref_length = length($rh_entry_seqs->{$ref_entry});
@@ -102,6 +109,7 @@ sub process_commandline {
 sub read_fas_file {
     my $file = shift;
 
+	$last_call_read_fas_file_read_nucleotides = 0;
     my %seq_entry_hash = ();
     my ($current_entry, $current_seq);
     open FAS, $file
@@ -119,9 +127,11 @@ sub read_fas_file {
         else { # assume sequence line
             chomp;
             $current_seq .= $_;
-            if (!$current_entry || $_ =~ /[^ATGCatgcNn-]/) {
-                die "Illegal format (no entry definition line) or illegal characters (not ATGCNatgcn or -)!  Aborting.\n";
+            if (!$current_entry || $_ =~ /([^ATGCatgcNn\-RrYySsWwKkMmBb])/) {
+                die "Illegal format (no entry definition line - $current_entry) or illegal characters (not ATGCNatgcn or - -- $1)!  Aborting.\n";
             }
+			
+			$last_call_read_fas_file_read_nucleotides += length($_);
         }
     }
     close FAS;
