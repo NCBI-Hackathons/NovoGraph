@@ -11,13 +11,14 @@ $| = 1;
 
 # Example command:
 # To check correctness of INPUT for mafft:
-# 	./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
+# 	./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
 
 my $alignmentsFile;
 my $referenceFasta;
 my $outputFile = 'output.sam';
 my $lenientOrder = 1;
 my $outputTruncatedReads;
+my $outputReadLengths;
 
 my $S_match = 1;
 my $S_mismatch = -1;
@@ -28,6 +29,7 @@ GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'outputFile:s' => \$outputFile,	
 	'outputTruncatedReads:s' => \$outputTruncatedReads,
+	'outputReadLengths:s' => \$outputReadLengths,
 );
 
 die "Please specify --alignmentsFile" unless($alignmentsFile);
@@ -39,6 +41,7 @@ die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "Please specify --outputFile" unless($outputFile);
 
 die "Please specify --outputTruncatedReads" unless($outputTruncatedReads);
+die "Please specify --outputReadLengths" unless($outputReadLengths);
 
 print "Read $referenceFasta\n";
 my $reference_href = readFASTA($referenceFasta, 0);
@@ -67,6 +70,7 @@ my $n_alignments_rightGapsRemoved = 0;
 my $n_alignments_leftAndRightGapsRemoved = 0;
 
 open(TRUNCATED, ">", $outputTruncatedReads) or die "Cannot open $outputTruncatedReads";
+open(LENGTHS, ">", $outputReadLengths) or die "Cannot open $outputReadLengths";
 
 my %processed_readIDs;
 my @lines_current_read;
@@ -484,6 +488,8 @@ my $processReadLines = sub {
 		{
 			print TRUNCATED $readID, "\n";
 		}
+		
+		print LENGTHS join("\t", $readID, length($alignment_contig_forSAM_noGaps)), "\n";
 	}
 };
 

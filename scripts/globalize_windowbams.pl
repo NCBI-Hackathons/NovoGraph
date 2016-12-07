@@ -37,8 +37,14 @@ process_commandline();
 
 my $fastadir = $Opt{'fastadir'};
 my $msadir = $Opt{'msadir'};
-my $contigs_file = $Opt{'contigs'};
 my $output_file = $Opt{'output'};
+
+unless($Opt{bamheader} and (-e $Opt{bamheader}))
+{
+	die "Please specify valid file for --bamheader";
+}
+
+my $contigs_file = $Opt{contigs};
 
 my $rh_windowinfo = read_windowbams_info($fastadir, $msadir); # hashed by ref entry, then sorted lists of hashes to bam paths ("bam") and offset positions ("offset")
 my $rh_contiglength = read_contigs_file($contigs_file); # contig lengths hashed by contig name
@@ -67,6 +73,7 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
                 $current_contigs{$contig} = $rh_window_contig_alignments->{$contig};
             }
 
+			die "Don't have length for $contig" unless(exists $rh_contiglength->{$contig});
             my $expected_contig_length = $rh_contiglength->{$contig};
             my $current_contig_length = length($current_contigs{$contig}->{seq});
             if ($expected_contig_length==$current_contig_length) {
@@ -123,9 +130,11 @@ sub read_windowbams_info {
     my ($lastentry, $laststart); # make sure sorted!
     while (<WINDOWS>) {
         next if (/^referenceContigID/);
-        if (/^(\S+)\s(\d+)\s(\d+)\s(\d+)/) {
-            my ($entry, $windowid, $start, $end) = ($1, $2, $3, $4);
-            push @{$entry_hash{$entry}}, {bam => "$msadir/$entry\_$windowid.bam", 
+        if (/^(\S+)\s(\S+)\s(\d+)\s(\d+)\s(\d+)/) {
+            my ($entry, $chrDir, $windowid, $start, $end) = ($1, $2, $3, $4);
+			my $bamFile = "$msadir/$chrDir/$entry\_$windowid.bam";
+			warn "BAM file $bamFile not present" unless(-e $bamFile);
+            push @{$entry_hash{$entry}}, {bam => $bamFile, 
                                           offset => $start};
             if ($lastentry && ($entry eq $lastentry) && ($start < $laststart)) {
                 die "Windows in _windowInfo are unsorted! ($entry:$start is less than $laststart)\n";
@@ -149,7 +158,7 @@ sub read_contigs_file {
     open CONTIGS, $file
         or die "Couldn\'t open .contigs file $file: $!\n";
     while (<CONTIGS>) {
-        if (/^(\S+)\s(\d+)$/) {
+        if (/^(\S+)\s(\d+)/) {
             my ($contig, $contiglength) = ($1, $2);
             $contig_length{$contig} = $contiglength;
         }

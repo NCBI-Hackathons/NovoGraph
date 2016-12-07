@@ -151,7 +151,8 @@ sub parse_alignment {
 
     my $reverseentryseq = reverse($rh_entries->{$this_entry}); # reversed so we can use chop to step through
     my $reverserefseq = reverse($rh_entries->{$ref_entry});
-
+	die unless(length($reverseentryseq) == length($reverserefseq));
+	
     my $flat_cigar = '';
     my $start_pos = 1; # this will shift up or down if there are pads at the beginning of the entry or reference, resp.
     my $entry_seq = '';
@@ -178,7 +179,10 @@ sub parse_alignment {
             $entry_seq .= uc($next_entrybase);
         }
         else {
-            $flat_cigar .= 'P';
+			if($match_seen_yet)
+			{
+				$flat_cigar .= 'P';
+			}
         }
         ($next_entrybase, $next_refbase) = (chop $reverseentryseq, chop $reverserefseq);
     }
