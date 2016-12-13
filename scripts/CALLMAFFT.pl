@@ -144,8 +144,9 @@ elsif($action eq 'processChunk')
 		
 		makeMSA($file, $msaFile);
 		makeBAM($msaFile, $bamFile);
-		checkBAM($bamFile, $file);
-		unlink($msaFile);
+		#checkBAM($bamFile, $file);
+		# todo
+		#unlink($msaFile);
 	}
 }
 else
@@ -275,22 +276,84 @@ sub makeMSA
 	die unless($inputFile and $outputFile);
 	
 	my $input_href = readFASTA($inputFile);
+	my $n_sequences_originallyIn = (scalar keys %$input_href);
+	
+	my $temp_file_in = $inputFile . ".tmp_in";
+	my $temp_file_out = $inputFile . ".tmp_out";
+	
+	my %empty_sequences;
+	foreach my $key (keys %$input_href)
+	{
+		my $seq = $input_href->{$key};
+		die unless(length($seq));
+		$seq =~ s/[\-_]//g;
+		if(length($seq) == 0)
+		{
+			$empty_sequences{$key} = 1;
+		}
+		else
+		{
+			$input_href->{$key} = $seq;
+		}
+	}
+	
+	die if(scalar(keys %$input_href) == scalar(keys %empty_sequences));
+	foreach my $emptyKey (keys %empty_sequences)
+	{
+		die unless(exists $input_href->{$emptyKey});
+		delete $input_href->{$emptyKey};
+	}	
+	
 	if(scalar(keys %$input_href) >= 2)
 	{
+		writeFASTA($temp_file_in, $input_href);
+		my $cmd_mafft = qq($mafft_bin --auto --quiet $temp_file_in > $temp_file_out);
+		print "Executing $cmd_mafft \n";
+		
+		my $ret = system($cmd_mafft);
 
-	my $cmd_mafft = qq($mafft_bin --auto $inputFile > $outputFile);
-	my $ret = system($cmd_mafft);
-
-	unless(($ret == 0) and (-e $outputFile))
-	{
-		die "File $outputFile not there, but after $cmd_mafft it should be";
-	}
+		# print "Return code $ret\n";
+		
+		unless(($ret == 0) and (-e $temp_file_out))
+		{
+			die "File $temp_file_out not there, but after $cmd_mafft it should be";
+		}
+		
+		validate_as_alignment($temp_file_out);
 	}
 	else
 	{
-		cp($inputFile, $outputFile) or die "Cannot cp $inputFile $outputFile";
+		writeFASTA($temp_file_out, $input_href);
+		#cp($inputFile, $temp_file_out) or die "Cannot cp $inputFile $temp_file_out";
 	}
+	
+	if(keys %empty_sequences)
+	{
+		my $temp_out_href = readFASTA($temp_file_out);
+		my $l = length((values %$temp_out_href)[0]);
+		foreach my $k (keys %empty_sequences)
+		{
+			my $gaps = ('-' x $l);
+			die unless(length($gaps) == $l);
+			$temp_out_href->{$k} = $gaps;
+		}
+		writeFASTA($outputFile, $temp_out_href);
+		
+	}
+	else
+	{
+		cp($temp_file_out, $outputFile) or die "Cannot cp $inputFile $temp_file_out";	
+	}
+	
 	validate_as_alignment($outputFile);
+	my $output_href = readFASTA($outputFile);
+	die unless(scalar(keys %$output_href) == $n_sequences_originallyIn);
+	
+	# todo
+	#unlink($temp_file_in);
+	#unlink($temp_file_put);
+	
+	
 }
 
 sub validate_as_alignment
@@ -381,4 +444,34 @@ sub readFASTA
 	close(F);
 		
 	return \%R;
+}
+
+sub writeFASTA
+{
+	my $file = shift;
+	# print "Writing $file\n";
+	my $href = shift;
+	open(F, '>', $file) or die "Cannot open $file";
+	foreach my $key (keys %$href)
+	{
+		my $seq = $href->{$key};
+		print F '>', $key, "\n";
+		# print "\t", $key, "\t", length($seq), "\n";
+		while($seq)
+		{
+			my $toPrint;
+			if(length($seq) > 50)
+			{
+				$toPrint = substr($seq, 0, 50);
+				substr($seq, 0, 50) = '';
+			}
+			else
+			{
+				$toPrint = $seq;
+				$seq = '';
+			}	
+			print F $toPrint, "\n";
+		}
+	}
+	close(F);	
 }

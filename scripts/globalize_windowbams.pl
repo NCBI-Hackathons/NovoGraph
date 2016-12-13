@@ -188,8 +188,10 @@ sub read_windowbam_add_offset {
         if (/^(\S+)\t(\d+)\t(\S+)\t(\d+)\t(\d+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)\t(\S+)/) {
             my ($contig, $flag, $refentry, $position, $mapqual, $cigar, $seq, $qual) = 
                 ($1, $2, $3, $4, $5, $6, $10, $11);
+			# print $contig, "\t", $position, "\t", $cigar, "\n
             my $globalpos = $position + $offset;
             my $final_covered_pos = calc_final_refpos($globalpos, $cigar);
+			my $final_covered_pos_nonGlobal = $final_covered_pos - $offset;
             $aligns{$contig} = {contig => $contig,
                                 flag => $flag,
                                 refentry => $entry, # use chromosome, not REF in BAM file
@@ -199,6 +201,8 @@ sub read_windowbam_add_offset {
                                 seq => $seq,
                                 qual => $qual,
                                 final_refpos => $final_covered_pos };
+			
+			# print "BAM $bamfile offset $offset entry $contig from $globalpos to $final_covered_pos ($position - $final_covered_pos_nonGlobal) \n";
         }
     }
     close $fh;
@@ -211,6 +215,7 @@ sub calc_final_refpos {
     my $orig_cigar = shift;
     my $cigar = $orig_cigar;
 
+	my $sawMatch = 0;
     my $thispos = $pos - 1;
     while ($cigar) {
         my ($nbases, $nextop) = ($cigar =~ s/^(\d+)([MIDSHP])//) ? ($1, $2) : (undef, undef);
@@ -220,14 +225,17 @@ sub calc_final_refpos {
 
         if ($nextop eq 'M') {
             $thispos += $nbases;
+			$sawMatch = 1;
         }
         if ($nextop eq 'D') {
-            $thispos += $nbases;
+			if($sawMatch)
+			{
+				$thispos += $nbases;
+			}
         }
     }
 
     return $thispos;
-    
 }
 
 sub combine_contig_alignments {
@@ -249,16 +257,19 @@ sub combine_contig_alignments {
     my $finalpos2 = $rh_second_align->{final_refpos};
 
     my $combined_cigar = $cigar1;
-    my $deleted_length = $pos2 - $finalpos1 - 1;
-
-    if ($deleted_length < 0) {
-        print "Contig $contig REF $refentry:$globalpos-$finalpos1, then $refentry:$pos2-$finalpos2\n";
-        die "Something wrong!\n";
-    }
+	
+    #my $deleted_length = $pos2 - $finalpos1 - 1;
+	#print "deleted_length : $deleted_length\n"; # todo
+	
+    #if ($deleted_length < 0) {
+    #    print "Contig $contig REF $refentry:$globalpos-$finalpos1, then $refentry:$pos2-$finalpos2\n";
+    #    die "Something wrong!\n";
+    #}
  
-    if ($deleted_length) {
-        $combined_cigar .= $deleted_length.'D';
-    }
+    #if ($deleted_length) {
+    #    $combined_cigar .= $deleted_length.'D';
+    #}
+	
     $combined_cigar .= $cigar2;
     my $combined_seq = $seq1.$seq2;
 

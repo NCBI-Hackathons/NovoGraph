@@ -133,8 +133,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		}
 		push(@{$alignments_starting_at{$alignment_start_pos}}, [$ref, $query, $alignment->query->name]);
 			
-		$n_alignments++;
-		
+	
 		my $start_pos = $alignment_start_pos - 2;
 		my $ref_pos = $start_pos;
 		my $running_gaps = 0;
@@ -168,7 +167,6 @@ foreach my $referenceSequenceID (@sequence_ids)
 	}
 	
 	print "Have loaded $n_alignments alignments.\n";
-	exit;
 	
 	# my $last_all_equal = 0;
 	my @open_haplotypes = (['', 0, -1]);

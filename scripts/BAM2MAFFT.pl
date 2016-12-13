@@ -90,7 +90,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 		next;
 	}
 	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
-
+	next unless($referenceSequenceID eq 'chr1');
+	
 	my $chrDir = $referenceSequenceID;
 	$chrDir =~ s/\W//g;
 	die "Duplicate directory $chrDir?" if(exists $saw_ref_IDs{$chrDir});
@@ -114,8 +115,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 		# todo
 		if($n_alignment > 100)
 		{
-			#warn "For testing purposes, stop after chr1";
-			#last;
+			warn "For testing purposes, stop after chr1";
+			last;
 		}
 			
 		$n_alignment++;		
@@ -354,6 +355,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 	}	
 	print "\n";
 
+	my %saw_sequence_already;
 	my %runningSequencesForReconstruction;
 	foreach my $windowID (0 .. scalar(@window_positions))
 	{
@@ -365,10 +367,21 @@ foreach my $referenceSequenceID (@sequence_ids)
 		foreach my $sequenceID (keys %{$sequences_per_window{$window_idx_key}})
 		{
 			my $sequence_for_emission = $sequences_per_window{$window_idx_key}{$sequenceID};
-			$sequence_for_emission =~ s/[\-_]//g;
+			#$sequence_for_emission =~ s/[\-_]//g;
 			$sequenceID_not_seen{$sequenceID} = 0;
-			$runningSequencesForReconstruction{$sequenceID} .= $sequence_for_emission;
 			
+			my $sequence_for_emission_noGaps = $sequence_for_emission;
+			$sequence_for_emission_noGaps =~ s/[\-_]//g;
+			$runningSequencesForReconstruction{$sequenceID} .= $sequence_for_emission_noGaps;
+			
+			my $sequenceID_for_print = $sequenceID;
+			if(not $saw_sequence_already{$sequenceID})
+			{
+				# this is the first time we see that sequence
+				die unless(length($sequence_for_emission_noGaps));
+				$saw_sequence_already{$sequenceID} = 1;
+				$sequenceID_for_print .= "_FIRST";
+			}
 			if(length($sequence_for_emission))
 			{
 				unless($is_open)
@@ -376,7 +389,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 					open(MAFFTOUT, '>', $output_fn) or die "Cannot open $output_fn";
 					$is_open = 1;
 				}
-				print MAFFTOUT '>', $sequenceID, "\n";
+				print MAFFTOUT '>', $sequenceID_for_print, "\n";
 				print MAFFTOUT $sequence_for_emission, "\n";
 			}
 			else

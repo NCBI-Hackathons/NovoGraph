@@ -19,9 +19,10 @@ samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/
 
 samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam
 
+./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
 gg-wrapper-bam2vcf.pl --script BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --window 100000 --samples /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/examples/list_of_assemblies.txt --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forVG | parallel -j 8
 
 ./gg-wrapper-bam2vcf.pl --script ./BAM2VCF.pl --BAM uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --window 10000000 --samples /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/examples/list_of_assemblies.txt --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forVG  | parallel -j 8
 
-./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts/uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf
+./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf

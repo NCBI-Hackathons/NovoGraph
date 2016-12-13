@@ -6,6 +6,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use FileHandle;
+use Data::Dumper;
 
 our %Opt;
 
@@ -35,6 +36,8 @@ When fed a multiple sequence alignment in FASTA format and a specification of wh
 
 my $last_call_read_fas_file_read_nucleotides = 0;
 
+# test
+# ./fas2bam.pl --input /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.mfa --ref "ref" --output /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam --bamheader ../config/windowbam.header.txt; samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam.sorted.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam.sorted.bam
 #------------
 # Begin MAIN 
 #------------
@@ -47,7 +50,12 @@ my $output_file = $Opt{'output'};
 
 my $rh_entry_seqs = read_fas_file($input_file);
 
-#check for ref entry
+if (!$rh_entry_seqs->{$ref_entry})
+{
+	$ref_entry .= '_FIRST';
+}
+
+#check for ref entry  
 if (!$rh_entry_seqs->{$ref_entry}) {
 	my $l_references = join("\n", map {"'" . $_ . "'"} keys %$rh_entry_seqs);
     die "No entry for reference $ref_entry in $input_file - read $last_call_read_fas_file_read_nucleotides sequence characters - have the following references:\n".$l_references;
@@ -81,8 +89,12 @@ my ($flag, $score) = (0, 0);
 foreach my $entry (sort keys %{$rh_entry_seqs}) {
     next if ($entry eq $ref_entry);
 
-    my ($sam_start, $cigar_string, $rs_entryseq, $ra_vars) = parse_alignment($rh_entry_seqs, $entry, $ref_entry);
+    my ($sam_start, $cigar_string, $rs_entryseq, $ra_vars, $lastPos) = parse_alignment($rh_entry_seqs, $entry, $ref_entry);
+	  
+	#print $entry, " ", $sam_start, " ", $lastPos, "\n"; 
+	$entry =~ s/_FIRST$//;
     print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t*\t0\t0\t$$rs_entryseq\t*\n";
+	
 }
 
 #------------
@@ -149,48 +161,97 @@ sub parse_alignment {
     my $this_entry = shift;
     my $ref_entry = shift;
 
+	my $this_entry_original = $rh_entries->{$this_entry};
+	my $ref_entry_original = $rh_entries->{$ref_entry};
+	
     my $reverseentryseq = reverse($rh_entries->{$this_entry}); # reversed so we can use chop to step through
     my $reverserefseq = reverse($rh_entries->{$ref_entry});
 	die unless(length($reverseentryseq) == length($reverserefseq));
 	
     my $flat_cigar = '';
     my $start_pos = 1; # this will shift up or down if there are pads at the beginning of the entry or reference, resp.
+	my $last_pos = 1;
     my $entry_seq = '';
     my @variants = (); # not dealing with VCF yet
 
+	my $isFirst = ($this_entry =~ /_FIRST$/);
     my $match_seen_yet = 0; # entry gaps ahead of aligned bases will not be in the cigar bases, but change start position
+    my $insertion_seen_yet = 0; # entry gaps ahead of aligned bases will not be in the cigar bases, but change start position
+	my $alignmentPos = 0;
     my ($next_entrybase, $next_refbase) = (chop $reverseentryseq, chop $reverserefseq);
     while ($next_entrybase && $next_refbase) {
         if (($next_entrybase ne '-') && ($next_refbase ne '-')) { # aligned bases
             $match_seen_yet = 1;
             $flat_cigar .= 'M';
             $entry_seq .= uc($next_entrybase);
+			
+			$last_pos++;
         }
-        elsif (($next_entrybase eq '-')  && ($next_refbase ne '-')){
-            if (!$match_seen_yet) {
-                $start_pos++;
-            }
-            else {
-                $flat_cigar .= 'D';
-            }
+        elsif (($next_entrybase eq '-')  && ($next_refbase ne '-')){	
+			if (!$match_seen_yet) {
+				$start_pos++;
+			}
+			
+			$last_pos++;
+			
+			if($isFirst)
+			{
+				# die Dumper($this_entry_original, $ref_entry_original) unless($match_seen_yet);
+				die  $alignmentPos."\n".$ref_entry_original."\n".$this_entry_original."\n " if($insertion_seen_yet and not $match_seen_yet);
+				if ($match_seen_yet) {
+					$flat_cigar .= 'D';
+				}		
+			}
+			else
+			{
+				$flat_cigar .= 'D';
+			}
+
         }
         elsif (($next_refbase eq '-') && ($next_entrybase ne '-')) {
             $flat_cigar .= 'I';
             $entry_seq .= uc($next_entrybase);
+			$insertion_seen_yet++;
         }
         else {
-			if($match_seen_yet)
+			die unless(($next_refbase eq '-') && ($next_entrybase eq '-'));
+				
+			if($isFirst)
+			{
+				if ($match_seen_yet) {
+					$flat_cigar .= 'P';
+				}		
+			}
+			else
 			{
 				$flat_cigar .= 'P';
 			}
         }
         ($next_entrybase, $next_refbase) = (chop $reverseentryseq, chop $reverserefseq);
+		$alignmentPos++;
     }
 
     #print "$flat_cigar\n";
     my $cigar_string = condense_flat_cigar($flat_cigar);
+	# $cigar_string = keep_cigar_flat($flat_cigar);
 
-    return ($start_pos, $cigar_string, \$entry_seq, [@variants]);
+	if(! $match_seen_yet)
+	{
+		$start_pos = 0;
+	}
+	
+    return ($start_pos, $cigar_string, \$entry_seq, [@variants], $last_pos);
+}
+
+sub keep_cigar_flat 
+{
+	my $in = shift;
+	my $out;
+	foreach my $o (split(//, $in))
+	{
+		$out .= '1' . $o;
+	}
+	return $out;
 }
 
 sub condense_flat_cigar {
