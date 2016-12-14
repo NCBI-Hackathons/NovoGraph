@@ -58,8 +58,8 @@ while(my $alignment = $iterator->next_seq)
 {
 	if($alignment->seq_id ne 'chr1')
 	{
-		warn "For testing purposes, stop after chr1"; # todo
-		last;
+		#warn "For testing purposes, stop after chr1"; # todo
+		#last;
 	}
 	
 	my $readID = $alignment->query->name;
