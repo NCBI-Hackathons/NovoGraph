@@ -43,9 +43,13 @@ my $reads_href = readFASTA($readsFasta, 0);
 print "\tdone.\n";
 
 my @out_headerfields = qw/readID chromosome firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference alignment_read completeReadSequence_plus completeReadSequence_minus/;
-		
+
+my $headerFn = $outputFile . '.header';
+open(HEADER, '>', $headerFn) or die "Cannot open $headerFn";
+print HEADER join("\t", @out_headerfields), "\n";
+close(HEADER);
+
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
-print OUT join("\t", @out_headerfields), "\n";
 
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 my $iterator = $sam->features(-iterator=>1);
@@ -106,8 +110,8 @@ while(my $alignment = $iterator->next_seq)
 }
 
 my $sorted_outputFile = $outputFile.'.sorted';
-die "Implement this properly - first line issue!";
-# sed '1d' AartiInput > AartiInput.forSort
+#die "Implement this properly - first line issue!";
+# sed '1d' forAarti > AartiInput.forSort
 
 my $sort_cmd = qq(sort $outputFile > $sorted_outputFile);
 if(system($sort_cmd))
@@ -119,7 +123,10 @@ unless(-e $sorted_outputFile)
 	die "Expected output file $sorted_outputFile not existing";
 }
 
-print "\n\nProduced output file $sorted_outputFile";
+my $combined_outputFile = $outputFile . '.sortedWithHeader';
+my $combine_cmd = qq(cat $headerFn $sorted_outputFile > $combined_outputFile);
+
+print "\n\nProduced output file $combined_outputFile";
 
 sub convertAlignmentToHash
 {
