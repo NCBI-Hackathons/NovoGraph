@@ -258,6 +258,66 @@
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
          transform="matrix(-0.4,0,0,-0.4,-4,0)" />
     </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Mend-61-8-3-5-3"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path12031-7-1-9-4-6"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="matrix(-0.4,0,0,-0.4,-4,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Mend-61-8-3-5-4-7"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path12031-7-1-9-4-9-5"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="matrix(-0.4,0,0,-0.4,-4,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Mend-61-8-3-6"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path12031-7-1-9-2"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="matrix(-0.4,0,0,-0.4,-4,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Mend-61-8-3-1"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path12031-7-1-9-27"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="matrix(-0.4,0,0,-0.4,-4,0)" />
+    </marker>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -267,8 +327,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.9899495"
-     inkscape:cx="465.20455"
-     inkscape:cy="685.88132"
+     inkscape:cx="327.5401"
+     inkscape:cy="842.40022"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -298,6 +358,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-62.362205)">
+    <rect
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       id="rect8215"
+       width="636.20697"
+       height="587.27557"
+       x="64.396553"
+       y="127.90467" />
     <g
        id="g8507-97"
        transform="translate(669.80255,61.173668)">
@@ -305,21 +372,89 @@
          transform="translate(-232.96234,182.20595)"
          id="g10471-3-6" />
     </g>
-    <flowRoot
+    <text
        xml:space="preserve"
-       id="flowRoot8760"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Verdana;-inkscape-font-specification:Verdana;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(-28.961914,798.83002)"><flowRegion
-         id="flowRegion8762"><rect
-           id="rect8764"
-           width="630"
-           height="180"
-           x="96.97464"
-           y="-240.55862" /></flowRegion><flowPara
-         id="flowPara8766"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15px;font-family:Arial;-inkscape-font-specification:'Arial Bold'">Figure Meta NW.<flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
-   id="flowSpan8770">  Schematic of modified Needleman-Wunch algorithm for global alignment to a reference genome. Contigs (blue diagonals) are first locally aligned to a reference genome (A). All possible combinations of these local alignments are enumerated by realizing all paths connecting contigs from the upper left to lower right corner of the matrix (B). Each alignment is scored: matches contribute positive scores (dark blue lines in C), while indels (red) and mismatches (light blue) incur a penalty (D). The alignment with the highest score is selected as the best global alignment for the next step (E); ties among global alignments are resolved arbitrarily.</flowSpan></flowPara></flowRoot>    <g
+       x="68.012695"
+       y="573.03259"
+       id="text8179"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="184.73145"
+         y="591.78259"
+         id="tspan8181"><tspan
+           x="68.012695"
+           y="573.03259"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15px;font-family:Arial;-inkscape-font-specification:'Arial Bold'"
+           id="tspan8183">Figure Meta NW.</tspan><tspan
+           x="184.73145"
+           y="573.03259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8185">  Schematic of modified Needleman-Wunch algorithm for global alignment to </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="610.53259"
+         id="tspan8187"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="591.78259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8189">a reference genome. Contigs (blue diagonals) are first locally aligned to a reference genome </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="629.28259"
+         id="tspan8191"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="610.53259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8193">(A). All possible combinations of these local alignments are enumerated by realizing all paths </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="648.03259"
+         id="tspan8195"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="629.28259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8197">connecting contigs from the upper left to lower right corner of the matrix (B). Each alignment is </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="666.78259"
+         id="tspan8199"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="648.03259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8201">scored: matches contribute positive scores (dark blue lines in C), while indels (red) and </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="685.53259"
+         id="tspan8203"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="666.78259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8205">mismatches (light blue) incur a penalty (D). The alignment with the highest score is selected as </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="704.28259"
+         id="tspan8207"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="685.53259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8209">the best global alignment for the next step (E); ties among global alignments are resolved </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="68.012695"
+         y="0"
+         id="tspan8211"
+         style="font-size:15px"><tspan
+           x="68.012695"
+           y="704.28259"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial;font-size:15px"
+           id="tspan8213">arbitrarily.</tspan></tspan></text>
+    <g
        id="g12315"
        transform="matrix(0.77586213,0,0,0.77586213,-563.05424,109.77881)">
       <rect
@@ -14603,37 +14738,37 @@
          style="color:#000000;display:inline;overflow:visible;visibility:visible;opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#b3b3b3;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
     </g>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8)"
        d="m 310.82582,215.96109 15.51729,-2e-5"
        id="path12016-82-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-2)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-2)"
        d="m 310.82582,352.51282 15.51729,-10e-6"
        id="path12016-82-0-9"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-7)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-7)"
        d="m 310.82583,489.06456 15.51728,-2e-5"
        id="path12016-82-0-6"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-4)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-4)"
        d="m 438.06721,489.06456 15.51728,-2e-5"
        id="path12016-82-0-3"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-79)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-79)"
        d="m 438.06721,352.51283 15.51728,-1e-5"
        id="path12016-82-0-4"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-9)"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-9)"
        d="m 438.06721,215.96109 15.51728,-2e-5"
        id="path12016-82-0-7"
        inkscape:connector-curvature="0"
@@ -14645,23 +14780,11 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3)"
-       d="m 183.5844,206.65071 15.51728,-1e-5"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3)"
+       d="m 183.5844,215.96108 15.51728,-1e-5"
        id="path12016-82-0-41"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3-5)"
-       d="m 183.58446,215.96111 9.6052,-2e-5 0,136.55172 5.91202,0"
-       id="path12016-82-0-41-1"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccc" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.77586216px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3-5-4)"
-       d="m 183.58446,225.27146 4.95003,0 1e-5,263.7931 10.56719,-2e-5"
-       id="path12016-82-0-41-1-8"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccc" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15.51724243px;line-height:125%;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -14673,5 +14796,17 @@
          id="tspan11978-0-8"
          x="579.30048"
          y="144.76878">E</tspan></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3-5-3)"
+       d="m 183.58446,225.27146 7.6052,-2e-5 0,127.24137 7.91202,0"
+       id="path12016-82-0-41-1-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend-61-8-3-5-4-7)"
+       d="m 183.58446,234.5818 3.51722,-4e-5 0,254.48276 12.00002,2e-5"
+       id="path12016-82-0-41-1-8-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
   </g>
 </svg>
