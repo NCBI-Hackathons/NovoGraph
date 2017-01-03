@@ -1,13 +1,10 @@
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
-nice bwa index -a bwtsw GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-
 
 /home/nhansen/projects/bwa/bwa-0.7.15/bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa input_sequences.fa  | samtools view -Sb - > input_sequences_unsorted.bam
 samtools sort -o input_sequences.bam input_sequences_unsorted.bam
 samtools index input_sequences.bam
 
-samtools sort -T prefix -O 'bam' -o file2.bam  input_sequences_unsorted.bam
 
 [diltheyat@gry-compute50 /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts]:./BAM2AARTI.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
 
