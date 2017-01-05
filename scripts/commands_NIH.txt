@@ -1,3 +1,9 @@
+bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+
+
+/home/nhansen/projects/bwa/bwa-0.7.15/bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa input_sequences.fa  | samtools view -Sb - > input_sequences_unsorted.bam
+samtools sort -o input_sequences.bam input_sequences_unsorted.bam
+samtools index input_sequences.bam
 
 # Check that there are no unmapped reads in the input BAM because might lead to unknown behaviour:
 
