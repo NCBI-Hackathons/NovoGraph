@@ -241,6 +241,8 @@ sub invoke_self_array
 			
 		print QSUB qq(#!/bin/bash
 #\$ -t ${minJobID}-${maxJobID}
+#\$ -q public.q
+#\$ -tc 100
 #\$ -l mem_free=8G
 #\$ -N 'CALLMAFFT'
 jobID=\$(expr \$SGE_TASK_ID - 1)

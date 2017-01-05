@@ -90,7 +90,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		next;
 	}
 	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
-	next unless($referenceSequenceID eq 'chr1');
+	#next unless($referenceSequenceID eq 'chr1');
 	
 	my $chrDir = $referenceSequenceID;
 	$chrDir =~ s/\W//g;
@@ -112,12 +112,11 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $n_alignment = 0;
 	while(my $alignment = $alignment_iterator->next_seq)
 	{
-		# todo
-		if($n_alignment > 100)
-		{
-			warn "For testing purposes, stop after chr1";
-			last;
-		}
+		#if($n_alignment > 100)
+		#{
+		#	warn "For testing purposes, stop after chr1";
+		#	last;
+		#}
 			
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";
@@ -281,12 +280,11 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $n_alignment = 0;
 	while(my $alignment = $alignment_iterator->next_seq)
 	{
-		# todo
-		if($n_alignment > 100)
-		{
-			warn "For testing purposes, stop after chr1";
-			last;
-		}
+		#if($n_alignment > 100)
+		#{
+		#	warn "For testing purposes, stop after chr1";
+		#	last;
+		#}
 		
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";

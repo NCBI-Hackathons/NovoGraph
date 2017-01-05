@@ -35,6 +35,11 @@ while(<IN>)
 	{
 		my @fields = split(/\t/, $line);
 		die unless(scalar(@fields) >= 11);
+		my $pos = $fields[3];
+		if($pos == 0)
+		{
+			die "Observed a 0 position - this should not happen in this SAM. Path $input, line $.";
+		}
 		my $CIGAR = $fields[5];
 		my $CIGARoperations = 0;
 		while($CIGAR)

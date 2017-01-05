@@ -62,7 +62,7 @@ chomp($alignments_headerLine);
 my @alignments_headerFields = split(/\t/, $alignments_headerLine);
 die unless($alignments_headerFields[0] eq 'readID');
 
-my $fn_truncated = 
+#my $fn_truncated = 
 my $n_output_alignments = 0;
 my $n_chains_sum = 0;
 my $n_alignments_leftGapsRemoved = 0;
@@ -224,10 +224,10 @@ my $processReadLines = sub {
 	die unless(scalar(@finalScores));
 	my $i_of_max_finalfinalScore = which_max(\@finalScores);
 	
-	print "For read ${readID}, found best alignment:\n";
-	print "\t", "Score", ": ", $finalScores[$i_of_max_finalfinalScore], "\n";
-	print "\t", "Chromosome", ": ", $finalScores_chromosome[$i_of_max_finalfinalScore], "\n";
-	print "\t", "Strand", ": ", $finalScores_strand[$i_of_max_finalfinalScore], "\n";
+	# print "For read ${readID}, found best alignment:\n";
+	# print "\t", "Score", ": ", $finalScores[$i_of_max_finalfinalScore], "\n";
+	# print "\t", "Chromosome", ": ", $finalScores_chromosome[$i_of_max_finalfinalScore], "\n";
+	# print "\t", "Strand", ": ", $finalScores_strand[$i_of_max_finalfinalScore], "\n";
 	
 	my $strand = $finalScores_strand[$i_of_max_finalfinalScore];
 	my $chromosome = $finalScores_chromosome[$i_of_max_finalfinalScore];
@@ -457,7 +457,7 @@ my $processReadLines = sub {
 			$readID,
 			(2 | 64),
 			$chromosome,
-			$min_emitted_reference_position,
+			$min_emitted_reference_position+1,
 			255,
 			$CIGAR,
 			'*',
@@ -477,7 +477,7 @@ my $processReadLines = sub {
 			$n_alignments_leftAndRightGapsRemoved++;
 		}
 		elsif($remove_columns_front)
-		{
+		{ 
 			$n_alignments_leftGapsRemoved++;
 		}
 		elsif($remove_columns_back)
@@ -496,7 +496,10 @@ my $processReadLines = sub {
 
 while(<INPUT>)
 {
-	print "Read line $.\n";
+	if(($. % 10000) == 0)
+	{
+		print "Read line $.\n";
+	}
 	
 	my $line = $_;
 	chomp($line);
@@ -549,9 +552,9 @@ die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
 
 print "Produced BAM file $outputFile\n\n";
 
-unlink($bam_unsorted);
-unlink($outputFile_sam);
-unlink($outputFile_sam_filtered);
+#unlink($bam_unsorted);
+#unlink($outputFile_sam);
+#unlink($outputFile_sam_filtered);
 
 sub which_max
 {
