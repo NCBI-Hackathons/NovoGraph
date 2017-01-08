@@ -126,7 +126,7 @@ unless(-e $sorted_outputFile)
 my $combined_outputFile = $outputFile . '.sortedWithHeader';
 my $combine_cmd = qq(cat $headerFn $sorted_outputFile > $combined_outputFile);
 
-print "\n\nProduced output file $combined_outputFile";
+print "\n\nProduced output file $combined_outputFile\n";
 
 sub convertAlignmentToHash
 {
