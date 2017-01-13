@@ -24,15 +24,18 @@ GetOptions (
 	'BAM:s' => \$BAM, 
 	'outputFile:s' => \$outputFile,	
 	'readsFasta:s' => \$readsFasta,	
-	'lenientOrder:s' => \$lenientOrder,	
+	'lenientOrder:s' => \$lenientOrder,
+        'outputFile::s' => \$outputFile	
 );
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --readsFasta" unless($readsFasta);
+die "Please specify --output" unless($outputFile); 
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
+die "--output $outputFile not existing" unless(-e $outputFile);
 
 print "Read $referenceFasta\n";
 my $reference_href = readFASTA($referenceFasta, 0);
