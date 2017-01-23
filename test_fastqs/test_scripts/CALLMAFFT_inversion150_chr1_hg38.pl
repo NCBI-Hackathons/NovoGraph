@@ -24,8 +24,8 @@ $| = 1;
 # ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.fa
 
 my $mafft_bin = find_present_alternative('/gpfs/commons/home/biederstedte-934/bin/mafft');
-my $FAS2BAM_bin = find_present_alternative('./fas2bam.pl');
-my $validateMSABAM = find_present_alternative('./validate_BAM_MSA.pl');
+my $FAS2BAM_bin = find_present_alternative('/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/fas2bam.pl');
+my $validateMSABAM = find_present_alternative('/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/validate_BAM_MSA.pl');
 my $GRCh38_header_file = find_present_alternative('/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/config/windowbam.header.txt');
 
 my $mafftDirectory;
@@ -162,13 +162,13 @@ sub checkBAM
 	my $BAM_sorted = $BAM . '.sorted.bam';
 	my $BAM_sorted_bai = $BAM_sorted . '.bai';
 	
-	my $cmd_sort = qq(samtools sort -o $BAM_sorted $BAM);
+	my $cmd_sort = qq(/gpfs/commons/groups/imielinski_lab/Software/samtools-1.3.1/samtools sort -o $BAM_sorted $BAM);
 	if(system($cmd_sort))
 	{
 		die "Command $cmd_sort failed";
 	}
 	
-	my $cmd_index = qq(samtools index $BAM_sorted);
+	my $cmd_index = qq(/gpfs/commons/groups/imielinski_lab/Software/samtools-1.3.1/samtools index $BAM_sorted);
 	if(system($cmd_index))
 	{
 		die "Command $cmd_index failed";
