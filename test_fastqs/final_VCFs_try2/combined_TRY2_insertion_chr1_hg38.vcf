@@ -1,0 +1,5 @@
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO

@@ -1,0 +1,19 @@
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	6000498	.	GG	GG-,G-G	.	PASS	.
+chr1	6001311	.	CA	CG	.	PASS	.
+chr1	6004385	.	GG	GA	.	PASS	.
+chr1	6004545	.	GC	GT	.	PASS	.
+chr1	6004600	.	TC	TA	.	PASS	.
+chr1	6006169	.	CA	CG	.	PASS	.
+chr1	6006392	.	AC	AT	.	PASS	.
+chr1	6006811	.	GT	GC	.	PASS	.
+chr1	6008324	.	TT	TC	.	PASS	.
+chr1	6008326	.	AA	AG	.	PASS	.
+chr1	6008397	.	GA	GC	.	PASS	.
+chr1	6009086	.	TC	TA	.	PASS	.
+chr1	6009567	.	AT	AG	.	PASS	.
+chr1	6009999	.	TAGCTGGGATTACAGGCACACATCACCACACCCAGCTAATTTTTGTATTTTTAGTAGAGAAGGGGTTTCGGTTTCACCACGTTGGCCAGGCTGGTCTCAAACTCCTGGCCCCAAGTGATCCACCCGCCTCAGCCTCCCAAAGTGCTGGCATTACAGGTGTGAGCCACCGTGTCCAGTCATATGTGCCATTTCTTAGCTTGCATTTCCTTTTTAGTTAGTTAAACTTATTTCTTAAATAAGCTTATTTTAAACTGAAACTTGATGTCCCTGCAATAAAGAACCAGCATTACTTGTCATCAATAAAAGGTAACTGGAGGCAGGCATGGTGGCTCACACCTGTAGTCCCATCTGCTTTCGAGGCTGAGGCAGGAGGATCTCTTGAACCCGAGAGTTCAAGTTCAACCTGGGCAACATAGCAAGACCTCCGGCCCTTAAAAAAATAAAAAGTAACTGGAAAAATAAGTGGATCAATATTAACTTCAAGGCCTGTCTCAAGTGTGGC	T---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	.	PASS	.
