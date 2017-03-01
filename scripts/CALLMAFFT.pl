@@ -33,12 +33,13 @@ my $action;
 my $inputTruncatedReads;
 my $readsFasta;
 my $paranoid = 1;
-my $chunkSize = 1000;
+my $chunkSize = 5;
 my $processChunk;
 my $chunkI;
 my $qsub = 1;
 my $path_to_script = $FindBin::Bin.'/'.$FindBin::Script;
 my $temp_qsub = 'temp_qsub';
+my $reprocess;
 
 GetOptions (
 	'action:s' => \$action,
@@ -47,6 +48,7 @@ GetOptions (
 	'processChunk:s' => \$processChunk, 
 	'chunkI:s' => \$chunkI, 
 	'qsub:s' => \$qsub, 
+	'reprocess:s' => \$reprocess, 
 );
 
 unless($action)
@@ -54,7 +56,146 @@ unless($action)
 	die "Please specify --action";
 }
 my $fn_files_to_process = $mafftDirectory . '/files_to_process';
-if($action eq 'kickOff')
+my $fn_files_to_reprocess = $mafftDirectory . '/files_to_reprocess';
+if($action eq 'reprocess')
+{
+	print "Reprocess....\n\n";
+	
+	my $dirHandle;
+	opendir ($dirHandle, $mafftDirectory) or die "$0: opendir: $!";
+	my @sub_directories = grep {-d "$mafftDirectory/$_" && ! /^\.{1,2}$/} readdir($dirHandle);
+	closedir $dirHandle;
+	
+	print "Identified ", scalar(@sub_directories), " directories.\n";
+	print join("\n", map {' - '.$_} @sub_directories), "\n";
+	
+	open(REPROCESS, '>', $fn_files_to_reprocess) or die "Cannot open $fn_files_to_reprocess";
+	
+	my $n_files = 0;
+	my $n_files_found = 0;
+	my $n_files_found_withMFA = 0;
+	my $n_files_found_withBAM = 0;
+	foreach my $sub_directory (@sub_directories)
+	{
+		my $subDir_fullPath = $mafftDirectory . '/' . $sub_directory;
+		my $subDirHandle;
+		opendir ($subDirHandle, $subDir_fullPath) or die "Cannot open '$subDir_fullPath'";
+	
+		my @fasta_files = sort grep {(-f "$subDir_fullPath/$_") &&  ($_ =~ /\.fa$/)} readdir($subDirHandle);
+							
+		closedir $subDirHandle;
+		
+		foreach my $fasta_file (@fasta_files)
+		{
+			$n_files_found++;
+			
+			my $mfa_file = $subDir_fullPath . '/' . $fasta_file;
+			my $bam_file = $subDir_fullPath . '/' . $fasta_file;
+			$mfa_file =~ s/\.fa$/.mfa/;
+			$bam_file =~ s/\.fa$/.bam/;
+		
+			if(-e $mfa_file)
+			{
+				$n_files_found_withMFA++;
+			}
+			if(-e $bam_file)
+			{
+				$n_files_found_withBAM++;
+			}
+			else
+			{
+				# print "Not existing: $bam_file\n";
+			}
+			
+			unless(-e $bam_file)
+			{
+				my $fasta_file_full_path = $subDir_fullPath . '/' . $fasta_file;
+				$fasta_file_full_path = File::Spec->rel2abs($fasta_file_full_path);
+				die unless(-e $fasta_file_full_path);
+				print REPROCESS $fasta_file_full_path, "\n";
+				$n_files++;
+			}
+		}
+	}
+	
+	close(REPROCESS);
+	
+	print "Total found files: $n_files_found\n";
+	print "With MFA: $n_files_found_withMFA \n";
+	print "With BAM: $n_files_found_withBAM \n\n";
+	print "Now redo: $n_files \n";
+	
+	my $n_chunks = ceil($n_files / $chunkSize);
+	
+	invoke_self_array($n_chunks-1, 1);
+	
+}
+elsif($action eq 'check')
+{
+	print "Check....\n\n";
+	
+	my $dirHandle;
+	opendir ($dirHandle, $mafftDirectory) or die "$0: opendir: $!";
+	my @sub_directories = grep {-d "$mafftDirectory/$_" && ! /^\.{1,2}$/} readdir($dirHandle);
+	closedir $dirHandle;
+	
+	print "Identified ", scalar(@sub_directories), " directories.\n";
+	print join("\n", map {' - '.$_} @sub_directories), "\n";
+		
+	my $n_files = 0;
+	my $n_files_found = 0;
+	my $n_files_found_withMFA = 0;
+	my $n_files_found_withBAM = 0;
+	foreach my $sub_directory (@sub_directories)
+	{
+		my $subDir_fullPath = $mafftDirectory . '/' . $sub_directory;
+		my $subDirHandle;
+		opendir ($subDirHandle, $subDir_fullPath) or die "Cannot open '$subDir_fullPath'";
+	
+		my @fasta_files = sort grep {(-f "$subDir_fullPath/$_") &&  ($_ =~ /\.fa$/)} readdir($subDirHandle);
+							
+		closedir $subDirHandle;
+		
+		foreach my $fasta_file (@fasta_files)
+		{
+			$n_files_found++;
+			
+			my $mfa_file = $subDir_fullPath . '/' . $fasta_file;
+			my $bam_file = $subDir_fullPath . '/' . $fasta_file;
+			$mfa_file =~ s/\.fa$/.mfa/;
+			$bam_file =~ s/\.fa$/.bam/;
+		
+			if(-e $mfa_file)
+			{
+				$n_files_found_withMFA++;
+			}
+			if(-e $bam_file)
+			{
+				$n_files_found_withBAM++;
+			}
+			else
+			{
+				# print "Not existing: $bam_file\n";
+			}
+			
+			unless(-e $bam_file)
+			{
+				my $fasta_file_full_path = $subDir_fullPath . '/' . $fasta_file;
+				$fasta_file_full_path = File::Spec->rel2abs($fasta_file_full_path);
+				die unless(-e $fasta_file_full_path);
+				$n_files++;
+			}
+		}
+	}
+	
+	close(REPROCESS);
+	
+	print "Total found files: $n_files_found\n";
+	print "With MFA: $n_files_found_withMFA \n";
+	print "With BAM: $n_files_found_withBAM \n\n";
+	print "Would now redo: $n_files \n";
+}
+elsif($action eq 'kickOff')
 {
 	die unless($chunkSize);
 	
@@ -115,8 +256,9 @@ elsif($action eq 'processChunk')
 	my $lastLine = ($chunkI + 1) * $chunkSize - 1;
 	print "Go from line $firstLine to $lastLine\n";
 
+	my $useFile = ($reprocess) ? $fn_files_to_reprocess : $fn_files_to_process;
 	my @files_to_process;
-	open(FILES_TO_PROCESS, '<', $fn_files_to_process) or die "Cannot open $fn_files_to_process";
+	open(FILES_TO_PROCESS, '<', $useFile) or die "Cannot open $useFile";
 	my $lineI = -1;
 	while(<FILES_TO_PROCESS>)
 	{
@@ -228,10 +370,13 @@ sub makeBAM
 		die "File $outputFile not there, but after $cmd_makeBAM it should be - attempts $attempt - last exit status $ret!";
 	}
 }
+
 sub invoke_self_array
 {
 	my $maxChunk_0based = shift;
+	my $reprocess = shift;
 	
+	my $reprocess_string = ($reprocess) ? " --reprocess 1 " : '';
 	my $mafftDirectory_abs = File::Spec->rel2abs($mafftDirectory);
 	if($qsub)
 	{	
@@ -247,7 +392,7 @@ sub invoke_self_array
 #\$ -N 'CALLMAFFT'
 jobID=\$(expr \$SGE_TASK_ID - 1)
 cd $current_dir
-perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize
+perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize $reprocess_string
 );
 		close(QSUB);
 		my $qsub_cmd = "qsub $temp_qsub";
@@ -261,7 +406,7 @@ perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk 
 		for(my $chunkI = 0; $chunkI <= $maxChunk_0based; $chunkI++)
 		{
 			print "Call myself for chunk $chunkI\n";
-			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize);
+			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string);
 			if(system($cmd))
 			{
 				die "Command $cmd failed";
@@ -309,7 +454,8 @@ sub makeMSA
 	if(scalar(keys %$input_href) >= 2)
 	{
 		writeFASTA($temp_file_in, $input_href);
-		my $cmd_mafft = qq($mafft_bin --auto --quiet $temp_file_in > $temp_file_out);
+		#my $cmd_mafft = qq($mafft_bin --auto --quiet $temp_file_in > $temp_file_out);
+		my $cmd_mafft = qq($mafft_bin --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
 		print "Executing $cmd_mafft \n";
 		
 		my $ret = system($cmd_mafft);

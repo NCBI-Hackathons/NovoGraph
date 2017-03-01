@@ -97,6 +97,8 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
 
 close $sam_fh;
 
+print "Finished successfully\n\n";
+
 #------------
 # End MAIN
 #------------

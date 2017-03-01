@@ -38,7 +38,8 @@ my @sequence_ids = $sam->seq_ids();
 my $reference_href = readFASTA($referenceFasta);
 #print "\t...done.\n";
 
-foreach my $referenceSequenceID (@sequence_ids)
+#foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
+foreach my $referenceSequenceID ("chr21")
 {
 	#print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
@@ -67,6 +68,28 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		my $gaps_left_side = 0;
 		my $gaps_right_side = 0;
+
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
+			{
+				last; # first match
+			}
+			
+			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
+			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
+			die if($isDeletion and $isInsertion);
+			
+			if($isDeletion)
+			{
+				warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}
+			if($isInsertion)
+			{
+				warn Dummper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}
+			
+		}
 		
 		for(my $i = 0; $i < length($ref); $i++)
 		{
@@ -172,7 +195,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 					else
 					{
 						die Dumper("Gap structure mismatch at position $referenceSequenceID $ref_pos - this is alignment $n_alignments, have existing value $gap_structure[$ref_pos], want to set $running_gaps", $alignment_start_pos-1, $alignment->query->name, $alignment->cigar_str, $ref, $query) unless($gap_structure[$ref_pos] == $running_gaps);
-						print "Concordant $referenceSequenceID $ref_pos with $running_gaps , this ", $alignment->query->name, "\n";
+						# print "Concordant $referenceSequenceID $ref_pos with $running_gaps , this ", $alignment->query->name, "\n";
 
 												
 						#warn Dumper("Gap structure mismatch at position $ref_pos - this is alignment $n_alignments, have existing value $gap_structure[$ref_pos], want to set $running_gaps", $alignment_start_pos-1, $alignment->query->name, $alignment->cigar_str) unless($gap_structure[$ref_pos] == $running_gaps);

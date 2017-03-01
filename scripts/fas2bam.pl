@@ -197,7 +197,7 @@ sub parse_alignment {
 			if($isFirst)
 			{
 				# die Dumper($this_entry_original, $ref_entry_original) unless($match_seen_yet);
-				die  $alignmentPos."\n".$ref_entry_original."\n".$this_entry_original."\n " if($insertion_seen_yet and not $match_seen_yet);
+				# die  $this_entry."\n".$alignmentPos."\n".$ref_entry_original."\n".$this_entry_original."\n " if($insertion_seen_yet and not $match_seen_yet);
 				if ($match_seen_yet) {
 					$flat_cigar .= 'D';
 				}		
