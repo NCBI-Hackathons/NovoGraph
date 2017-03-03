@@ -1,0 +1,26 @@
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	6001750	.	GT	G	.	PASS	.
+chr1	6001753	.	TTG	TCT	.	PASS	.
+chr1	6001758	.	C	A	.	PASS	.
+chr1	6001760	.	CATG	CGCA	.	PASS	.
+chr1	6001764	.	GTGGTAGGACTGGGTCCTAGGCTCCTGGAG	GC	.	PASS	.
+chr1	6001796	.	A	G	.	PASS	.
+chr1	6001797	.	GCGGC	GAACA	.	PASS	.
+chr1	6001803	.	T	A	.	PASS	.
+chr1	6001808	.	A	G	.	PASS	.
+chr1	6001809	.	AGCCCC	AAATGA	.	PASS	.
+chr1	6001817	.	T	C	.	PASS	.
+chr1	6001819	.	G	GT	.	PASS	.
+chr1	6001821	.	TTCTCTGA	TGGGGCAG	.	PASS	.
+chr1	6001833	.	T	C	.	PASS	.
+chr1	6001835	.	G	A	.	PASS	.
+chr1	6001838	.	A	G	.	PASS	.
+chr1	6001840	.	T	A	.	PASS	.
+chr1	6001841	.	GTG	GCC	.	PASS	.
+chr1	6001844	.	CA	CGGAACACACAGAGAAATGATCCAGTGTGG	.	PASS	.
+chr1	6001847	.	C	G	.	PASS	.
+chr1	6001849	.	C	A	.	PASS	.
