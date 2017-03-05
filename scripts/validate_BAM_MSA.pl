@@ -38,10 +38,10 @@ my @sequence_ids = $sam->seq_ids();
 my $reference_href = readFASTA($referenceFasta);
 #print "\t...done.\n";
 
-#foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
-foreach my $referenceSequenceID ("chr21")
+foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
+#foreach my $referenceSequenceID ("chr21")
 {
-	#print "Processing $referenceSequenceID .. \n";
+	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
 	
 	my $l_ref_sequence = length($reference_href->{$referenceSequenceID});
@@ -68,11 +68,12 @@ foreach my $referenceSequenceID ("chr21")
 		
 		my $gaps_left_side = 0;
 		my $gaps_right_side = 0;
-
+		my $firstMatch = -1;
 		for(my $i = 0; $i < length($ref); $i++)
 		{
 			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
 			{
+				$firstMatch = $i;
 				last; # first match
 			}
 			
@@ -82,14 +83,19 @@ foreach my $referenceSequenceID ("chr21")
 			
 			if($isDeletion)
 			{
-				warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+				# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
 			}
 			if($isInsertion)
 			{
-				warn Dummper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+				# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
 			}
 			
 		}
+		die if($firstMatch == -1);
+		
+		$ref = substr($ref, $firstMatch);
+		$query = substr($query, $firstMatch);
+		
 		
 		for(my $i = 0; $i < length($ref); $i++)
 		{
@@ -189,7 +195,10 @@ foreach my $referenceSequenceID ("chr21")
 						
 						$gap_structure[$ref_pos] = $running_gaps;
 						
-						print "Set $referenceSequenceID $ref_pos to $running_gaps from ", $alignment->query->name, "\n";
+						if($running_gaps != 0)
+						{
+							# print "Set $referenceSequenceID $ref_pos to $running_gaps from ", $alignment->query->name, "\n";
+						}
 						
 					}
 					else
@@ -210,7 +219,7 @@ foreach my $referenceSequenceID ("chr21")
 	}
 }	
 
-
+print "\n\nOK\n\n";
 
 sub readFASTA
 {

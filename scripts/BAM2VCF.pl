@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long;   
-use List::Util qw/max/;
+use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::Sam;
 
@@ -17,6 +17,25 @@ $| = 1;
 my $BAM;
 my $referenceFasta;
 my $output;
+
+#printHaplotypesAroundPosition(2, {
+	# 0 => [
+		# ['AAAC', 'TTTT', 'r0', 0, 3],
+	# ],
+	# 2 => [
+		# ['ACGT', 'TTTT', 'r1', 2, 5],
+		# ['AC-GT', 'TTATT', 'r2', 2, 5],	
+		# ['ACGT', 'AA_A', 'r3', 2, 5],		
+	# ],
+	#2 => [
+		# ['-CGT', 'TTTT', 'r4', 3, 5],	
+	#	['ACG-', 'TTTT', 'r5', 2, 4],	
+	#],
+	#0 => [
+	#	 ['AAAC', 'TTT-', 'r7', 0, 3],
+	#],	
+#});
+ 
 
 GetOptions (
 	'BAM:s' => \$BAM, 
@@ -45,7 +64,13 @@ print OUT qq(##fileformat=VCFv4.2
 ##source=BAM2VCF.pl
 ##reference=file://$referenceFasta), "\n";
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
-foreach my $referenceSequenceID (@sequence_ids)
+#foreach my $referenceSequenceID (@sequence_ids)
+my @limit_to = ("chr21");
+if($BAM =~ /TRY2/)
+{
+	@limit_to = ("chr1");
+}
+foreach my $referenceSequenceID (@limit_to)
 {
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
@@ -71,6 +96,34 @@ foreach my $referenceSequenceID (@sequence_ids)
 
 		my $alignment_start_pos = $alignment->start - 1;
 		my ($ref,$matches,$query) = $alignment->padded_alignment;
+				
+		my $firstMatch;
+		my $lastMatch;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
+			{
+				$firstMatch = $i unless(defined $firstMatch);
+				$lastMatch = $i;
+			}
+			
+			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
+			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
+			die if($isDeletion and $isInsertion);
+			
+			if($isDeletion)
+			{
+				# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}
+			if($isInsertion)
+			{
+				# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}	
+		}
+		die unless(defined $firstMatch);
+		
+		$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
+		$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
 		
 		my $gaps_left_side = 0;
 		my $gaps_right_side = 0;
@@ -138,9 +191,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
 		{
 			#die Dumper($alignment_start_pos, $ref, $query);
-		}
-		push(@{$alignments_starting_at{$alignment_start_pos}}, [$ref, $query, $alignment->query->name, $alignment_start_pos]);
-			
+		}			
 	
 		my $start_pos = $alignment_start_pos - 1;
 		my $ref_pos = $start_pos;
@@ -171,7 +222,10 @@ foreach my $referenceSequenceID (@sequence_ids)
 				
 			}
 		}
-		last if($n_alignments > 10); # todo remove
+		
+		my $alignment_last_pos = $ref_pos - 1;
+		my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
+		push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
 	}
 	
 	print "Have loaded $n_alignments alignments.\n";
@@ -179,14 +233,23 @@ foreach my $referenceSequenceID (@sequence_ids)
 	# my $last_all_equal = 0;
 	my @open_haplotypes = (['', 0, -1]);
 	my $start_open_haplotypes = 0;
-	for(my $posI = 0; $posI < length($reference_href->{$referenceSequenceID}); $posI++)
+	my $opened_alignments = 0;
+	POSI: for(my $posI = 0; $posI < length($reference_href->{$referenceSequenceID}); $posI++)
 	{
-		# print $posI, ", open haplotypes: ", scalar(@open_haplotypes), "\n";
+		if(($posI % 10000) == 0)
+		{
+			print $posI, ", open haplotypes: ", scalar(@open_haplotypes), "\n";
+		}
 		
 		foreach my $haplotype (@open_haplotypes)
 		{
 			if($haplotype->[1] != 0)
 			{
+				if((substr($haplotype->[1][0], $haplotype->[2], 1) eq '-') or (substr($haplotype->[1][0], $haplotype->[2], 1) eq '*'))
+				{
+					warn "Position $haplotype->[2] is gap in one of our haplotypes!";
+				}
+				
 				my $nextPos = $haplotype->[2]+1;
 				my $additionalExtension = '';
 				while(($nextPos < length($haplotype->[1][0])) and ((substr($haplotype->[1][0], $nextPos, 1) eq '-') or (substr($haplotype->[1][0], $nextPos, 1) eq '*')))
@@ -203,11 +266,11 @@ foreach my $referenceSequenceID (@sequence_ids)
 			{	
 				if($posI > 0)
 				{
-				my $n_gaps = $gap_structure[$posI-1];
-				$n_gaps = 0 if(not defined $n_gaps);
-				my $gaps = '-' x $n_gaps;
-				die unless(length($gaps) == $n_gaps);
-				$haplotype->[0] .= $gaps;
+					my $n_gaps = $gap_structure[$posI-1];
+					$n_gaps = 0 if(not defined $n_gaps);
+					my $gaps = '-' x $n_gaps;
+					die unless(length($gaps) == $n_gaps);
+					$haplotype->[0] .= $gaps;
 				}
 			}
 		}
@@ -219,7 +282,18 @@ foreach my $referenceSequenceID (@sequence_ids)
 			{  
 				$assembled_h_length = length($openHaplotype->[0]);
 			}
-			die Dumper("Initial II length mismatch", $posI, $assembled_h_length, length($openHaplotype->[0]), \@open_haplotypes) unless($assembled_h_length == length($openHaplotype->[0]));
+			
+			unless($assembled_h_length == length($openHaplotype->[0]))
+			{
+				print Dumper("Initial II length mismatch", $posI, $assembled_h_length, [@gap_structure[($posI-3) .. ($posI+1)]]), "\n";
+				foreach my $oH2 (@open_haplotypes)
+				{
+					print "\t", length($oH2->[0]), "\t", " consumed until: ", $oH2->[2], ", of length ",  (($oH2->[1] == 0) ? "REF" : "nonRef $oH2->[1][2] / length " . length($oH2->[1][0])), , "\n";
+				}	
+				printHaplotypesAroundPosition($posI, \%alignments_starting_at);
+				die;
+			}
+			# die Dumper("Initial II length mismatch", $posI, $assembled_h_length, length($openHaplotype->[0]), \@open_haplotypes, "Initial II length mismatch") unless($assembled_h_length == length($openHaplotype->[0]));
 		}
 		
 		# for(my $existingHaploI = 0; $existingHaploI <= $#open_haplotypes; $existingHaploI++)
@@ -235,6 +309,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 			# print "Enter new haplotype ", $new_haplotype->[2], "\n";
 			if($open_haplotypes_maxI > -1)
 			{				
+				$opened_alignments++;
+				
 				for(my $existingHaploI = 0; $existingHaploI <= $open_haplotypes_maxI; $existingHaploI++)
 				{
 					my $new_haplotype_copy_this = [$open_haplotypes[$existingHaploI][0], $new_haplotype, -1];
@@ -356,7 +432,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 				{
 					$extensions_nonRef_length = length($extension);
 				}
-				die Dumper("Length mismatch", $extension, \%extensions_nonRef, $posI) unless(length($extension) == $extensions_nonRef_length);
+				die Dumper("Length mismatch", $extension, \%extensions_nonRef, $posI, "Length mismatch") unless(length($extension) == $extensions_nonRef_length);
 			}
 		}
 				
@@ -420,9 +496,9 @@ foreach my $referenceSequenceID (@sequence_ids)
 			my $open_haplotypes_before = scalar(@open_haplotypes);			
 			foreach my $haplotype (@open_haplotypes)
 			{
-				die Dumper("Length mismatch II", $ref_span+1, length($haplotype->[0])) unless(length($haplotype->[0]) >= ($ref_span + 1));
+				die Dumper("Length mismatch II", $ref_span+1, length($haplotype->[0]), "Length mismatch II") unless(length($haplotype->[0]) >= ($ref_span + 1));
 				my $haplotype_coveredSequence = substr($haplotype->[0], 0, length($haplotype->[0])-1);
-				# $haplotype_coveredSequence =~ s/[\-\*]//g;
+				$haplotype_coveredSequence =~ s/[\-\*]//g;
 				if($haplotype_coveredSequence ne $reference_sequence)
 				{
 					$alternativeSequences{$haplotype_coveredSequence}++;
@@ -447,28 +523,55 @@ foreach my $referenceSequenceID (@sequence_ids)
 				
 				# @alternativeAlleles = map {$_ =~ s/[\-\*]//g; $_} @alternativeAlleles;
 				
-				print "Starting at position $start_open_haplotypes, have REF $reference_sequence and alternative sequences " . join(' / ', @alternativeAlleles) . "\n";
+				# print "Starting at position $start_open_haplotypes, have REF $reference_sequence and alternative sequences " . join(' / ', @alternativeAlleles) . "\n";
 			
-				print OUT join("\t",
-						$referenceSequenceID,
-						$start_open_haplotypes+1,
-						".",
-						$reference_sequence,
-						join(',', @alternativeAlleles),
-						'.',
-						'PASS',
-						'.'
-					), "\n";
+				if((length($reference_sequence) == 2) and (all {length($_) == 2} @alternativeAlleles))
+				{
+					my $firstRefChar = substr($reference_sequence, 0, 1);
+					foreach my $alt (@alternativeAlleles)
+					{
+						die Dumper("Some problem with supposed SNP", $posI, $reference_sequence, \@alternativeAlleles, "Some problem with supposed SNP") unless(substr($alt, 0, 1) eq $firstRefChar);						
+					}
+					print OUT join("\t",
+							$referenceSequenceID,
+							$start_open_haplotypes+2,
+							".",
+							substr($reference_sequence, 1, 1),
+							join(',', map {substr($_, 1, 1)} @alternativeAlleles),
+							'.',
+							'PASS',
+							'.'
+						), "\n";					
+				}
+				else
+				{
+					print OUT join("\t",
+							$referenceSequenceID,
+							$start_open_haplotypes+1,
+							".",
+							$reference_sequence,
+							join(',', @alternativeAlleles),
+							'.',
+							'PASS',
+							'.'
+						), "\n";
+				}
 			}
 			$start_open_haplotypes = $posI;
 			
+			if(($n_alignments == $opened_alignments) and ($open_haplotypes_after == 1))
+			{
+				last POSI;
+			}
 			# print "Went from $open_haplotypes_before to $open_haplotypes_after \n";
 		}
 		
 		# $last_all_equal = $this_all_equal;
 	}
 	
-}	
+}
+
+print "\n\nOK\n\n";
 
 sub readFASTA
 {
@@ -491,7 +594,6 @@ sub readFASTA
 		{
 			$currentSequence = substr($line, 1);
 			$currentSequence =~ s/\s.+//;
-			last if($currentSequence ne 'chr1'); # todo remove
 		}
 		else
 		{
@@ -511,4 +613,75 @@ sub reverseComplement
 	return $kMer;
 }
 
+sub printHaplotypesAroundPosition
+{
+	my $posI = shift;
+	my $alignments_starting_at_href = shift;
+	
+	my @aroundPositions = grep {$_ >= 0} (($posI - 2) .. ($posI + 2));
+	foreach my $startPos (keys %{$alignments_starting_at_href})
+	{
+		foreach my $alignment_aref (@{$alignments_starting_at_href->{$startPos}})
+		{
+			my $apparent_startPos = $alignment_aref->[3];
+			if($apparent_startPos != $startPos)
+			{
+				warn Dumper("Apparent / startpos mismatch", $startPos, $apparent_startPos, $alignment_aref->[2]);
+			}
+			my $stopPos = $alignment_aref->[4];
+			die unless($stopPos >= $startPos);
+			my $interesting = 0;
+			foreach my $interestingPos (@aroundPositions)
+			{
+				if(($interestingPos >= $startPos) and ($interesting <= $stopPos))
+				{
+					$interesting = 1;
+				}
+			}
+			
+			my $ref = $alignment_aref->[0];
+			my $query = $alignment_aref->[1];
+			
+			if($interesting)
+			{
+				my %gt_per_position;
+				my $ref_pos = $startPos - 1;
+				my $running_allele = '';
+				for(my $i = 0; $i < length($ref); $i++)
+				{
+					my $c_ref = substr($ref, $i, 1);
+					my $c_query = substr($query, $i, 1);
+					
+					if(($c_ref eq '-') or ($c_ref eq '*'))
+					{
+						$running_allele .= $c_query;
+					}
+					else
+					{
+						if($running_allele)
+						{
+							$gt_per_position{$ref_pos} = $running_allele;
+						}
+						
+						$running_allele = $c_query;
+						$ref_pos++;						
+					}
+				}
+				if($running_allele)
+				{
+					$gt_per_position{$ref_pos} = $running_allele;
+				}
+						
+				print "Positions $alignment_aref->[2] \n";
+				foreach my $interestingPos (@aroundPositions)
+				{
+					if(exists $gt_per_position{$interestingPos})
+					{
+						print "\t", $interestingPos, "\t", $gt_per_position{$interestingPos}, "\n";
+					}
+				}
+			}
+		}
+	}
+}
 
