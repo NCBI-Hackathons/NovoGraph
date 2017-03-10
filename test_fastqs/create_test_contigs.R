@@ -291,7 +291,7 @@ inverted = c(deleted[1:3050], reverse(deleted[3050:3200]), deleted[3201:9000])
 print(length(inverted))
 ## SV, tandem repeat 150 bp at 5000 bp, 3 times 50bp [3150:3300]
 final = c(inverted[1:3150], inverted[3151:3200], inverted[3151:3200], inverted[3151:3200], inverted[3301:9000])
-export(final, "overlap3_chr1_hg38.fasta.gz", compress=TRUE)
+export(final, "nonoverlap3_chr1_hg38.fasta.gz", compress=TRUE)
 ##
 ## same idea, non-overlapping, different chromosome section, chrom2
 ##
