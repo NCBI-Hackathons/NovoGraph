@@ -54,9 +54,15 @@ my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
 my @sequence_ids = $sam->seq_ids();
 
-print "Reading $referenceFasta\n";
-my $reference_href = readFASTA($referenceFasta);
-print "\t...done.\n";
+my $testing = 0;
+
+my $reference_href;
+if(not $testing)
+{
+	print "Reading $referenceFasta\n";
+	$reference_href = readFASTA($referenceFasta);
+	print "\t...done.\n";
+}
 
 open(OUT, ">", $output) or die "Cannpt open $output";
 print OUT qq(##fileformat=VCFv4.2
@@ -65,12 +71,42 @@ print OUT qq(##fileformat=VCFv4.2
 ##reference=file://$referenceFasta), "\n";
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 #foreach my $referenceSequenceID (@sequence_ids)
-my @limit_to = ("chr21");
+my @referenceSequenceIDs = @sequence_ids;
 if($BAM =~ /TRY2/)
 {
-	@limit_to = ("chr1");
+	@referenceSequenceIDs = ("chr21");
 }
-foreach my $referenceSequenceID (@limit_to)
+my %alignments_starting_at_test;
+if($testing)
+{
+	# ?CGT-A--CGT ref
+	# -CTT-A--CGT r0
+	#      AAACGT r1
+	#   GTAT      r2
+	#
+		 
+	@referenceSequenceIDs = qw/test1/;
+	$reference_href = {
+		test1 => "ACGTACGT",
+	};
+	
+	%alignments_starting_at_test = (
+	 1 => [
+		 ['CGT-A--CGT', 'CTT-A--CGT', 'r0', 1, 7],
+	 ],
+	 4 => [
+		 ['A--CGT', 'AAACGT', 'r1', 4, 7],
+	 ],	 
+	 2 => [
+		 ['GT-A', 'GTAT', 'r2', 2, 4],
+	 ],		 
+	);
+}
+
+mkdir('forVCF');
+die unless(-e 'forVCF');
+@referenceSequenceIDs = qw/chr21/;
+foreach my $referenceSequenceID (@referenceSequenceIDs)
 {
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
@@ -86,149 +122,196 @@ foreach my $referenceSequenceID (@limit_to)
 	print " .. done.\n";
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
-	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);
-
+	my $fn_out = 'forVCF/' . $referenceSequenceID;
+	open(D, '>', $fn_out) or die "Cannot open $fn_out";
+	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
 	my %alignments_starting_at;
-	while(my $alignment = $alignment_iterator->next_seq)
+	if(not $testing)
 	{
-		$n_alignments++;		
+		my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
+		while(my $alignment = $alignment_iterator->next_seq)
+		{
+			$n_alignments++;		
 
-		my $alignment_start_pos = $alignment->start - 1;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
-				
-		my $firstMatch;
-		my $lastMatch;
-		for(my $i = 0; $i < length($ref); $i++)
-		{
-			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
-			{
-				$firstMatch = $i unless(defined $firstMatch);
-				$lastMatch = $i;
-			}
+			my $alignment_start_pos = $alignment->start - 1;
+			my ($ref,$matches,$query) = $alignment->padded_alignment;
 			
-			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
-			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
-			die if($isDeletion and $isInsertion);
+			my $ref_preAll = $ref;
+			my $query_preAll = $query;
 			
-			if($isDeletion)
+			my $firstMatch;
+			my $lastMatch;
+			for(my $i = 0; $i < length($ref); $i++)
 			{
-				# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-			}
-			if($isInsertion)
-			{
-				# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-			}	
-		}
-		die unless(defined $firstMatch);
-		
-		$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
-		$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
-		
-		my $gaps_left_side = 0;
-		my $gaps_right_side = 0;
-		
-		for(my $i = 0; $i < length($ref); $i++)
-		{
-			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-			{
-				last;
-			}
-			else
-			{
-				$gaps_left_side++;
-			}
-		}
-		
-		for(my $i = length($ref) - 1; $i >= 0; $i--)
-		{
-			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-			{
-				last;
-			}
-			else
-			{
-				$gaps_right_side++;
-			}
-		}
-		
-		my $starstar_left_side = 0;
-		my $starstar_right_side = 0;
-		for(my $i = 0; $i < length($ref); $i++)
-		{
-			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-			{
-				$starstar_left_side++;
-			}
-			else
-			{
-				last;
-			}
-		}
-		
-		for(my $i = length($ref) - 1; $i >= 0; $i--)
-		{
-			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-			{
-				$starstar_right_side++;
-			}
-			else
-			{
-				last;
-			}
-		}
-		
-		
-		die unless($gaps_left_side == 0);
-		die unless($gaps_right_side == 0);
-		
-		$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
-		$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
-		#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
-		#$query = substr($query, 0, length($query) - $gaps_right_side);		
-		die unless(length($ref) == length($query));
-		
-		if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
-		{
-			#die Dumper($alignment_start_pos, $ref, $query);
-		}			
-	
-		my $start_pos = $alignment_start_pos - 1;
-		my $ref_pos = $start_pos;
-		my $running_gaps = 0;
-		for(my $i = 0; $i < length($ref); $i++)
-		{
-			my $c_ref = substr($ref, $i, 1);
-			
-			if(($c_ref eq '-') or ($c_ref eq '*'))
-			{
-				$running_gaps++;
-			}
-			else
-			{
-				if($ref_pos != $start_pos)
+				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
 				{
-					if(not defined $gap_structure[$ref_pos])
-					{
-						$gap_structure[$ref_pos] = $running_gaps;
-					}
-					else
-					{
-						die "Gap structure mismatch at position $ref_pos - this is alignment $n_alignments, have existing value $gap_structure[$ref_pos], want to set $running_gaps" unless($gap_structure[$ref_pos] == $running_gaps);
-					}
+					$firstMatch = $i unless(defined $firstMatch);
+					$lastMatch = $i;
 				}
-				$ref_pos++;
-				$running_gaps = 0;
 				
+				my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
+				my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
+				die if($isDeletion and $isInsertion);
+				
+				if($isDeletion)
+				{
+					# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+				}
+				if($isInsertion)
+				{
+					# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+				}	
 			}
-		}
+			die unless(defined $firstMatch);
+			
+			$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
+			$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
+			
+			if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
+			{
+				warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
+			}
+			my $gaps_left_side = 0;
+			my $gaps_right_side = 0;
+			
+			for(my $i = 0; $i < length($ref); $i++)
+			{
+				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+				{
+					last;
+				}
+				else
+				{
+					$gaps_left_side++;
+				}
+			}
+			
+			for(my $i = length($ref) - 1; $i >= 0; $i--)
+			{
+				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+				{
+					last;
+				}
+				else
+				{
+					$gaps_right_side++;
+				}
+			}
+			
+			my $starstar_left_side = 0;
+			my $starstar_right_side = 0;
+			for(my $i = 0; $i < length($ref); $i++)
+			{
+				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+				{
+					$starstar_left_side++;
+				}
+				else
+				{
+					last;
+				}
+			}
+			
+			for(my $i = length($ref) - 1; $i >= 0; $i--)
+			{
+				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+				{
+					$starstar_right_side++;
+				}
+				else
+				{
+					last;
+				}
+			}
+			
+			
+			die unless($gaps_left_side == 0);
+			die unless($gaps_right_side == 0);
+			
+			$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
+			$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
+			#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
+			#$query = substr($query, 0, length($query) - $gaps_right_side);		
+			die unless(length($ref) == length($query));
+			
+			if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
+			{
+				#die Dumper($alignment_start_pos, $ref, $query);
+			}			
 		
-		my $alignment_last_pos = $ref_pos - 1;
-		my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
-		push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+			my $ref_pos = $alignment_start_pos - 1;
+			my $running_gaps = 0;
+			for(my $i = 0; $i < length($ref); $i++)
+			{
+				my $c_ref = substr($ref, $i, 1);
+				
+				if(!(($c_ref eq '-') or ($c_ref eq '*')))
+				{
+					$ref_pos++;
+				}
+			}
+			
+			my $alignment_last_pos = $ref_pos - 1;
+			my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
+			push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+			
+			print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
+		}
+	}
+	else
+	{
+		%alignments_starting_at = %alignments_starting_at_test;
 	}
 	
+	# reference gaps *before* the i-th reference character
+	my $examine_gaps_n_alignment = 0;
+	foreach my $alignment_start_pos (keys %alignments_starting_at)
+	{
+		foreach my $alignment (@{$alignments_starting_at{$alignment_start_pos}})
+		{
+			my $ref = $alignment->[0];
+			
+			my $start_pos = $alignment_start_pos - 1;
+			my $ref_pos = $start_pos;
+			my $running_gaps = 0;
+			for(my $i = 0; $i < length($ref); $i++)
+			{
+				my $c_ref = substr($ref, $i, 1);
+				
+				if(($c_ref eq '-') or ($c_ref eq '*'))
+				{
+					$running_gaps++;
+				}
+				else
+				{
+					if(($ref_pos >= 5309528) and ($ref_pos <= 5309532))
+					{
+						print "Gaps $ref_pos ". $alignment->[2] . ": " . $running_gaps . "\n";
+					}	
+					if($ref_pos != $start_pos)
+					{
+						if(not defined $gap_structure[$ref_pos])
+						{
+							$gap_structure[$ref_pos] = $running_gaps;
+						}
+						else
+						{
+							die "Gap structure mismatch at position $ref_pos - this is alignment $examine_gaps_n_alignment, have existing value $gap_structure[$ref_pos], want to set $running_gaps" unless($gap_structure[$ref_pos] == $running_gaps);
+						}
+					}
+					$ref_pos++;
+					$running_gaps = 0;
+					$examine_gaps_n_alignment++;
+				}
+			}	
+		}
+	}
+		
 	print "Have loaded $n_alignments alignments.\n";
+	
+	close(D);
+	next;
 	
 	# my $last_all_equal = 0;
 	my @open_haplotypes = (['', 0, -1]);
@@ -236,31 +319,43 @@ foreach my $referenceSequenceID (@limit_to)
 	my $opened_alignments = 0;
 	POSI: for(my $posI = 0; $posI < length($reference_href->{$referenceSequenceID}); $posI++)
 	{
-		if(($posI % 10000) == 0)
+		if((($posI % 10000) == 0) or (scalar(@open_haplotypes) > 100))
 		{
 			print $posI, ", open haplotypes: ", scalar(@open_haplotypes), "\n";
 		}
 		
 		foreach my $haplotype (@open_haplotypes)
 		{
+			# consume all gaps "before" the current reference position
 			if($haplotype->[1] != 0)
 			{
-				if((substr($haplotype->[1][0], $haplotype->[2], 1) eq '-') or (substr($haplotype->[1][0], $haplotype->[2], 1) eq '*'))
+				if($haplotype->[2] == (length($haplotype->[1][0]) - 1))
 				{
-					warn "Position $haplotype->[2] is gap in one of our haplotypes!";
+					my $n_gaps = $gap_structure[$posI-1];
+					$n_gaps = 0 if(not defined $n_gaps);
+					my $gaps = '-' x $n_gaps;
+					die unless(length($gaps) == $n_gaps);
+					$haplotype->[0] .= $gaps;
 				}
-				
-				my $nextPos = $haplotype->[2]+1;
-				my $additionalExtension = '';
-				while(($nextPos < length($haplotype->[1][0])) and ((substr($haplotype->[1][0], $nextPos, 1) eq '-') or (substr($haplotype->[1][0], $nextPos, 1) eq '*')))
+				else
 				{
-					$additionalExtension .= substr($haplotype->[1][1], $nextPos, 1);
-					$nextPos++;
+					if((substr($haplotype->[1][0], $haplotype->[2], 1) eq '-') or (substr($haplotype->[1][0], $haplotype->[2], 1) eq '*'))
+					{
+						warn "Position $haplotype->[2] is gap in one of our haplotypes!";
+					}
+					
+					my $nextPos = $haplotype->[2]+1;
+					my $additionalExtension = '';
+					while(($nextPos < length($haplotype->[1][0])) and ((substr($haplotype->[1][0], $nextPos, 1) eq '-') or (substr($haplotype->[1][0], $nextPos, 1) eq '*')))
+					{
+						$additionalExtension .= substr($haplotype->[1][1], $nextPos, 1);
+						$nextPos++;
+					}
+					my $consumedUntil = $nextPos - 1;
+					
+					$haplotype->[0] .= $additionalExtension;
+					$haplotype->[2] = $consumedUntil;
 				}
-				my $consumedUntil = $nextPos - 1;
-				
-				$haplotype->[0] .= $additionalExtension;
-				$haplotype->[2] = $consumedUntil;
 			}	
 			else
 			{	
@@ -275,6 +370,7 @@ foreach my $referenceSequenceID (@limit_to)
 			}
 		}
 		
+		# check that all extensions - i.e. up to the current reference position - have the same length
 		my $assembled_h_length;
 		foreach my $openHaplotype (@open_haplotypes)
 		{
@@ -301,6 +397,7 @@ foreach my $referenceSequenceID (@limit_to)
 			# print "\t", $existingHaploI, "\t", $open_haplotypes[$existingHaploI][0], " ", $open_haplotypes[$existingHaploI][1], " ", $open_haplotypes[$existingHaploI][2], "\n";
 		# }
 
+		# copy in new haplotypes
 		my $refC = substr($reference_href->{$referenceSequenceID}, $posI, 1);
 		my @new_haplotypes = (exists $alignments_starting_at{$posI}) ? @{$alignments_starting_at{$posI}} : ();
 		my $open_haplotypes_maxI = $#open_haplotypes;
@@ -321,7 +418,7 @@ foreach my $referenceSequenceID (@limit_to)
 				my $start_reference_extraction = $start_open_haplotypes;
 				my $stop_reference_extraction = $posI - 1;
 				my $referenceExtraction;
-				die unless($stop_reference_extraction >= $start_reference_extraction);
+				die Dumper("Weird", $start_reference_extraction, $stop_reference_extraction) unless($stop_reference_extraction >= $start_reference_extraction);
 				for(my $refI = $start_reference_extraction; $refI <= $stop_reference_extraction; $refI++)
 				{
 					$referenceExtraction .= substr($reference_href->{$referenceSequenceID}, $refI, 1);
@@ -343,6 +440,7 @@ foreach my $referenceSequenceID (@limit_to)
 			}
 		}
 		
+		# we exit these haplotypes be making them ref / another haplotype
 		$open_haplotypes_maxI = $#open_haplotypes;
 		foreach my $haplotype (@open_haplotypes)
 		{
@@ -394,6 +492,7 @@ foreach my $referenceSequenceID (@limit_to)
 			print "\n";
 		}
 		
+		# we consume characters up to (but not including) the next reference non-gap
 		my %extensions_nonRef;
 		my $extensions_nonRef_length;
 		foreach my $haplotype (@open_haplotypes)
@@ -435,7 +534,8 @@ foreach my $referenceSequenceID (@limit_to)
 				die Dumper("Length mismatch", $extension, \%extensions_nonRef, $posI, "Length mismatch") unless(length($extension) == $extensions_nonRef_length);
 			}
 		}
-				
+		
+		# now carry out the actual extension
 		my %extensions;
 		foreach my $haplotype (@open_haplotypes)
 		{
