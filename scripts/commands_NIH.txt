@@ -23,7 +23,7 @@ PATH=$PATH:/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensi
 ./CALLMAFFT.pl --action check --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
 ./CALLMAFFT.pl --action reprocess --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
 
-/data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/_windowsInfo
+####  /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/_windowsInfo
 
 ./globalize_windowbams.pl --fastadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --msadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --bamheader /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/config/GRCh38.headerfile.txt --contigs /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --output /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam
 

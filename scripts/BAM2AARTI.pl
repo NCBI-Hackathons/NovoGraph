@@ -24,12 +24,13 @@ GetOptions (
 	'BAM:s' => \$BAM, 
 	'outputFile:s' => \$outputFile,	
 	'readsFasta:s' => \$readsFasta,	
-	'lenientOrder:s' => \$lenientOrder,	
+	'lenientOrder:s' => \$lenientOrder
 );
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --readsFasta" unless($readsFasta);
+die "Please specify --output" unless($outputFile); 
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
@@ -125,8 +126,12 @@ unless(-e $sorted_outputFile)
 
 my $combined_outputFile = $outputFile . '.sortedWithHeader';
 my $combine_cmd = qq(cat $headerFn $sorted_outputFile > $combined_outputFile);
+if(system($combine_cmd))
+{
+die "Failed during command: $combine_cmd";
+}
 
-print "\n\nProduced output file $combined_outputFile";
+print "\n\nProduced output file $combined_outputFile\n";
 
 sub convertAlignmentToHash
 {

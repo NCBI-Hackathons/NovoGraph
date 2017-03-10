@@ -1,0 +1,1 @@
+readID	chromosome	firstPos_reference	lastPos_reference	firstPos_read	lastPos_read	strand	n_matches	n_mismatches	n_gaps	alignment_reference	alignment_read	completeReadSequence_plus	completeReadSequence_minus
