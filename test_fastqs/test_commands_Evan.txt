@@ -71,7 +71,7 @@ $  perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Gr
 
 
 
--bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1041 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/CALLMAFFT.pl --action kickOff --mafftDirectory /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_BAM2MAFFT_insertion_chr1_hg38  --qsub 1
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1041 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/CALLMAFFT.pl --action kickOff --mafftDirectory /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/forMAFFT_insertion_chr1_hg38_TRY2  --qsub 1
 
 
 
