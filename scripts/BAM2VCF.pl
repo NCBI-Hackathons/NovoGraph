@@ -17,7 +17,11 @@ $| = 1;
 my $BAM;
 my $referenceFasta;
 my $output;
-
+my $bin_BAM2VCF = '../BAM2VCF/BAM2VCF';
+unless(-e $bin_BAM2VCF)
+{
+	die "BAM2VCF binary $bin_BAM2VCF not present - run 'make all' in the directory.";
+}
 #printHaplotypesAroundPosition(2, {
 	# 0 => [
 		# ['AAAC', 'TTTT', 'r0', 0, 3],
@@ -74,7 +78,7 @@ print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 my @referenceSequenceIDs = @sequence_ids;
 if($BAM =~ /TRY2/)
 {
-	@referenceSequenceIDs = ("chr21");
+	@referenceSequenceIDs = ("chr1");
 }
 my %alignments_starting_at_test;
 if($testing)
@@ -105,7 +109,7 @@ if($testing)
 
 mkdir('forVCF');
 die unless(-e 'forVCF');
-@referenceSequenceIDs = qw/chr21/;
+#@referenceSequenceIDs = qw/chr21/;
 foreach my $referenceSequenceID (@referenceSequenceIDs)
 {
 	print "Processing $referenceSequenceID .. \n";
@@ -122,8 +126,8 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	print " .. done.\n";
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
-	my $fn_out = 'forVCF/' . $referenceSequenceID;
-	open(D, '>', $fn_out) or die "Cannot open $fn_out";
+	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
+	open(D, '>', $fn_for_BAM2VCF) or die "Cannot open $fn_for_BAM2VCF";
 	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
 	my %alignments_starting_at;
@@ -170,7 +174,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			
 			if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
 			{
-				warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
+				# warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
 			}
 			my $gaps_left_side = 0;
 			my $gaps_right_side = 0;
@@ -287,7 +291,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 				{
 					if(($ref_pos >= 5309528) and ($ref_pos <= 5309532))
 					{
-						print "Gaps $ref_pos ". $alignment->[2] . ": " . $running_gaps . "\n";
+						# print "Gaps $ref_pos ". $alignment->[2] . ": " . $running_gaps . "\n";
 					}	
 					if($ref_pos != $start_pos)
 					{
@@ -311,6 +315,16 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	print "Have loaded $n_alignments alignments.\n";
 	
 	close(D);
+	
+	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID);
+	
+	print "Now executing: $cmd\n";
+	
+	if(system($cmd))
+	{
+		die "Command $cmd failed";
+	}
+	
 	next;
 	
 	# my $last_all_equal = 0;

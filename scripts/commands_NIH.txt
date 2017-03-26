@@ -27,23 +27,33 @@ PATH=$PATH:/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensi
 
 ./globalize_windowbams.pl --fastadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --msadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --bamheader /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/config/GRCh38.headerfile.txt --contigs /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --output /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam
 
-samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam;\
+./checkMAFFT_input_and_output.pl --MAFFTdir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --contigLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --preMAFFTBAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --finalOutputBAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam
+
+# print SAM output
+
+./globalize_windowbams.pl --fastadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --msadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --contigs /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --output /data/projects/phillippy/projects/hackathon/intermediate_files/combined.sam
+
+cat /data/projects/phillippy/projects/hackathon/intermediate_files/combined.sam | samtools view -u -t /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/config/GRCh38.headerfile.txt - >  /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam;\
+samtools sort /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam > /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam;\
 samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam
 
 ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
 
-./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf
+./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/uber_vcf.vcf
 
 
-
-
-samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam
-
-samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam
 
 
 gg-wrapper-bam2vcf.pl --script BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --window 100000 --samples /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/examples/list_of_assemblies.txt --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forVG | parallel -j 8
 
 ./gg-wrapper-bam2vcf.pl --script ./BAM2VCF.pl --BAM uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --window 10000000 --samples /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/examples/list_of_assemblies.txt --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forVG  | parallel -j 8
 
+
+
+## We have a BAM with a missing sequence -- check what is going on here
+	/data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT//chr21/chr21_794.bam
+	NA19240.gi|939190542|gb|LKPB01002076.1|
+
+	Re-executing fas2bam solves that problem
+	

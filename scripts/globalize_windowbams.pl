@@ -6,6 +6,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use FileHandle;
+use Data::Dumper;
 
 our %Opt;
 
@@ -41,7 +42,7 @@ my $output_file = $Opt{'output'};
 
 unless($Opt{bamheader} and (-e $Opt{bamheader}))
 {
-	die "Please specify valid file for --bamheader";
+	# die "Please specify valid file for --bamheader";
 }
 
 my $contigs_file = $Opt{contigs};
@@ -54,7 +55,13 @@ my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} >
 
 my $sam_fh = FileHandle->new("$sambam_file");
                    
-foreach my $entry (sort keys %{$rh_windowinfo}) {
+my $total_printed_alignments =  0;
+my $missed_alignments =  0;
+
+my @entries = sort keys %{$rh_windowinfo};
+my %already_processed_contigs;
+foreach my $entry (@entries) {
+	next unless($entry eq 'chr21'); # todo
     my %current_contigs = (); # Contigs that aren't "finished" yet.  If contig lengths are right, this will never get too big
 
     foreach my $rh_baminfo (@{$rh_windowinfo->{$entry}}) {
@@ -71,16 +78,24 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
             }
             else {
                 $current_contigs{$contig} = $rh_window_contig_alignments->{$contig};
+				die "Duplicate contig? $contig" if ($already_processed_contigs{$contig});
             }
 
-			die "Don't have length for $contig" unless(exists $rh_contiglength->{$contig});
+			die "Don't have length for $contig" unless(defined $rh_contiglength->{$contig});
             my $expected_contig_length = $rh_contiglength->{$contig};
+			
             my $current_contig_length = length($current_contigs{$contig}->{seq});
+			if($current_contig_length > $expected_contig_length)
+			{
+				die Dumper("Error - contig too long!", $current_contig_length, $expected_contig_length, $current_contigs{$contig}->{seq});
+			}
             if ($expected_contig_length==$current_contig_length) {
                 if (($current_contigs{$contig}) && ($current_contigs{$contig}->{cigar} ne '*')) {
-                    print STDERR "Printing SAM entry for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
+                    # print STDERR "Printing SAM entry for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
                     print_sam_entry($sam_fh, $current_contigs{$contig});
                     delete $current_contigs{$contig};
+					$total_printed_alignments++;
+					$already_processed_contigs{$contig}++;
                 }
                 else {
                     print STDERR "Skipping alignment for $contig--no cigar string\n";
@@ -92,12 +107,15 @@ foreach my $entry (sort keys %{$rh_windowinfo}) {
         }
     }
     my $no_left_over = keys %current_contigs;
+	$missed_alignments += $no_left_over;
     print STDERR "$no_left_over contigs left over for $entry!\n" if ($no_left_over);
 }
 
 close $sam_fh;
 
 print "Finished successfully\n\n";
+print "Non-finished alignments: $missed_alignments \n\n";
+print "Printed alignments: $total_printed_alignments \n\n";
 
 #------------
 # End MAIN
@@ -194,6 +212,7 @@ sub read_windowbam_add_offset {
             my $globalpos = $position + $offset;
             my $final_covered_pos = calc_final_refpos($globalpos, $cigar);
 			my $final_covered_pos_nonGlobal = $final_covered_pos - $offset;
+			die if(exists $aligns{$contig});
             $aligns{$contig} = {contig => $contig,
                                 flag => $flag,
                                 refentry => $entry, # use chromosome, not REF in BAM file
