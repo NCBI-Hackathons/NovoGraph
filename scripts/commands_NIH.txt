@@ -31,11 +31,11 @@ PATH=$PATH:/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensi
 
 # print SAM output
 
-./globalize_windowbams.pl --fastadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --msadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --contigs /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --output /data/projects/phillippy/projects/hackathon/intermediate_files/combined.sam
-
+./globalize_windowbams.pl --fastadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --msadir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --contigs /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --output /data/projects/phillippy/projects/hackathon/intermediate_files/combined.sam;\
 cat /data/projects/phillippy/projects/hackathon/intermediate_files/combined.sam | samtools view -u -t /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/config/GRCh38.headerfile.txt - >  /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam;\
 samtools sort /data/projects/phillippy/projects/hackathon/intermediate_files/combined.bam > /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam;\
-samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam
+samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam;\
+./checkMAFFT_input_and_output.pl --MAFFTdir /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/ --contigLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths --preMAFFTBAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --finalOutputBAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam &> output_checkMAFFT4
 
 ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
