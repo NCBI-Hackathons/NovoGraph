@@ -87,7 +87,7 @@ foreach my $entry (@entries) {
             my $current_contig_length = length($current_contigs{$contig}->{seq});
 			if($current_contig_length > $expected_contig_length)
 			{
-				die Dumper("Error - contig too long!", $current_contig_length, $expected_contig_length, $current_contigs{$contig}->{seq});
+				die Dumper("Error - contig $contig too long!", $current_contig_length, $expected_contig_length, $current_contigs{$contig}->{seq});
 			}
             if ($expected_contig_length==$current_contig_length) {
                 if (($current_contigs{$contig}) && ($current_contigs{$contig}->{cigar} ne '*')) {
@@ -212,6 +212,7 @@ sub read_windowbam_add_offset {
             my $globalpos = $position + $offset;
             my $final_covered_pos = calc_final_refpos($globalpos, $cigar);
 			my $final_covered_pos_nonGlobal = $final_covered_pos - $offset;
+			$seq = '' if($seq eq '*');
 			die if(exists $aligns{$contig});
             $aligns{$contig} = {contig => $contig,
                                 flag => $flag,
