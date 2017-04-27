@@ -61,7 +61,7 @@ my $missed_alignments =  0;
 my @entries = sort keys %{$rh_windowinfo};
 my %already_processed_contigs;
 foreach my $entry (@entries) {
-	next unless($entry eq 'chr21'); # todo
+	# next unless($entry eq 'chr21'); # todo
     my %current_contigs = (); # Contigs that aren't "finished" yet.  If contig lengths are right, this will never get too big
 
     foreach my $rh_baminfo (@{$rh_windowinfo->{$entry}}) {
@@ -102,7 +102,7 @@ foreach my $entry (@entries) {
                 }
             }
             else {
-                #print STDERR "Still waiting for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
+                print STDERR "Still waiting for contig $contig (expected $expected_contig_length, current $current_contig_length)\n";
             }
         }
     }

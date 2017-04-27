@@ -311,12 +311,14 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			}	
 		}
 	}
-		
-	print "Have loaded $n_alignments alignments.\n";
-	
+			
 	close(D);
 	
+	print "Have loaded $n_alignments alignments -- $fn_for_BAM2VCF.\n";
+
 	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID);
+	
+	exit;  # todo remove
 	
 	print "Now executing: $cmd\n";
 	

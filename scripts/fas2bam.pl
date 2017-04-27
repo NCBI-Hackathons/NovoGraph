@@ -46,6 +46,7 @@ process_commandline();
 
 my $input_file = $Opt{'input'};
 my $ref_entry = $Opt{'ref'};
+my $ref_entry_noFirst = $ref_entry;
 my $output_file = $Opt{'output'};
 
 my $rh_entry_seqs = read_fas_file($input_file);
@@ -83,6 +84,7 @@ my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} >
                                     : "> $output_file";
 
 my $sam_fh = FileHandle->new("$sambam_file");
+die "Can't open $sambam_file" unless(defined $sam_fh);
 
                    
 my ($flag, $score) = (0, 0);
@@ -90,10 +92,10 @@ foreach my $entry (sort keys %{$rh_entry_seqs}) {
     next if ($entry eq $ref_entry);
 
     my ($sam_start, $cigar_string, $rs_entryseq, $ra_vars, $lastPos) = parse_alignment($rh_entry_seqs, $entry, $ref_entry);
-	  
+	die unless(defined $rs_entryseq);
 	#print $entry, " ", $sam_start, " ", $lastPos, "\n"; 
 	$entry =~ s/_FIRST$//;
-    print $sam_fh "$entry\t$flag\t$ref_entry\t$sam_start\t$score\t$cigar_string\t*\t0\t0\t$$rs_entryseq\t*\n";
+    print $sam_fh "$entry\t$flag\t$ref_entry_noFirst\t$sam_start\t$score\t$cigar_string\t*\t0\t0\t$$rs_entryseq\t*\n";
 	
 }
 
@@ -240,6 +242,7 @@ sub parse_alignment {
 		$start_pos = 0;
 	}
 	
+	die unless(defined $entry_seq);
     return ($start_pos, $cigar_string, \$entry_seq, [@variants], $last_pos);
 }
 
