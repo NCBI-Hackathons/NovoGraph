@@ -56,7 +56,7 @@ die "Please specify --output" unless($output);
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
-my %expectedLengts;
+my %expectedLengths;
 if($contigLengths)
 {
 	open(L, '<', $contigLengths) or die "Cannot open --contigLengths $contigLengths";
@@ -65,7 +65,7 @@ if($contigLengths)
 		my $l = $_; 
 		chomp($l);
 		my @f = split(/\t/, $l);
-		$expectedLengts{$f[0]} = $f[1];
+		$expectedLengths{$f[0]} = $f[1];
 	}
 	close(L);
 }
@@ -84,7 +84,7 @@ if(not $testing)
 	print "\t...done.\n";
 }
 
-open(OUT, ">", $output) or die "Cannpt open $output";
+open(OUT, ">", $output) or die "Cannot open $output";
 print OUT qq(##fileformat=VCFv4.2
 ##fileDate=20161026
 ##source=BAM2VCF.pl
