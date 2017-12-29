@@ -22,7 +22,7 @@ $| = 1;
 ### perl voodo
 ### $| is the built-in variable for autoflush, cf. "perl pre-defined variables", perlvar
 ### $| = 1; forces a flush after every write or print, so the output apperas as soon as it's generated rather than being buffered
-
+### $OUTPUT_AUTOFLUSH; If set to nonzero, forces an fflush(3) after every write or print on the currently selected output channel.
 
 ### VARIABLES: CRAM, hg38 fasta, output VCF (?), subdirectory of BAM2VCF, contigLengths (?) (what's this file/file format?)
 ### RE: $output ---- we use `my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;` below
@@ -69,13 +69,13 @@ die "Please specify --CRAM" unless($CRAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --output" unless($output);
 
-die "--CRAM $CRAM not existing" unless(-e $CRAM);
+die "--CRAM $CRAM not existing" unless(-e $CRAM);    ### '-e', checks whether exists at certain path
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
 
 
-my %expectedLengths;   
-if($contigLengths)
+my %expectedLengths;    ### hash defined, 'expectedLengths'
+if($contigLengths)      ### read in tab-delimited file
 {
 	open(L, '<', $contigLengths) or die "Cannot open --contigLengths $contigLengths";
 	while(<L>)
@@ -83,14 +83,17 @@ if($contigLengths)
 		my $l = $_; 
 		chomp($l);
 		my @f = split(/\t/, $l);
-		$expectedLengths{$f[0]} = $f[1];    ## get value of expectedLengths
+		$expectedLengths{$f[0]} = $f[1];    ### get value of expectedLengths
 	}
 	close(L);
 }
 
-my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);   ### 'prepare' FASTA, SAM for loading
+### -> operator like C, means 'deference'
+### in this case, means 'Class -> method()'
 
-my @sequence_ids = $sam->seq_ids();    ### sequence IDs from the BAM
+my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);   ### standard Bio::DB::HTS constructor; 'prepare' FASTA, SAM for loading
+
+my @sequence_ids = $sam->seq_ids();    ### define array 'sequence_ids', sequence IDs from the BAM
 
 my $testing = 0;   ## if == 1, trips the $testing conditionals below; includes 'try # 2' and unit tests
 
@@ -142,6 +145,7 @@ if($testing)                                  ### quick unit test à la perl
 	);
 }
 
+
 mkdir('forVCF');           ## mkdir 'forVCF'
 die unless(-e 'forVCF');
 # @referenceSequenceIDs = qw/chr21/;
@@ -182,9 +186,10 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			}	
 			
 			if($contigLengths)
-			{                                     ### EVAN: I don't understand this
+			## perl search-and-replace regex, '$string =~ s/regex/replacement/g;'
+			{                                     ### EVAN: I don't understand this---somehow formatting contigLengths 
 				my $query_noGaps = $query;
-				$query_noGaps =~ s/[\-_\*]//g;
+				$query_noGaps =~ s/[\-_\*]//g;   ## replace '-' and '*' with space??
 				my $expectedLength = $expectedLengts{$alignment->query->name};
 				die "No length for " . $alignment->query->name unless(defined $expectedLength);
 				unless($expectedLength == length($query_noGaps))
@@ -215,7 +220,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			{
 				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
 				{
-					$firstMatch = $i unless(defined $firstMatch);
+					$firstMatch = $i unless(defined $firstMatch);   ### why would 'firstMatch' be defined? 
 					$lastMatch = $i;
 				}
 				
@@ -351,9 +356,9 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			
 			my $alignment_last_pos = $ref_pos - 1;
 			my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
-			push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+			push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);  ## add elements to array
 			
-			print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
+			print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";   ### write out in VCF format
 		}
 	}
 	else   ### testing
