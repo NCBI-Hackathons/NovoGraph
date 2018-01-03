@@ -1,0 +1,16 @@
+Assemblies downloaded as FASTAs. URLs below:
+
+The Chinese HX1 project (http://hx1.wglab.org/)
+Contigs are here: http://hx1.wglab.org/data/hx1f4.3rdfixedv2.fa.gz
+
+A Korean genome: http://www.nature.com/nature/journal/v538/n7624/full/nature20098.html
+Contigs are here: https://www.ncbi.nlm.nih.gov/Traces/wgs/?val=LPVO02&display=contigs&page=1
+
+NA19240 
+https://www.ncbi.nlm.nih.gov/Traces/wgs/?val=LKPB01#contigs
+
+CHM13
+https://www.ncbi.nlm.nih.gov/Traces/wgs/?val=LDOC03#contigs
+
+CHM1
+https://www.ncbi.nlm.nih.gov/Traces/wgs/?val=LJII01&display=contigs&page=1
