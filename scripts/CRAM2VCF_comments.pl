@@ -163,7 +163,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	#	#$gap_structure[$i] = -1;
 	#}
 	print " .. done.\n";
-	die unless(scalar(@gap_structure) == $l_ref_sequence);
+	die unless(scalar(@gap_structure) == $l_ref_sequence);  ## length of array 'gap_structure' should equal than of 'l_ref_sequence'; if not, kill the program
 	
 	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
 	open(D, '>', $fn_for_BAM2VCF) or die "Cannot open $fn_for_BAM2VCF";
