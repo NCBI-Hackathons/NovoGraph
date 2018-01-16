@@ -80,6 +80,27 @@ int main(int argc, char *argv[]) {
 	int n_alignments_skipped = 0;
 	std::map<unsigned int, std::vector<startingHaplotype*>> alignments_starting_at;
 	std::string line;
+
+	/* 
+
+       We read in the data produced by the CRAM2VCF script.
+
+       These are basically pairwise sequence alignments between reference and input contigs in a simple text format.
+
+       By definition, at any given reference position, we have to be able to reconstitute a valid multiple sequence alignment of the reference
+       and the contigs from the pairwise reference<->contig alignments. One crucial requirement for this is that we sometimes have to encode
+       'double-gap' columns in the pairwise alignments that specify gaps for both the sequence and the reference.
+
+       Also the following algorithms become more complex when there are large deletions relative to the reference. Therefore we apply a filter for maximum
+       gap region length:
+
+           (max_running_gap_length <= max_gap_length)
+       
+       This parameter can be played around with!
+
+     */
+	   
+
 	while(inputStream.good())
 	{
 		std::getline(inputStream, line);
@@ -116,7 +137,6 @@ int main(int argc, char *argv[]) {
 			}
 			assert(running_gap_length == 0);
 
-			// std::cout << "Alignment " << h->query_name << " max running gap: " << max_running_gap_length << "\n" << std::flush;
 			if(max_running_gap_length <= max_gap_length)
 			{
 				alignments_starting_at[h->aligment_start_pos].push_back(h);
@@ -153,6 +173,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 	{
 			n_alignments += startPos.second.size();
 	}
+
+    // STEP 1: Gap structure
+	// first step: count how many gaps we have in the underlying MSA-like structure at each reference position
+	// gap_structure.at(i) counts the number of gaps that occur between reference position i - 1 and i (0-based).
+	// this needs to be consistent for all input alignments
+    // coverage_structure.at(i) is calculated for output/debug purposes.
 
 	std::vector<int> gap_structure;
 	std::vector<int> coverage_structure;
@@ -207,8 +233,10 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 		}
 	}
 
-	std::cout << "Loaded " << examine_gaps_n_alignment << " alignments.\n";
+    // STEP 2: Output some stuff
 
+	std::cout << "Loaded " << examine_gaps_n_alignment << " alignments.\n";
+	
 	std::cout << "Coverage structure:\n";
 	int coverage_window_length = 10000;
 	for(unsigned int pI = 0; pI < coverage_structure.size(); pI += coverage_window_length)
@@ -238,13 +266,48 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			known_haplotype_pointers.insert(sH);
 		}
 	}
+
+	// openHaplotype data structure:
+	// (1) running haplotype sequence (string)
+    // (2) pointer to input alignment we're copying from - 0 means reference
+    // (3) position within the input alignment - the (inclusive) position up to which we've copied stuff already into the first element. (I think this is ignored and can be -1 if (2) == 0, i.e. reference)
+
 	using openHaplotype = std::tuple<std::string, const startingHaplotype*, int>;
 	std::vector<openHaplotype> open_haplotypes;
+
+	// we init with an empty running haplotype that copies the reference
 	openHaplotype initH = std::make_tuple("", (const startingHaplotype*)0, -1);
 	open_haplotypes.push_back(initH);
 
 	int start_open_haplotypes = 0;
 	int opened_alignments = 0;
+
+    // STEP 3: Build the graph / VCF
+	//
+	// We do this in a stepwise fashion, reference position by reference position
+	//
+	// As we go along the reference, we keep track of possible haplotypes (we say that this is a list of 'running' or 'open' haplotypes)
+	// that consist of the input contigs (to be precise, their alignments) and potential recombination events between the input contigs.
+	//
+	// We recombine promiscuously: whenever a new alignment starts, it can recombine into all existing haplotypes,
+	// and whenever it ends, it can recombine back into other running haplotypes.
+	//
+	// Whenever the VCF format allows us to empty the list of possible haplotypes, we do so (i.e. when there's a position at which all haplotypes are REF); when this happens,
+    // we write all open haplotypes as variants into the VCF, and shorten the possible haplotypes to the last position.
+	// If any running haplotypes (and their associated data, see the openHaplotype structure) are identical at this point, we combine them.
+	// 	
+	// !! An important corollary is that, at any point in time, all open haplotypes start at the same reference position.
+	// !! This information is stored in the variable start_open_haplotypes
+	// !! I.e. everything up to start_open_haplotypes has been processed already / stored in the output VCF.
+	//
+	// The 'state space' of our graph builder increases as new alignments appear and disappear as we walk along the reference,
+    // and it becomes smaller each time we dump some variant positions into VCF. If one of the running alignments represents a
+    // long-running gap that hasn't been closed yet, this prevents us from the VCF output stage; therefore big gaps
+	// lead to decreased performance and alignments containing them are sometimes filtered (see above).
+	//
+	// While doing all of this, we need to do some data gymnastics to make sure that the MSA structure of the
+    // input alignments is maintained and respected.
+	//
 
 	for(int posI = 0; posI < (int)referenceSequence.length(); posI++)
 	{
@@ -253,12 +316,13 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			std::cout << posI << ", open haplotypes: " << open_haplotypes.size() << "\n";
 		}
 
+		// make sure that all open haplotypes really 'extend' up to reference position posI in MSA space
+		// therefore: consume (for each open haplotype) all gaps "before" the current reference position
 		for(openHaplotype& haplotype : open_haplotypes)
 		{
-			//consume all gaps "before" the current reference position
 			if(std::get<1>(haplotype) != 0)
 			{
-				if(std::get<2>(haplotype) == ((int)std::get<1>(haplotype)->ref.length() - 1))
+				if(std::get<2>(haplotype) == ((int)std::get<1>(haplotype)->ref.length() - 1)) // if we're at the end of the alignment already, we may need to copy in gaps, as final gaps wouldn't be part of the alignment
 				{
 					int n_gaps = gap_structure.at(posI-1);
 					if(n_gaps == -1)
@@ -273,9 +337,11 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 				{
 					if(((std::get<1>(haplotype)->ref.at(std::get<2>(haplotype))) == '-') || (std::get<1>(haplotype)->ref.at(std::get<2>(haplotype)) == '*'))
 					{
-						std::cerr << "Position " << std::get<2>(haplotype) << "is gap in one of our haplotypes!";
+						// not sure what this is to tell us
+						std::cerr << "Position " << std::get<2>(haplotype) << " is gap in one of our haplotypes!";
 					}
 
+					
 					int nextPos = std::get<2>(haplotype)+1;
 					std::string additionalExtension;
 					while((nextPos < (int)std::get<1>(haplotype)->ref.length()) && ((std::get<1>(haplotype)->ref.at(nextPos) == '-') || (std::get<1>(haplotype)->ref.at(nextPos) == '*')))
@@ -289,7 +355,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 					std::get<2>(haplotype) = consumedUntil;
 				}
 			}
-			else
+			else // even if we're copying from the reference, we might have to put in some gaps if this is required by the MSA
 			{
 				if(posI > 0)
 				{
@@ -306,7 +372,9 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
 		}
 
-		// check that all extensions - i.e. up to the current reference position - have the same length
+		// check that all open haplotypes - i.e. up to the current reference position - have the same length
+		// this is required because we're dealing with an MSA-like structure here, and we want all open
+		// haplotypes to have reached the same 'column' in the MSA
 		int assembled_h_length = -1;
 		for(openHaplotype haplotype : open_haplotypes)
 		{
@@ -327,7 +395,10 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
 		}
 
-		// copy in new haplotypes
+		// it might be that we have additional alignments starting at posI
+		// if so, we make a list of these to be integrated into the openHaplotypes set	
+		// when we integrate a new alignment, we assume that the new alignment can 'recombine'
+		// into each of the open haplotypes.
 		unsigned char refC = referenceSequence.at(posI);
 		std::vector<const startingHaplotype*> new_haplotypes;
 		if(alignments_starting_at.count(posI))
@@ -338,19 +409,24 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 				new_haplotypes.push_back(sH);
 			}
 		}
+
+		// the following block represents the 'recombining into' step ...
 		unsigned int open_haplotypes_size = open_haplotypes.size();
 		for(const startingHaplotype* new_haplotype : new_haplotypes)
 		{
-			if(open_haplotypes_size > 0)
+			if(open_haplotypes_size > 0) // not quite sure why this should ever be < 1, but might be condition reached towards the end of a chromosome
 			{
 				opened_alignments++;
 
 				for(int existingHaploI = 0; existingHaploI < (int)open_haplotypes_size; existingHaploI++)
 				{
+					// ... we take the sequence of an existing open haplotype, but stipulate that from now onwards we copy from the new alignment (new_haplotype)
 					openHaplotype new_haplotype_copy_this = std::make_tuple(std::get<0>(open_haplotypes.at(existingHaploI)), new_haplotype, -1);
 					open_haplotypes.push_back(new_haplotype_copy_this);
 				}
 
+				// in addition to recombining into an existing variant haplotype, we can also
+				// recombine into the reference - which we need to copy from position start_open_haplotypes onwards.
 				int open_span = posI - start_open_haplotypes;
 				int start_reference_extraction = start_open_haplotypes;
 				int stop_reference_extraction = posI - 1;
@@ -386,7 +462,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
 		}
 
-
+		// some debug information
 		if(posI == 7652900)
 		{
 			std::cerr << "Pre-exit haplotype lengths " << posI << "\n"; // [@gap_structure[(posI-3) .. (posI+1)]]
@@ -396,7 +472,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
 		}
 
-		// we exit these haplotypes be making them ref / another haplotype
+		// whenever we've exhausted an input alignment, we recombine back into all other running haplotypes
+		// that is, we switch the template alignment for these running haplotypes to ref / another, non-exhausted running haplotype (all options)
+		// 
+		// NB: This step doesn't remove any elements from open_haplotypes - on the contrary, it can add elements (by recombination into other open haplotypes)
+		//
+
 		open_haplotypes_size = open_haplotypes.size();
 		std::set<unsigned int> exitedHaplotype;
 		for(unsigned int outer_haplotype_I = 0; outer_haplotype_I < open_haplotypes_size; outer_haplotype_I++)
@@ -405,10 +486,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 
 			if(std::get<1>(haplotype) != 0) // i.e. non-ref
 			{
-				if(std::get<2>(haplotype) == ((int)std::get<1>(haplotype)->ref.length() - 1))
+				if(std::get<2>(haplotype) == ((int)std::get<1>(haplotype)->ref.length() - 1)) // i.e. we're done with this input alignment
 				{
 					std::cerr << "Position " << posI << ", exit haplotype " << std::get<1>(haplotype)->query_name << " length " << std::get<0>(haplotype).length() << "\n" << std::flush;
 					// print "exit one\n";
+
+					// recombine into the reference
 					std::get<1>(haplotype) = 0;
 					std::get<2>(haplotype) = -1;
 					exitedHaplotype.insert(outer_haplotype_I);
@@ -418,7 +501,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 
 					for(int existingHaploI = 0; existingHaploI < (int)open_haplotypes_size; existingHaploI++)
 					{
-						if(existingHaploI == existingHaploI)
+						if(existingHaploI == existingHaploI) // this looks like a bug - nonsensical -- might be instead: existingHaploI == outer_haplotype_I
 						{
 							continue;
 						}
@@ -426,10 +509,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 						if(exitedHaplotype.count(existingHaploI))
 							continue;
 
+						// create and add a new recombination haplotype
 						assert(std::get<0>(haplotype).length() == expected_haplotype_length);
 						openHaplotype new_haplotype_copy_this = std::make_tuple(std::string(std::get<0>(haplotype)), std::get<1>(open_haplotypes.at(existingHaploI)), std::get<2>(open_haplotypes.at(existingHaploI)));
 						assert(std::get<0>(haplotype).length() == expected_haplotype_length);
 
+						// ... and of course the new haplotype must not be exhausted already
 						if((std::get<1>(new_haplotype_copy_this) == 0) || (std::get<2>(new_haplotype_copy_this) != ((int)std::get<1>(new_haplotype_copy_this)->ref.length() - 1)))
 						{
 							assert((std::get<1>(haplotype) == 0) || (std::get<2>(haplotype) != ((int)std::get<1>(haplotype)->ref.length() - 1)));
@@ -462,9 +547,8 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
 		}
 
-
+		// can ignore
 		// print "\tLength ", assembled_h_length, "\n";
-
 		/*
 		if(1 == 0)
 		{
@@ -493,7 +577,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 		}
 		*/
 
-		// we consume characters up to (but not including) the next reference non-gap
+		// the extension step: by now all members of open_haplotypes are extensible (otherwise they were exited already)
+		// we extend the first element of each haplotype with the sequence of the alignment (or the reference) we're copying from
+
+		// ... but before we do this, make sure that everything works out length-wise
+		// i.e. we populate extensions_nonRef_length, and make sure that all potential extensions have the same length
+		// (and we also need this for the actual extension)
 		std::set<std::string> extensions_nonRef;
 		int extensions_nonRef_length = -1;
 		for(openHaplotype haplotype : open_haplotypes)
@@ -503,6 +592,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			int consumed_ref = 0;
 			std::string consumed_ref_sequence;
 
+				
 			if(std::get<1>(haplotype) == 0)
 			{
 
@@ -592,16 +682,23 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			extensions.insert(extension);
 		}
 		assert(extensions.size());
-
+	
+		// debug stuff
 		// print "Extensions:\n", join("\n", map {"\t'"._."'"} keys %extensions), "\n\n";
-
 		//#this_all_equal = ( (scalar(keys %extensions) == 0) or ((scalar(keys %extensions) == 1) and (exists extensions{refC})) );
+
+		// IF all extensions made represent the same character
+		// AND IF this charactter is equal to the reference
+		// THEN we can close and output a list of variant alleles to the output VCF
+		
 		std::string refC_string = {(char)refC};
 		bool this_all_equal = ((extensions.size() == 1) && (extensions.count(refC_string)));
 		if(posI == 0)
 		{
 			assert(this_all_equal);
 		}
+
+		// debug stuff
 		/*
 		if(open_haplotypes.size() > 100)
 		{
@@ -612,6 +709,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			}
  		}*/
 
+		// carry out the closing and print to VCF
 		if(this_all_equal && (posI > 0))
 		{
 			// close
@@ -625,16 +723,19 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			int open_haplotypes_before = open_haplotypes.size();
 			for(openHaplotype& haplotype : open_haplotypes)
 			{
-				assert((int)std::get<0>(haplotype).length() >= (ref_span + 1)); //die Dumper("Length mismatch II", ref_span+1, length(std::get<0>(haplotype)), "Length mismatch II") unless(length(std::get<0>(haplotype)) >= (ref_span + 1));
+				assert((int)std::get<0>(haplotype).length() >= (ref_span + 1)); // Ignore this comment: Perl pseudocoder. die Dumper("Length mismatch II", ref_span+1, length(std::get<0>(haplotype)), "Length mismatch II") unless(length(std::get<0>(haplotype)) >= (ref_span + 1));
 				std::string haplotype_coveredSequence = std::get<0>(haplotype).substr(0, std::get<0>(haplotype).length()-1);
 				haplotype_coveredSequence = removeGaps(haplotype_coveredSequence);
 				if(haplotype_coveredSequence != reference_sequence)
 				{
 					alternativeSequences.insert(haplotype_coveredSequence);
 				}
+
+				// set the running component of the haplotype to the last character
 				std::get<0>(haplotype) = std::get<0>(haplotype).substr(std::get<0>(haplotype).length()-1);
 				assert(std::get<0>(haplotype).length() == 1);
 
+				// unique key for this remaining haplotype to make sure we're not storing anything identical
 				std::stringstream uniqueRemainerKey;
 				uniqueRemainerKey << std::get<0>(haplotype) << "//" << (void*)std::get<1>(haplotype) << "//" << std::get<2>(haplotype);
 
@@ -654,6 +755,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			open_haplotypes = new_open_haplotypes;
 			int open_haplotypes_after = open_haplotypes.size();
 
+			// only output to VCF if there are alternative sequences
 			if(alternativeSequences.size())
 			{
 				bool all_alternativeAlleles_length_2 = true;
@@ -712,6 +814,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			// std::cout << "Went from " << open_haplotypes_before << " to " << open_haplotypes_after << "\n";
 		}
 
+		// debug stuff
 		if(posI == 7652900)
 		{
 			std::cerr << "Haplotype lengths " << posI << "\n"; // [@gap_structure[(posI-3) .. (posI+1)]]
