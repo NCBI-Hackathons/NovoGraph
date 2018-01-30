@@ -25,7 +25,17 @@ $| = 1;
 ### $OUTPUT_AUTOFLUSH; If set to nonzero, forces an fflush(3) after every write or print on the currently selected output channel.
 
 ### VARIABLES: CRAM, hg38 fasta, output VCF (?), subdirectory of BAM2VCF, contigLengths (?) (what's this file/file format?)
+
+## RE: what's this file/file format?
+## contig ID and length are tab-separated -- no header
+## e.g. 
+## > CHM13.gi|953902711|gb|LDOC03012091.1|   16569
+## > CHM13.gi|953902713|gb|LDOC03012090.1|   48337
+## > CHM13.gi|953902714|gb|LDOC03012089.1|   2193864
+
+
 ### RE: $output ---- we use `my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;` below
+
 
 my $CRAM;
 my $referenceFasta;
@@ -154,10 +164,20 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});  ### if come across a strange sequence ID, kill it
 	
+
+	## Dilthey comments, 14Jan18:
+	## '$#gap_structure = ($l_ref_sequence - 1);' sets the size of the array 
+	## i.e. after this command, the array will have ($l_ref_sequence - 1)+1 elements 
+	## this is to speed up things a bit, because it preallocates the array. 
+	## After having executed this command, the new array > elements will be undef. 
+	## I think the -1 was another way to express 'not defined', but using the inbuilt undef seemed more practical to me in the end.
+
 	my $l_ref_sequence = length($reference_href->{$referenceSequenceID});   ### length of sequence ID
 	my @gap_structure;
-	$#gap_structure = ($l_ref_sequence - 1);       #### EVAN: I DON'T UNDERSTAND THIS AT ALL
+	$#gap_structure = ($l_ref_sequence - 1); ## preallocates size of the array, which has '($l_ref_sequence - 1)+1' elements
 	print "Set...";
+
+
 	#for(my $i = 0; $i < $l_ref_sequence; $i++)
 	#{
 	#	#$gap_structure[$i] = -1;
@@ -184,12 +204,16 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 				warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
 				next;
 			}	
+
+			## point of `if($contigLengths){}`
+			## this is to make sure we're using correct contig sequences.
 			
 			if($contigLengths)
 			## perl search-and-replace regex, '$string =~ s/regex/replacement/g;'
-			{                                     ### EVAN: I don't understand this---somehow formatting contigLengths 
+			{                                     
 				my $query_noGaps = $query;
-				$query_noGaps =~ s/[\-_\*]//g;   ## replace '-' and '*' with space??
+				$query_noGaps =~ s/[\-_\*]//g;   ## what this does: removes all -, _, * characters (i.e. substitute with zero-length string). 
+				## Then we check whether the length of this string agrees with what we expect from the contig lengths file - a double-check against data corruption or loss.
 				my $expectedLength = $expectedLengts{$alignment->query->name};
 				die "No length for " . $alignment->query->name unless(defined $expectedLength);
 				unless($expectedLength == length($query_noGaps))
