@@ -4,139 +4,60 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long;   
-use List::Util qw/max all/;
+use List::Util qw/max min all/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
 
 $| = 1;
 
-# Example command:
-# To check correctness of INPUT for mafft:
-# 	./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts/uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf
-# ./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa --output uber_vcf.vcf
+# example command: perl CRAM2MSA.pl --CRAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined.cram --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+
 my $CRAM;
 my $referenceFasta;
-my $output;
-my $bin_BAM2VCF = '../BAM2VCF/BAM2VCF';
-my $contigLengths;
-unless(-e $bin_BAM2VCF)
+
+my %targetPos_printAlignments;
+while(<DATA>)
 {
-	die "BAM2VCF binary $bin_BAM2VCF not present - run 'make all' in the directory.";
-}
-#printHaplotypesAroundPosition(2, {
-	# 0 => [
-		# ['AAAC', 'TTTT', 'r0', 0, 3],
-	# ],
-	# 2 => [
-		# ['ACGT', 'TTTT', 'r1', 2, 5],
-		# ['AC-GT', 'TTATT', 'r2', 2, 5],	
-		# ['ACGT', 'AA_A', 'r3', 2, 5],		
-	# ],
-	#2 => [
-		# ['-CGT', 'TTTT', 'r4', 3, 5],	
-	#	['ACG-', 'TTTT', 'r5', 2, 4],	
-	#],
-	#0 => [
-	#	 ['AAAC', 'TTT-', 'r7', 0, 3],
-	#],	
-#});
- 
- 
+	my $line = $_;
+	chomp($line);
+	next unless($line);
+	my @f = split(/\s+/, $line);
+	die "Weird line in DATA (1): $line" unless(defined $f[1]);
+	die "Weird line in DATA (2): $line" unless(defined $f[2]);
+	die "Weird line in DATA (3): $line" unless(defined $f[3]);
+	push(@{$targetPos_printAlignments{$f[1]}}, [@f[2 .. 3]]);
+}	
+
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
-	'output:s' => \$output,
-	'contigLengths:s' => \$contigLengths, 	
 );
-	
+
 die "Please specify --CRAM" unless($CRAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
-die "Please specify --output" unless($output);
 
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
-
-my %expectedLengths;
-if($contigLengths)
-{
-	open(L, '<', $contigLengths) or die "Cannot open --contigLengths $contigLengths";
-	while(<L>)
-	{
-		my $l = $_; 
-		chomp($l);
-		my @f = split(/\t/, $l);
-		$expectedLengths{$f[0]} = $f[1];
-	}
-	close(L);
-}
 
 my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);
 
 my @sequence_ids = $sam->seq_ids();
 
-my $testing = 0;
+print "Reading $referenceFasta\n";
+my $reference_href = readFASTA($referenceFasta);
+print "\t...done.\n";
 
-my $reference_href;
-if(not $testing)
-{
-	print "Reading $referenceFasta\n";
-	$reference_href = readFASTA($referenceFasta);
-	print "\t...done.\n";
-}
-
-open(OUT, ">", $output) or die "Cannot open $output";
-print OUT qq(##fileformat=VCFv4.2
-##fileDate=20161026
-##source=BAM2VCF.pl
-##reference=file://$referenceFasta), "\n";
-print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
-#foreach my $referenceSequenceID (@sequence_ids)
 my @referenceSequenceIDs = @sequence_ids;
-if($CRAM =~ /TRY2/)
-{
-	# @referenceSequenceIDs = ("chr1");
-}
-my %alignments_starting_at_test;
-if($testing)
-{
-	# ?CGT-A--CGT ref
-	# -CTT-A--CGT r0
-	#      AAACGT r1
-	#   GTAT      r2
-	#
-		 
-	@referenceSequenceIDs = qw/test1/;
-	$reference_href = {
-		test1 => "ACGTACGT",
-	};
-	
-	%alignments_starting_at_test = (
-	 1 => [
-		 ['CGT-A--CGT', 'CTT-A--CGT', 'r0', 1, 7],
-	 ],
-	 4 => [
-		 ['A--CGT', 'AAACGT', 'r1', 4, 7],
-	 ],	 
-	 2 => [
-		 ['GT-A', 'GTAT', 'r2', 2, 4],
-	 ],		 
-	);
-}
 
 my %alignments_per_referenceSequenceID;
 my $total_alignments = 0;
-mkdir('forVCF');
-die unless(-e 'forVCF');
-@referenceSequenceIDs = qw/chr21/; # todo
-my $fn_cmds = '_CRAM2VCF_commands.txt';
-my $fn_cmds_cat = $fn_cmds . '.cat';
-my $fn_gaps = '_CRAM2VCF_gaps.txt';
-open(CMDS, '>', $fn_cmds) or die "Cannot open $fn_cmds";
-open(CMDSCAT, '>', $fn_cmds_cat) or die "Cannot open $fn_cmds_cat";
-open(GAPSTRUCTURE, '>', $fn_gaps) or die "Cannot open $fn_gaps";
-print CMDSCAT 'cat ';
 foreach my $referenceSequenceID (@referenceSequenceIDs)
 {
+	next unless(exists $targetPos_printAlignments{$referenceSequenceID});
+	
+	my $fn_gaps = 'temp/gaps_' . $referenceSequenceID . '.txt';
+	open(GAPSTRUCTURE, '>', $fn_gaps) or die "Cannot open $fn_gaps";
+	
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
 
@@ -151,180 +72,152 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	print " .. done.\n";
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
-	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
-	my $fn_for_BAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
-	
-	open(D, '>', $fn_for_BAM2VCF) or die "Cannot open $fn_for_BAM2VCF";
-	open(D2, '>', $fn_for_BAM2VCF_SNPs) or die "Cannot open $fn_for_BAM2VCF_SNPs";
-	
-	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
 	my %alignments_starting_at;
-	if(not $testing)
+
+	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
+	while(my $alignment = $alignment_iterator->next_seq)
 	{
-		my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
-		while(my $alignment = $alignment_iterator->next_seq)
+		$n_alignments++;		
+
+		my $alignment_start_pos = $alignment->start - 1;
+		my ($ref,$matches,$query) = $alignment->padded_alignment;
+		unless(length($ref) == length($query))
 		{
-			$n_alignments++;		
-
-			my $alignment_start_pos = $alignment->start - 1;
-			my ($ref,$matches,$query) = $alignment->padded_alignment;
-			unless(length($ref) == length($query))
-			{
-				warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
-				next;
-			}	
-			
-			if($contigLengths)
-			{
-				my $query_noGaps = $query;
-				$query_noGaps =~ s/[\-_\*]//g;
-				my $expectedLength = $expectedLengths{$alignment->query->name};
-				die "No length for " . $alignment->query->name unless(defined $expectedLength);
-				unless($expectedLength == length($query_noGaps))
-				{
-					die Dumper("Sequence length mismatch", $query_noGaps, length($query_noGaps), $expectedLength, length($alignment->query->dna), $alignment->query->name);
-				}
-			}
-
-			
-			
-			my $ref_preAll = $ref;
-			my $query_preAll = $query;
-			
-			my $firstMatch;
-			my $lastMatch;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
-				{
-					$firstMatch = $i unless(defined $firstMatch);
-					$lastMatch = $i;
-				}
+			warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
+			next;
+		}	
 				
-				my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
-				my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
-				die if($isDeletion and $isInsertion);
-				
-				if($isDeletion)
-				{
-					# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-				}
-				if($isInsertion)
-				{
-					# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-				}	
-			}
-			die unless(defined $firstMatch);
-			
-			$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
-			$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
-			
-			if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
-			{
-				# warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
-			}
-			my $gaps_left_side = 0;
-			my $gaps_right_side = 0;
-			
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-				{
-					last;
-				}
-				else
-				{
-					$gaps_left_side++;
-				}
-			}
-			
-			for(my $i = length($ref) - 1; $i >= 0; $i--)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-				{
-					last;
-				}
-				else
-				{
-					$gaps_right_side++;
-				}
-			}
-			
-			my $starstar_left_side = 0;
-			my $starstar_right_side = 0;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-				{
-					$starstar_left_side++;
-				}
-				else
-				{
-					last;
-				}
-			}
-			
-			for(my $i = length($ref) - 1; $i >= 0; $i--)
-			{
-				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-				{
-					$starstar_right_side++;
-				}
-				else
-				{
-					last;
-				}
-			}
-			
-			
-			die unless($gaps_left_side == 0);
-			die unless($gaps_right_side == 0);
-			
-			$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
-			$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
-			#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
-			#$query = substr($query, 0, length($query) - $gaps_right_side);		
-			die unless(length($ref) == length($query));
-			
-			if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
-			{
-				#die Dumper($alignment_start_pos, $ref, $query);
-			}			
+		my $ref_preAll = $ref;
+		my $query_preAll = $query;
 		
-			my $ref_pos = $alignment_start_pos - 1;
-			my $running_gaps = 0;
-			for(my $i = 0; $i < length($ref); $i++)
+		my $firstMatch;
+		my $lastMatch;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
 			{
-				my $c_ref = substr($ref, $i, 1);
-				my $c_query = substr($query, $i, 1);
-				
-				if(!(($c_ref eq '-') or ($c_ref eq '*')))
-				{
-					$ref_pos++;
-				}
-				
-				if(($c_ref ne '-') and ($c_ref ne '*') and ($c_query ne '-') and ($c_query ne '*'))
-				{
-					
-				}
+				$firstMatch = $i unless(defined $firstMatch);
+				$lastMatch = $i;
 			}
 			
-			my $alignment_last_pos = $ref_pos - 1;
-			my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
-			push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
+			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
+			die if($isDeletion and $isInsertion);
 			
-			print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
-			
-			$alignments_per_referenceSequenceID{$referenceSequenceID}[0]++;
-			(my $query_nonGap = $query) =~ s/[\-_\*]//g;
-			$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);
+			if($isDeletion)
+			{
+				# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}
+			if($isInsertion)
+			{
+				# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
+			}	
 		}
+		die unless(defined $firstMatch);
+		
+		$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
+		$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
+		
+		if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
+		{
+			# warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
+		}
+		my $gaps_left_side = 0;
+		my $gaps_right_side = 0;
+		
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+			{
+				last;
+			}
+			else
+			{
+				$gaps_left_side++;
+			}
+		}
+		
+		for(my $i = length($ref) - 1; $i >= 0; $i--)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+			{
+				last;
+			}
+			else
+			{
+				$gaps_right_side++;
+			}
+		}
+		
+		my $starstar_left_side = 0;
+		my $starstar_right_side = 0;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+			{
+				$starstar_left_side++;
+			}
+			else
+			{
+				last;
+			}
+		}
+		
+		for(my $i = length($ref) - 1; $i >= 0; $i--)
+		{
+			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+			{
+				$starstar_right_side++;
+			}
+			else
+			{
+				last;
+			}
+		}
+		
+		
+		die unless($gaps_left_side == 0);
+		die unless($gaps_right_side == 0);
+		
+		$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
+		$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
+		#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
+		#$query = substr($query, 0, length($query) - $gaps_right_side);		
+		die unless(length($ref) == length($query));
+		
+		if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
+		{
+			#die Dumper($alignment_start_pos, $ref, $query);
+		}			
+	
+		my $ref_pos = $alignment_start_pos - 1;
+		my $running_gaps = 0;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			my $c_ref = substr($ref, $i, 1);
+			my $c_query = substr($query, $i, 1);
+			
+			if(!(($c_ref eq '-') or ($c_ref eq '*')))
+			{
+				$ref_pos++;
+			}
+			
+			if(($c_ref ne '-') and ($c_ref ne '*') and ($c_query ne '-') and ($c_query ne '*'))
+			{
+				
+			}
+		}
+		
+		my $alignment_last_pos = $ref_pos - 1;
+		my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
+		push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+			
+		$alignments_per_referenceSequenceID{$referenceSequenceID}[0]++;
+		(my $query_nonGap = $query) =~ s/[\-_\*]//g;
+		$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);
 	}
-	else
-	{
-		%alignments_starting_at = %alignments_starting_at_test;
-	}
+
 	
 	# reference gaps *before* the i-th reference character
 	my $examine_gaps_n_alignment = 0;
@@ -369,11 +262,9 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			}	
 		}
 	}
-			
-	close(D);
-	
+				
 	$total_alignments += $n_alignments;
-	print "Have loaded $n_alignments alignments -- $fn_for_BAM2VCF.\n";
+	print "Have loaded $n_alignments alignments\n";
 
 	for(my $refPos = 0; $refPos <= $#gap_structure; $refPos++)
 	{
@@ -382,17 +273,10 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 		{
 			print GAPSTRUCTURE join("\t", $referenceSequenceID, $refPos, $n_gaps), "\n";
 		}
-	}	
-	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt&);
+	}
 	
-	my $output_file = $fn_for_BAM2VCF . '.VCF';
+	close(GAPSTRUCTURE);
 	
-	print CMDS $cmd, "&\n";
-	
-	print CMDSCAT $output_file . ' ';
-
-	print "Now we could be executing: $cmd (manual)\n";	
-
 	if(exists $targetPos_printAlignments{$referenceSequenceID})
 	{
 		foreach my $targetPosData (@{$targetPos_printAlignments{$referenceSequenceID}})
@@ -403,49 +287,8 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			# printHaplotypesAroundPosition($targetPos, \%alignments_starting_at);	
 		}
 	}
-	next;
-	
-	
-	# todo
-	#if(system($cmd))
-	#{
-	#	die "Command $cmd failed";
-	#}
-	
-	# unless(-e $output_file)
-	# {
-		# die "File $output_file not existing";
-	# }
-	
-	# open(CHROUT, '<', $output_file) or die "Cannot open $output_file";
-	# while(<CHROUT>)
-	# {
-		# print OUT $_;
-	# }
 }
 
-close(OUT);
-
-print CMDSCAT ' >> ' . $output;
-
-my $fn_alignment_details = '_alignmentsPerRefID';
-open(ALIGNMENTDETAILS, '>', $fn_alignment_details) or die "Cannot open $fn_alignment_details";
-print ALIGNMENTDETAILS join("\t", qw/referenceID alignments alignedBases/), "\n";
-foreach my $referenceSequenceID (keys %alignments_per_referenceSequenceID)
-{
-	print ALIGNMENTDETAILS join("\t", $referenceSequenceID, @{$alignments_per_referenceSequenceID{$referenceSequenceID}}), "\n";
-}
-close(ALIGNMENTDETAILS);
-
-print "\nTotal alignments: $total_alignments\n";
-print "\nDetailed info on alignments and bases per reference ID: see file $fn_alignment_details\n";
-print "\nGap structure is in $fn_gaps\n";
-print "\nOK\n\n";
-
-close(CMDS);
-close(GAPSTRUCTURE);
-
-print"\nExecute commands in $fn_cmds and then $fn_cmds_cat\n\n";
 
 sub readFASTA
 {
@@ -732,3 +575,4 @@ __DATA__
 39509 chr21 34695843    820
 39636 chr21 34697908    520
 39788 chr21 34700829    822
+

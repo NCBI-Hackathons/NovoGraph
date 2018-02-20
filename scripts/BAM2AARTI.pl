@@ -16,8 +16,8 @@ my $outputFile = 'forAarti.txt';
 my $readsFasta;
 my $lenientOrder = 1;
 
-$referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
-$BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
+# $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
+# $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
 
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
@@ -128,7 +128,7 @@ my $combined_outputFile = $outputFile . '.sortedWithHeader';
 my $combine_cmd = qq(cat $headerFn $sorted_outputFile > $combined_outputFile);
 if(system($combine_cmd))
 {
-die "Failed during command: $combine_cmd";
+	die "Failed during command: $combine_cmd";
 }
 
 print "\n\nProduced output file $combined_outputFile\n";
