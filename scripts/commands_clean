@@ -59,4 +59,11 @@ cat /data/projects/phillippy/projects/hackathon/intermediate_files/combined_with
 
 ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT_2.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT_2 --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads_2 
 
+./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT_2 --qsub 1
+
+
+
+./CRAM2VCF_createFinalVCF.pl --CRAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined.cram --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/uber_vcf.vcf
+
+
 

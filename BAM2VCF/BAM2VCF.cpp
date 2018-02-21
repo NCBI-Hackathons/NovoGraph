@@ -174,12 +174,15 @@ int main(int argc, char *argv[]) {
 			std::string running_ref;
 			std::string running_query;
 			
-			long long runningGapCharacters = 0;
+			long long runningNonMatchPositions = 0;
 			long long runningRefGapCharacters = 0;
 			long long runningQueryGapCharacters = 0;
 			long long runningRefPos = h->aligment_start_pos - 1;
-			long long total_removedGappyRegions = 0;
+			//long long total_removedGappyRegions = 0;
 			std::vector<startingHaplotype*> haplotype_parts;
+			
+			std::string reconstituted_ref;
+			std::string reconstituted_query;
 			
 			for(unsigned int i = 0; i < h->ref.length(); i++)
 			{
@@ -202,19 +205,33 @@ int main(int argc, char *argv[]) {
 			
 				if(isMatchOrMismatch)
 				{
-					if(runningQueryGapCharacters > max_gap_length)
+					if(runningRefGapCharacters > max_gap_length)
 					{
 						// we have a match, but too many gaps, so we want to close!
 						
 						assert(firstMatchPos_reference != -1);
-						long long remainingCharacters = running_ref.length() - runningGapCharacters;
+						long long remainingCharacters = running_ref.length() - runningNonMatchPositions;
 						assert(remainingCharacters >= 0);
+						std::string removeRef;
+						std::string removeQuery;
+						if(runningNonMatchPositions > 0)
+						{
+								assert(running_ref.length() > remainingCharacters);
+								removeRef = running_ref.substr(remainingCharacters);
+								removeQuery = running_query.substr(remainingCharacters);
+						}
 						running_ref = running_ref.substr(0, remainingCharacters);
 						running_query = running_query.substr(0, remainingCharacters);
 						assert(running_ref.length() == remainingCharacters);
 						assert(running_query.length() == remainingCharacters);
-						total_removedGappyRegions += runningGapCharacters;
+						//total_removedGappyRegions += runningNonMatchPositions;
 						
+						reconstituted_ref.append(running_ref);
+						reconstituted_query.append(running_query);
+						
+						reconstituted_ref.append(removeRef);
+						reconstituted_query.append(removeQuery);
+
 						if(running_ref.length())
 						{
 							startingHaplotype* h_part = new startingHaplotype();
@@ -224,6 +241,23 @@ int main(int argc, char *argv[]) {
 							h_part->aligment_start_pos = firstMatchPos_reference;
 							h_part->alignment_last_pos = lastMatchPos_reference;
 							haplotype_parts.push_back(h_part);
+							/*
+							std::cerr << "New alignment from " << h->query_name << "\n";
+							std::cerr << "\tLength: " << running_ref.length() << "\n";
+							std::cerr << "\tR Start : " << h_part->aligment_start_pos << "\n";
+							std::cerr << "\tR Stop  : " << h_part->alignment_last_pos << "\n";
+							std::cerr << "\trunningRefGapCharacters  : " << runningRefGapCharacters << "\n";
+							std::cerr << "\trunningNonMatchPositions  : " << runningNonMatchPositions << "\n";
+							std::cerr << "\trunningQueryGapCharacters  : " << runningQueryGapCharacters << "\n";
+							
+							//std::cerr << "\tC Start : " << h_part->aligment_start_pos << "\n";
+							//std::cerr << "\tC Stop  : " << h_part->alignment_last_pos << "\n";
+							//std::cerr << "\tRef    : " << running_ref << "\n";
+							//std::cerr << "\tQuery  : " << running_query << "\n";
+							std::cerr << std::flush;
+							*/
+
+							assert(!((h_part->aligment_start_pos == 46398487) && (h_part->alignment_last_pos == 46398489)));
 						}
 						
 						running_ref.clear();
@@ -238,16 +272,16 @@ int main(int argc, char *argv[]) {
 					
 					lastMatchPos_reference = runningRefPos;
 					
-					runningGapCharacters = 0;
+					runningNonMatchPositions = 0;
 					runningRefGapCharacters = 0;
 					runningQueryGapCharacters = 0;
 				}
 				else
 				{
-					runningGapCharacters++;
-					if(isRefGap)
+					runningNonMatchPositions++;
+					if(isRefGap && !isQueryGap)
 						runningRefGapCharacters++;
-					if(isQueryGap)
+					if(isQueryGap && !isRefGap)
 						runningQueryGapCharacters++;					
 				}
 				
@@ -263,7 +297,7 @@ int main(int argc, char *argv[]) {
 			//std::cerr << "h->alignment_last_pos: " << h->alignment_last_pos << "\n" << std::flush;
 			assert(lastPos_control == ((long long)h->alignment_last_pos));
 			assert(lastPos_control == lastMatchPos_reference);
-			assert(runningGapCharacters <= max_gap_length);
+			assert(runningNonMatchPositions <= max_gap_length);
 
 			if(running_ref.length())
 			{
@@ -273,9 +307,14 @@ int main(int argc, char *argv[]) {
 				h_part->query_name = h_part->query_name + "_part" + std::to_string(haplotype_parts.size());
 				h_part->aligment_start_pos = firstMatchPos_reference;
 				h_part->alignment_last_pos = lastMatchPos_reference;
+				reconstituted_ref.append(running_ref);
+				reconstituted_query.append(running_query);				
 				haplotype_parts.push_back(h_part);
 			}
 						
+			assert(reconstituted_ref == h->ref);
+			assert(reconstituted_query == h->query);
+									
 			if(haplotype_parts.size() > 1)
 			{
 				/*
@@ -295,6 +334,7 @@ int main(int argc, char *argv[]) {
 					alignments_starting_at[hP->aligment_start_pos].push_back(hP);
 					n_alignments_sub++;
 				}
+				std::cerr << "\t\tSubalignments: " << n_alignments_sub << "\n" << std::flush;
 			}
 			else
 			{
@@ -302,6 +342,8 @@ int main(int argc, char *argv[]) {
 				delete(haplotype_parts.at(0));
 				n_alignments_loaded++;					
 			}
+			
+
 			
 			/*
 			int running_gap_length = 0;
@@ -704,7 +746,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 		unsigned int open_haplotypes_size = open_haplotypes.size();
 		for(const startingHaplotype* new_haplotype : new_haplotypes)
 		{
-			if(open_haplotypes_size <= max_running_haplotypes_before_add)
+			if(open_haplotypes.size() <= max_running_haplotypes_before_add)
 			{			
 				if(open_haplotypes_size > 0) // not quite sure why this should ever be < 1, but might be condition reached towards the end of a chromosome
 				{
@@ -777,6 +819,8 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 		// NB: This step doesn't remove any elements from open_haplotypes - on the contrary, it can add elements (by recombination into other open haplotypes)
 		//
 
+		std::set<std::string> inner_open_haplotypes_keys;
+
 		open_haplotypes_size = open_haplotypes.size();
 		std::set<unsigned int> exitedHaplotype;
 		for(unsigned int outer_haplotype_I = 0; outer_haplotype_I < open_haplotypes_size; outer_haplotype_I++)
@@ -787,6 +831,19 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 			{
 				if(std::get<2>(haplotype) == ((int)std::get<1>(haplotype)->ref.length() - 1)) // i.e. we're done with this input alignment
 				{
+					if(inner_open_haplotypes_keys.size() == 0)
+					{
+						for(const openHaplotype& haplotype : open_haplotypes)
+						{
+							std::stringstream haplotype_key_str;
+							haplotype_key_str << 	std::get<0>(haplotype) << ";" <<
+												std::get<1>(haplotype) << ";" <<
+												std::get<2>(haplotype);
+							std::string haplotype_key = haplotype_key_str.str();
+							inner_open_haplotypes_keys.insert(haplotype_key);
+						}
+					}
+					
 					std::cerr << "Position " << posI << ", exit haplotype " << std::get<1>(haplotype)->query_name << " length " << std::get<0>(haplotype).length() << " (open haplotypes " << open_haplotypes.size() << ")\n" << std::flush;
 					// print "exit one\n";
 
@@ -799,89 +856,82 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 					std::cerr << "\texpected_haplotype_length: " << expected_haplotype_length << "\n";
 					modifiedLastPos = true;
 					
-					std::set<std::string> inner_open_haplotypes_keys;
-					for(const openHaplotype& haplotype : open_haplotypes)
-					{
-						std::stringstream haplotype_key_str;
-						haplotype_key_str << 	std::get<0>(haplotype) << ";" <<
-											std::get<1>(haplotype) << ";" <<
-											std::get<2>(haplotype);
-						std::string haplotype_key = haplotype_key_str.str();
-						inner_open_haplotypes_keys.insert(haplotype_key);
-					}
+					if(open_haplotypes.size() <= max_running_haplotypes_before_add)
+					{  
 				
-					for(unsigned int existingHaploI = 0; existingHaploI < (int)open_haplotypes_size; existingHaploI++)
-					{
-						openHaplotype& haplotype = open_haplotypes.at(outer_haplotype_I);
-						
-						if(posI > 7650000)
+						for(unsigned int existingHaploI = 0; existingHaploI < (int)open_haplotypes_size; existingHaploI++)
 						{
-							//std::cerr << "Outer haplotype " << outer_haplotype_I << " / inner haplotype " << existingHaploI << ": length of " << (&haplotype) << " " << std::get<0>(haplotype).length() << "\n" << std::flush;
-						}
-						//if(existingHaploI == existingHaploI) // this looks like a bug - nonsensical -- might be instead: existingHaploI == outer_haplotype_I
-						if(existingHaploI == outer_haplotype_I)
-						{
-							continue;
-						}
-
-						if(exitedHaplotype.count(existingHaploI))
-							continue;
-
-						// create and add a new recombination haplotype
-						if(std::get<0>(haplotype).length() != expected_haplotype_length)
-						{
-							std::cerr << "std::get<0>(haplotype).length() is " << std::get<0>(haplotype).length() << "\n" << std::flush;
-						}
-						assert(std::get<0>(haplotype).length() == expected_haplotype_length);
-						openHaplotype new_haplotype_copy_this = std::make_tuple(std::string(std::get<0>(haplotype)), std::get<1>(open_haplotypes.at(existingHaploI)), std::get<2>(open_haplotypes.at(existingHaploI)));
-						assert(std::get<0>(haplotype).length() == expected_haplotype_length);
-						assert(std::get<0>(new_haplotype_copy_this).length() == expected_haplotype_length);
-
-						// ... and of course the new haplotype must not be exhausted already
-						if((std::get<1>(new_haplotype_copy_this) == 0) || (std::get<2>(new_haplotype_copy_this) != ((int)std::get<1>(new_haplotype_copy_this)->ref.length() - 1)))
-						{
-							assert((std::get<1>(haplotype) == 0) || (std::get<2>(haplotype) != ((int)std::get<1>(haplotype)->ref.length() - 1)));
-							assert(std::get<0>(haplotype).length() == std::get<0>(new_haplotype_copy_this).length());
-							if(posI == 7652900)
+							openHaplotype& haplotype = open_haplotypes.at(outer_haplotype_I);
+							
+							if(posI > 7650000)
 							{
-								std::cerr << "Position " << posI << " add of length " << std::get<0>(new_haplotype_copy_this).length() << "\n"; // [@gap_structure[(posI-3) .. (posI+1)]]
+								//std::cerr << "Outer haplotype " << outer_haplotype_I << " / inner haplotype " << existingHaploI << ": length of " << (&haplotype) << " " << std::get<0>(haplotype).length() << "\n" << std::flush;
+							}
+							//if(existingHaploI == existingHaploI) // this looks like a bug - nonsensical -- might be instead: existingHaploI == outer_haplotype_I
+							if(existingHaploI == outer_haplotype_I)
+							{
+								continue;
+							}
+
+							if(exitedHaplotype.count(existingHaploI))
+								continue;
+
+							// create and add a new recombination haplotype
+							if(std::get<0>(haplotype).length() != expected_haplotype_length)
+							{
+								std::cerr << "std::get<0>(haplotype).length() is " << std::get<0>(haplotype).length() << "\n" << std::flush;
 							}
 							assert(std::get<0>(haplotype).length() == expected_haplotype_length);
+							openHaplotype new_haplotype_copy_this = std::make_tuple(std::string(std::get<0>(haplotype)), std::get<1>(open_haplotypes.at(existingHaploI)), std::get<2>(open_haplotypes.at(existingHaploI)));
+							assert(std::get<0>(haplotype).length() == expected_haplotype_length);
 							assert(std::get<0>(new_haplotype_copy_this).length() == expected_haplotype_length);
-								
-							if(posI > 7650000)
+
+							// ... and of course the new haplotype must not be exhausted already
+							if((std::get<1>(new_haplotype_copy_this) == 0) || (std::get<2>(new_haplotype_copy_this) != ((int)std::get<1>(new_haplotype_copy_this)->ref.length() - 1)))
 							{
-								//std::cerr << "A " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
-							}
-							
-							// perhaps these checks are not a good idea
-							
-							std::stringstream new_haplotype_key_str;
-							new_haplotype_key_str << 	std::get<0>(new_haplotype_copy_this) << ";" <<
-												std::get<1>(new_haplotype_copy_this) << ";" << 
-												std::get<2>(new_haplotype_copy_this);
-							std::string new_haplotype_key = new_haplotype_key_str.str();
-						
-							if(inner_open_haplotypes_keys.count(new_haplotype_key) == 0)
-							{
-								if(open_haplotypes.size() <= max_running_haplotypes_before_add)
-								{  
-									open_haplotypes.push_back(new_haplotype_copy_this);
-									inner_open_haplotypes_keys.insert(new_haplotype_key);
+								assert((std::get<1>(haplotype) == 0) || (std::get<2>(haplotype) != ((int)std::get<1>(haplotype)->ref.length() - 1)));
+								assert(std::get<0>(haplotype).length() == std::get<0>(new_haplotype_copy_this).length());
+								if(posI == 7652900)
+								{
+									std::cerr << "Position " << posI << " add of length " << std::get<0>(new_haplotype_copy_this).length() << "\n"; // [@gap_structure[(posI-3) .. (posI+1)]]
 								}
-							}
+								assert(std::get<0>(haplotype).length() == expected_haplotype_length);
+								assert(std::get<0>(new_haplotype_copy_this).length() == expected_haplotype_length);
+									
+								if(posI > 7650000)
+								{
+									//std::cerr << "A " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
+								}
+								
+								// perhaps these checks are not a good idea
+								
+								std::stringstream new_haplotype_key_str;
+								new_haplotype_key_str << 	std::get<0>(new_haplotype_copy_this) << ";" <<
+													std::get<1>(new_haplotype_copy_this) << ";" << 
+													std::get<2>(new_haplotype_copy_this);
+								std::string new_haplotype_key = new_haplotype_key_str.str();
 							
+								if(inner_open_haplotypes_keys.count(new_haplotype_key) == 0)
+								{
+									if(open_haplotypes.size() <= max_running_haplotypes_before_add)
+									{  
+										open_haplotypes.push_back(new_haplotype_copy_this);
+										inner_open_haplotypes_keys.insert(new_haplotype_key);
+									}
+								}
+								
+								if(posI > 7650000)
+								{
+									//std::cerr << "B " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
+								}							
+							}
+							 
 							if(posI > 7650000)
 							{
-								//std::cerr << "B " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
-							}							
+							// 	std::cerr << "C " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
+							//	std::cerr << "Outer haplotype " << outer_haplotype_I << " / inner haplotype " << existingHaploI << ": length of " << (&haplotype) << " " << std::get<0>(haplotype).length() << "\n" << std::flush;
+							}						
 						}
-						 
-						if(posI > 7650000)
-						{
-						// 	std::cerr << "C " << (&haplotype) << " vs " << &(open_haplotypes.at(outer_haplotype_I)) << "\n";
-						//	std::cerr << "Outer haplotype " << outer_haplotype_I << " / inner haplotype " << existingHaploI << ": length of " << (&haplotype) << " " << std::get<0>(haplotype).length() << "\n" << std::flush;
-						}						
 					}
 
 					openHaplotype& haplotype = open_haplotypes.at(outer_haplotype_I);					
