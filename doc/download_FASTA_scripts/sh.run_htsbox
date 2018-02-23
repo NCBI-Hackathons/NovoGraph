@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export BAM=$1
+export OUT=`echo $BAM.htsbox.out | sed 's/.bam.htsbox.out$/.htsbox.out/'`
+/home/nhansen/projects/htsbox/htsbox-r312/htsbox samview -p $BAM > $OUT
