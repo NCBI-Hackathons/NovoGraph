@@ -80,6 +80,18 @@ int main(int argc, char *argv[]) {
 	assert(arguments.count("input"));
 	assert(arguments.count("referenceSequenceID"));
 
+	std::string outputFn = arguments.at("input") + ".VCF";
+	std::string doneFn = outputFn + ".done";
+	std::ofstream doneStream;
+	doneStream.open(doneFn.c_str());
+	if(! doneStream.is_open())
+	{
+		throw std::runtime_error("Cannot open " + doneFn + " for writing!");
+	}
+	doneStream << 0 << "\n";
+	doneStream.close();
+	
+	
 	std::ifstream inputStream;
 	inputStream.open(arguments.at("input").c_str());
 	if(! inputStream.is_open())
@@ -334,7 +346,7 @@ int main(int argc, char *argv[]) {
 					alignments_starting_at[hP->aligment_start_pos].push_back(hP);
 					n_alignments_sub++;
 				}
-				std::cerr << "\t\tSubalignments: " << n_alignments_sub << "\n" << std::flush;
+				// std::cerr << "\t\tSubalignments: " << n_alignments_sub << "\n" << std::flush;
 			}
 			else
 			{
@@ -396,7 +408,7 @@ int main(int argc, char *argv[]) {
 	SNPsstream.open(fn_files_SNPs.c_str());
 	assert(SNPsstream.is_open());
 	
-	produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, arguments.at("input")+".VCF");
+	produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn);
 
 	for(auto SNPsPerRefID : expectedAlleles)
 	{
@@ -408,6 +420,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
+
+	doneStream.open(doneFn.c_str());
+	if(! doneStream.is_open())
+	{
+		throw std::runtime_error("Cannot open " + doneFn + " for writing!");
+	}
+	doneStream << 1 << "\n";
+	doneStream.close();	
 
 	return 0;
 }
@@ -1232,7 +1252,7 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 
 		// last_all_equal = this_all_equal;
 	}
-
+	
 	std::cout << "Done.\n" << std::flush;
 }
 
