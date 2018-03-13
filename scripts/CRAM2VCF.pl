@@ -84,6 +84,7 @@ if(not $testing)
 	print "\t...done.\n";
 }
 
+my %targetPos_printAlignments;
 open(OUT, ">", $output) or die "Cannot open $output";
 print OUT qq(##fileformat=VCFv4.2
 ##fileDate=20161026
@@ -124,14 +125,29 @@ if($testing)
 }
 
 my %alignments_per_referenceSequenceID;
+
+# the following is just for testing!!
+# foreach my $referenceSequenceID (@referenceSequenceIDs)
+# {
+	# next unless($referenceSequenceID =~ /chr[\dXY]/);
+	# my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
+	# while(my $alignment = $alignment_iterator->next_seq)
+	# {
+		# $alignments_per_referenceSequenceID{$referenceSequenceID}++;
+	# }
+# }
+
+# die Dumper(\%alignments_per_referenceSequenceID, "testing");
+
 my $total_alignments = 0;
 mkdir('forVCF');
 die unless(-e 'forVCF');
-@referenceSequenceIDs = qw/chr21/; # todo
-my $fn_cmds = '_CRAM2VCF_commands.txt';
+# @referenceSequenceIDs = qw/chr21/; # todo
+my $fn_cmds = $output . '_CRAM2VCF_commands.txt';
 my $fn_cmds_cat = $fn_cmds . '.cat';
-my $fn_gaps = '_CRAM2VCF_gaps.txt';
+my $fn_gaps = $output . '_CRAM2VCF_gaps.txt';
 open(CMDS, '>', $fn_cmds) or die "Cannot open $fn_cmds";
+print CMDS 'ulimit -u 10000', "\n";
 open(CMDSCAT, '>', $fn_cmds_cat) or die "Cannot open $fn_cmds_cat";
 open(GAPSTRUCTURE, '>', $fn_gaps) or die "Cannot open $fn_gaps";
 print CMDSCAT 'cat ';
@@ -143,12 +159,12 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my $l_ref_sequence = length($reference_href->{$referenceSequenceID});
 	my @gap_structure;
 	$#gap_structure = ($l_ref_sequence - 1);
-	print "Set...";
+	#print "Set...";
 	#for(my $i = 0; $i < $l_ref_sequence; $i++)
 	#{
 	#	#$gap_structure[$i] = -1;
 	#}
-	print " .. done.\n";
+	#print " .. done.\n";
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
 	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
@@ -162,11 +178,12 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my %alignments_starting_at;
 	if(not $testing)
 	{
+		print "\t\tSet sequence ID to $referenceSequenceID\n";
 		my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
 		while(my $alignment = $alignment_iterator->next_seq)
 		{
 			$n_alignments++;		
-
+ 
 			my $alignment_start_pos = $alignment->start - 1;
 			my ($ref,$matches,$query) = $alignment->padded_alignment;
 			unless(length($ref) == length($query))
@@ -383,11 +400,11 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			print GAPSTRUCTURE join("\t", $referenceSequenceID, $refPos, $n_gaps), "\n";
 		}
 	}	
-	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt&);
+	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt &);
 	
 	my $output_file = $fn_for_BAM2VCF . '.VCF';
 	
-	print CMDS $cmd, "&\n";
+	print CMDS $cmd, "\n";
 	
 	print CMDSCAT $output_file . ' ';
 
@@ -403,7 +420,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			# printHaplotypesAroundPosition($targetPos, \%alignments_starting_at);	
 		}
 	}
-	next;
+	# next;
 	
 	
 	# todo
@@ -428,7 +445,7 @@ close(OUT);
 
 print CMDSCAT ' >> ' . $output;
 
-my $fn_alignment_details = '_alignmentsPerRefID';
+my $fn_alignment_details = $output . '_alignmentsPerRefID';
 open(ALIGNMENTDETAILS, '>', $fn_alignment_details) or die "Cannot open $fn_alignment_details";
 print ALIGNMENTDETAILS join("\t", qw/referenceID alignments alignedBases/), "\n";
 foreach my $referenceSequenceID (keys %alignments_per_referenceSequenceID)
@@ -445,7 +462,8 @@ print "\nOK\n\n";
 close(CMDS);
 close(GAPSTRUCTURE);
 
-print"\nExecute commands in $fn_cmds and then $fn_cmds_cat\n\n";
+# print"\nExecute commands in $fn_cmds\n\n";
+print"\nNow launch launch_CRAM2VCF_C++.pl with the right parameters.\n\n";
 
 sub readFASTA
 {

@@ -13,8 +13,6 @@ $| = 1;
 my $CRAM;
 my $referenceFasta;
 my $output;
-
-
  
 GetOptions (
 	'CRAM:s' => \$CRAM, 
@@ -47,6 +45,13 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my $fn_VCF = $fn_for_BAM2VCF . '.VCF';
 	
 	die "File $fn_for_BAM2VCF not present? Have you run CRAM2VCF.pl?" unless(-e $fn_for_BAM2VCF);
+	
+	my $fn_VCF_done = $fn_VCF . '.done';
+	unless(get_done($fn_VCF_done))
+	{
+		die "File $fn_VCF_done not indicating completion - abort.";		
+	}
+	
 	unless(-e $fn_VCF)
 	{
 		warn "File $fn_VCF not existing - skip, but generate big VCF anyway.";
@@ -64,6 +69,12 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	open(VCF, '<', $fn_VCF) or die "Cannot open $fn_VCF";
 	while(<VCF>)
 	{
+		my @fields = split(/\t/, $_);
+		unless(scalar(@fields) == 8)
+		{
+			warn "Weird number of fields in line $. of $fn_VCF -- is $#fields + 1, but want 8";
+			next;
+		}
 		print OUT $_;
 	}
 	close(VCF);
@@ -72,4 +83,16 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 
 close(OUT);
 
-print "\n\nGenerated file $output";
+print "\n\nGenerated file $output\n\n";
+
+sub get_done
+{
+	my $fn = shift;
+	return 0 unless($fn);
+	open(F, '<', $fn) or die "Cannot open $fn";
+	my $done = <F>;
+	chomp($done);
+	$done = (length($done) > 0) ? substr($done, 0, 1) : 0;	
+	close(F);
+	return $done;
+}
