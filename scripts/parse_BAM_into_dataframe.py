@@ -50,6 +50,9 @@ cigar_dict = [{k:sum(v) for k,v in e.items()} for e in data]
 ## S 4 soft clipping (clipped sequences present in SEQ)
 ## H 5 hard clipping (clipped sequences NOT present in SEQ)
 ## P 6 padding (silent deletion from padded reference)
+## = 7 sequence match
+## X 8 sequence mismatch
+## B 9 "backwards", http://seqanswers.com/forums/showthread.php?t=34440
 ## cf. http://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
 
 df = pd.DataFrame(list(map(group_sum, cigar_tups))).fillna(0)
@@ -57,10 +60,10 @@ df = pd.DataFrame(list(map(group_sum, cigar_tups))).fillna(0)
 df['position'] = locations
 
 ## renaming
-df = df.rename(index=str, columns={0: "match", 1: "insertion", 2: "deletion", 3: "skipped", 4: "soft_clipping", 5: "hard_clipping", 6: "padding"})
+df = df.rename(index=str, columns={0: "match", 1: "insertion", 2: "deletion", 3: "skipped", 4: "soft_clipping", 5: "hard_clipping", 6: "padding", 7: "seqmatch", 8: "seqmismatch", 9: "backwards"})
 
 ## re-order columns
-df = df[['position', 'match', 'insertion', 'deletion', 'soft_clipping', 'hard_clipping', 'padding']]
+##df = df[['position', 'match', 'insertion', 'deletion', 'soft_clipping', 'hard_clipping', 'padding', 'seqmatch', '']]
 
 ### save to csv
 df.to_csv(output_filename, index=False)

@@ -19,7 +19,9 @@ skippedsize = 500
 softclipping_size = 5550000
 hardclipping_size = 5550000
 padding_size = 500
-
+sequence_match_size = 2000
+sequence_mismatch_size = 2000
+backwards_size = 2000
 
 ## M 0 alignment match (can be a sequence match or mismatch)
 ## I 1 insertion to the reference
@@ -28,6 +30,10 @@ padding_size = 500
 ## S 4 soft clipping (clipped sequences present in SEQ)
 ## H 5 hard clipping (clipped sequences NOT present in SEQ)
 ## P 6 padding (silent deletion from padded reference)
+## = 7 sequence match
+## X 8 sequence mismatch
+## B 9 "backwards", http://seqanswers.com/forums/showthread.php?t=34440
+## cf. http://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
 
 bamfile = pysam.Samfile(bamFile, "rb")
 
@@ -42,6 +48,9 @@ for read in bamfile:
         pretty_big_softclipping = False
         pretty_big_hardclipping = False
         pretty_big_padding = False
+        pretty_big_sequence_match = False
+        pretty_big_sequence_mismatch = False
+        pretty_big_backwards = False             
         for cigarType, cigarLength in cigarLine:
             if cigarType == 0:   ## alignment match 
                 if cigarLength > matchsize:  
@@ -71,7 +80,18 @@ for read in bamfile:
                 if cigarLength > padding_size:  
                     pretty_big_padding = True
                     break       
-
+            if cigarType == 7:   ## sequence match
+                if cigarLength > sequence_match_size:  
+                    pretty_big_sequence_match = True
+                    break
+            if cigarType == 8:   ## sequence mismatch
+                if cigarLength > sequence_mismatch_size:  
+                    pretty_big_sequence_mismatch = True
+                    break      
+            if cigarType == 9:   ## backwards
+                if cigarLength > backwards_size:  
+                    pretty_big_backwards = True
+                    break       
         ### print the positions
         if pretty_big_match:   ### M 0 alignment match
             print('MATCH:')
@@ -101,6 +121,17 @@ for read in bamfile:
             print('PADDING:')
             print("{}:{}-{}".format(read.reference_name, read.reference_start, read.reference_end))
 
+        if pretty_big_sequence_match:   ### = 7 sequence match 
+            print('SEQUENCE MATCH:')
+            print("{}:{}-{}".format(read.reference_name, read.reference_start, read.reference_end))
+
+        if sequence_mismatch_size:   ### X 8 sequence mismatch
+            print('SEQUENCE MISMATCH:')
+            print("{}:{}-{}".format(read.reference_name, read.reference_start, read.reference_end))
+
+        if pretty_big_backwards:   ### B 9 "backwards" 
+            print('BACKWARDS:')
+            print("{}:{}-{}".format(read.reference_name, read.reference_start, read.reference_end))
 
 
 
