@@ -135,5 +135,3 @@ for read in bamfile:
 
 
 
-
-
