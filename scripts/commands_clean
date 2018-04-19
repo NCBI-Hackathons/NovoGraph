@@ -8,12 +8,15 @@ samtools index SevenGenomesPlusGRCh38Alts.bam
 unlink input_sequences_unsorted.bam
 mv SevenGenomesPlusGRCh38Alts.bam /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam
 
+/data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+
 # Check that there are no unmapped reads in the input BAM because this might lead to unknown behaviour:
 samtools view -c -f 0x4 /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam
 
 # Prepare global alignment
 cd /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts
 ./BAM2AARTI.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput
+./checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
 
 
 # Check that /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader is NEW and was created correctly!
@@ -85,10 +88,16 @@ cat /data/projects/phillippy/projects/hackathon/intermediate_files/combined_2_wi
 
 ./CRAM2VCF.pl --CRAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_2.cram --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf --contigLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths_2
 
-./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
+perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
 
+./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
 
 ./CRAM2VCF_createFinalVCF.pl --CRAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_2.cram --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf
 
-perl graphStatistics.pl --VCF VCF/uber_vcf.vcf --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+# Chromosome 21 sanity checkFinalCRAM
+
+perl graphStatistics.pl --VCF VCF/graph_v2.vcf --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+perl minimumSNPSet_check.pl
+
+Rscript graphStatistics_plot.R VCF/graph_v2.vcf
 

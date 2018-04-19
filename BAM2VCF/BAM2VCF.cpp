@@ -44,8 +44,8 @@ public:
 	std::string ref;
 	std::string query;
 	std::string query_name;
-	unsigned int aligment_start_pos;
-	unsigned int alignment_last_pos;
+	long long aligment_start_pos;
+	long long alignment_last_pos;
 	
 	void print()
 	{
@@ -179,7 +179,17 @@ int main(int argc, char *argv[]) {
 				}	
 			}
 			
-			long long lastPos_control = h->aligment_start_pos - 1;
+			// this is a hack - if this is ever violated, carry out proper scan for the first match in the alignment
+			if(h->aligment_start_pos == 0)
+			{
+				assert(h->ref.at(1) != '-');
+				assert(h->query.at(1) != '-');
+				h->aligment_start_pos = 1;
+				h->ref = h->ref.substr(1);
+				h->query = h->query.substr(1);
+			}
+			
+			long long lastPos_control = (long long)h->aligment_start_pos - 1;
 			long long firstMatchPos_reference = -1;
 			long long lastMatchPos_reference = -1;
 			
@@ -189,7 +199,7 @@ int main(int argc, char *argv[]) {
 			long long runningNonMatchPositions = 0;
 			long long runningRefGapCharacters = 0;
 			long long runningQueryGapCharacters = 0;
-			long long runningRefPos = h->aligment_start_pos - 1;
+			long long runningRefPos = (long long)h->aligment_start_pos - 1;
 			//long long total_removedGappyRegions = 0;
 			std::vector<startingHaplotype*> haplotype_parts;
 			
@@ -207,7 +217,7 @@ int main(int argc, char *argv[]) {
 				}
 				
 				bool isMatchOrMismatch = ((c_ref != '-') && (c_ref != '*') && (c_query != '-') && (c_query != '*'));
-				bool isRefGap = ((c_ref == '-') || (c_ref == '*'));
+				bool isRefGap = ((c_ref == '-') || (c_ref == '*'));  
 				bool isQueryGap = ((c_query == '-') || (c_query == '*'));
 				
 				if((i == 0) || (i == (h->ref.length() - 1)))
@@ -217,7 +227,7 @@ int main(int argc, char *argv[]) {
 			
 				if(isMatchOrMismatch)
 				{
-					if(runningRefGapCharacters > max_gap_length)
+					if(runningQueryGapCharacters > max_gap_length)
 					{
 						// we have a match, but too many gaps, so we want to close!
 						
@@ -307,7 +317,22 @@ int main(int argc, char *argv[]) {
 			}
 			//std::cerr << "lastPos_control: " << lastPos_control << "\n";
 			//std::cerr << "h->alignment_last_pos: " << h->alignment_last_pos << "\n" << std::flush;
+			if(lastPos_control != ((long long)h->alignment_last_pos))
+			{
+				std::cerr << "h->aligment_start_pos: " << h->aligment_start_pos << "\n";
+				std::cerr << "lastPos_control: " << lastPos_control << "\n";
+				std::cerr << "h->alignment_last_pos: " << h->alignment_last_pos << "\n";
+				std::cerr << std::flush;
+			}
 			assert(lastPos_control == ((long long)h->alignment_last_pos));
+			if(lastPos_control != (lastMatchPos_reference))
+			{
+				std::cerr << "h->aligment_start_pos: " << h->aligment_start_pos << "\n";
+				std::cerr << "lastPos_control: " << lastPos_control << "\n";
+				std::cerr << "h->alignment_last_pos: " << h->alignment_last_pos << "\n";
+				std::cerr << "lastMatchPos_reference: " << lastMatchPos_reference << "\n";
+				std::cerr << std::flush;
+			}
 			assert(lastPos_control == lastMatchPos_reference);
 			assert(runningNonMatchPositions <= max_gap_length);
 
@@ -785,6 +810,12 @@ void produceVCF(const std::string referenceSequenceID, const std::string& refere
 					int open_span = posI - start_open_haplotypes;
 					int start_reference_extraction = start_open_haplotypes;
 					int stop_reference_extraction = posI - 1;
+					if(!(stop_reference_extraction >= start_reference_extraction))
+					{
+						std::cerr << "stop_reference_extraction" << ": " << stop_reference_extraction << "\n";
+						std::cerr << "start_reference_extraction" << ": " << start_reference_extraction << "\n";
+						std::cerr << std::flush;
+					}
 					assert(stop_reference_extraction >= start_reference_extraction); // die Dumper("Weird", start_reference_extraction, stop_reference_extraction) unless(stop_reference_extraction >= start_reference_extraction);
 					std::string referenceExtraction;
 					referenceExtraction.reserve(stop_reference_extraction - start_reference_extraction + 1);

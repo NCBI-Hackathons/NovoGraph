@@ -94,9 +94,9 @@ close(VCF);
 my $fn_out = $VCF . '.statistics';
 
 open(OUT, '>', $fn_out.'.lengthDiff') or die "Cannot open $fn_out.lengthDiff";
-foreach my $chromosome (keys %variantAllelesLengthDifference_perChromosome)
+foreach my $chromosome (sort keys %variantAllelesLengthDifference_perChromosome)
 {
-	foreach my $value (keys %{$variantAllelesLengthDifference_perChromosome{$chromosome}})
+	foreach my $value (sort {$a <=> $b} keys %{$variantAllelesLengthDifference_perChromosome{$chromosome}})
 	{
 		print OUT join("\t", $chromosome, $value, $variantAllelesLengthDifference_perChromosome{$chromosome}{$value}), "\n";
 	}

@@ -47,8 +47,8 @@ while(<CMDS>)
 		{
 			$files_done++;
 			next;
-		}
-		else
+		} 
+		else 
 		{
 			unlink($doneFile) or die "Cannot delete $doneFile";		
 		}
@@ -66,6 +66,7 @@ print "Files done already: $files_done -- delete $output*.done if you want to re
 my @command_batches = ([]);
 my $runningSize = 0;
 my $runningCommands = 0;
+my $totalCommands = 0;
 for(my $i = 0; $i <= $#commands; $i++)
 {
 	if(($runningCommands >= 20) or ($runningSize >= 1e6))
@@ -76,20 +77,28 @@ for(my $i = 0; $i <= $#commands; $i++)
 	}
 	push(@{$command_batches[$#command_batches]}, $commands[$i]);
 	$runningCommands++;
+	$totalCommands++;
 	$runningSize += (-s $inputFiles[$i]);
 }	
 
-print "\nTotal command batches: ", scalar(@command_batches), "\n\n";
-
-foreach my $command_batch (@command_batches)
+if($totalCommands == 0)
 {
-	my $combined_command = join(';', @$command_batch);
-	my $pid = fork;
-	die "fork failed" unless defined $pid;
-	if ($pid == 0) {
-		system($combined_command) and die "Could not execute command: $combined_command";
-		exit;
-	}	
+	print "\nAll done.\n\n";
 }
+else
+{
+	print "\nTotal command batches: ", scalar(@command_batches), "\n\n";
 
-print "\n\nProcesses launched.\n";
+	foreach my $command_batch (@command_batches)
+	{
+		my $combined_command = join(';', @$command_batch);
+		my $pid = fork;
+		die "fork failed" unless defined $pid;
+		if ($pid == 0) {
+			system($combined_command) and die "Could not execute command: $combined_command";
+			exit;
+		}	
+	}
+
+	print "\n\nProcesses launched.\n";
+}

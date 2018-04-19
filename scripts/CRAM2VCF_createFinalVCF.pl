@@ -49,7 +49,8 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my $fn_VCF_done = $fn_VCF . '.done';
 	unless(get_done($fn_VCF_done))
 	{
-		die "File $fn_VCF_done not indicating completion - abort.";		
+		die "File $fn_VCF_done not indicating completion - skip.";		
+		next;
 	}
 	
 	unless(-e $fn_VCF)

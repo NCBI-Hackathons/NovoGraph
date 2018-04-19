@@ -4,10 +4,10 @@ $| = 1;
 
 my $referenceFile = '/data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa';
 
-my $expectedSNPs = 'pileup21_cram.SNPs';
-#my $expectedSNPs = 'VCF/uber_vcf.vcf.part_chr21.VCF.expectedSNPs';
+#my $expectedSNPs = 'pileup21_cram.SNPs';
+my $expectedSNPs = 'VCF/graph_v2.vcf.part_chr21.VCF.expectedSNPs';
 #my $expectedSNPs = 'pileup21_original_primary.SNPs';
-my $VCF = 'VCF/uber_vcf.vcf.part_chr21.VCF';
+my $VCF = 'VCF/graph_v2.vcf.part_chr21.VCF';
 
 my $n_lookingFor_total = 0;
 my %expected;
