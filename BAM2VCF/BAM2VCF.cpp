@@ -1,9 +1,7 @@
 //============================================================================
 // Name        : BAM2VCF.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Author      : Alexander Dilthey
+// License     : The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
 //============================================================================
 
 #include <iostream>
