@@ -1,6 +1,30 @@
 # Graph Genomes
+## CSHL Hackathon 24-26 October 2016
 
-Initiated at the CSHL Hackathon 24-26 October 2016
+## Preliminary description of tools, inputs, and outputs
+### Problem: Whole genome graph creation from multiple assemblies
+
+[See Initial presentation Google doc here](https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing)
+
+[Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
+
+
+# Contributors
+
+Evan Biederstedt (NYGC, WCM)
+
+Alexander Dilthey (NIH)
+
+Nathan Dunn (LBNL)
+
+Aarti Jajoo (Baylor)
+
+Nancy Hansen (NIH)
+
+Jeff Oliver (Arizona)
+
+Andrew Olsen (CSHL)
+
 
 ## Workflow
 ### Step 0: Align all contigs to GRCh38
@@ -114,19 +138,12 @@ genome and additional assemblies_
       + Jeff
     + Status: **not started**
 
-
-## Contributors
-
-Evan Biederstedt (NYGC, WCM)
-
-Alexander Dilthey (NIH)
-
-Nathan Dunn (LBNL)
-
-Aarti Jajoo (Baylor)
-
-Nancy Hansen (NIH)
-
-Jeff Oliver (Arizona)
-
-Andrew Olsen (CSHL)
+### Step 4: Generate Docker container et al for distribution
++ Assignees:
+  + Nathan
++ Status: Done and working, but will need to be updated as code changes and there is a release
+  + Dockerfile in top-level of GitHub repo
+  + Publicly hosted here: https://hub.docker.com/r/ncbihackathons/graph_genomes_cshl/
+  + docker run -it ncbihackathons/graph_genomes_cshl
+    + contents in /app/scripts/
+    + Mount local volumes remotely use the -v option according to here https://docs.docker.com/engine/tutorials/dockervolumes/
