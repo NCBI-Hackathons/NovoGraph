@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -14,6 +17,7 @@ $| = 1;
 # To check correctness of INPUT for mafft:
 # 	./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts/uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf
 # ./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa --output uber_vcf.vcf
+
 my $CRAM;
 my $referenceFasta;
 my $output;
@@ -23,23 +27,6 @@ unless(-e $bin_BAM2VCF)
 {
 	die "BAM2VCF binary $bin_BAM2VCF not present - run 'make all' in the directory.";
 }
-#printHaplotypesAroundPosition(2, {
-	# 0 => [
-		# ['AAAC', 'TTTT', 'r0', 0, 3],
-	# ],
-	# 2 => [
-		# ['ACGT', 'TTTT', 'r1', 2, 5],
-		# ['AC-GT', 'TTATT', 'r2', 2, 5],	
-		# ['ACGT', 'AA_A', 'r3', 2, 5],		
-	# ],
-	#2 => [
-		# ['-CGT', 'TTTT', 'r4', 3, 5],	
-	#	['ACG-', 'TTTT', 'r5', 2, 4],	
-	#],
-	#0 => [
-	#	 ['AAAC', 'TTT-', 'r7', 0, 3],
-	#],	
-#});
  
  
 GetOptions (
@@ -417,7 +404,6 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			my $targetPos = $targetPosData->[0];
 			my $outputFn = 'temp/' . $referenceSequenceID . '_around_' . $targetPos;
 			outputMSAInto($targetPos, \%alignments_starting_at, $outputFn);
-			# printHaplotypesAroundPosition($targetPos, \%alignments_starting_at);	
 		}
 	}
 	# next;
@@ -495,14 +481,6 @@ sub readFASTA
 	close(F);
 		
 	return \%R;
-}
-
-sub reverseComplement
-{
-	my $kMer = shift;
-	$kMer =~ tr/ACGT/TGCA/;
-	return reverse($kMer);
-	return $kMer;
 }
 
 sub outputMSAInto
@@ -667,77 +645,6 @@ sub outputMSAInto
 	close(OUT);
 }
 
-sub printHaplotypesAroundPosition
-{
-	my $posI = shift;
-	my $alignments_starting_at_href = shift;
-	
-	my @aroundPositions = grep {$_ >= 0} (($posI - 2) .. ($posI + 2));
-	foreach my $startPos (keys %{$alignments_starting_at_href})
-	{
-		foreach my $alignment_aref (@{$alignments_starting_at_href->{$startPos}})
-		{
-			my $apparent_startPos = $alignment_aref->[3];
-			if($apparent_startPos != $startPos)
-			{
-				warn Dumper("Apparent / startpos mismatch", $startPos, $apparent_startPos, $alignment_aref->[2]);
-			}
-			my $stopPos = $alignment_aref->[4];
-			die unless($stopPos >= $startPos);
-			my $interesting = 0;
-			foreach my $interestingPos (@aroundPositions)
-			{
-				if(($interestingPos >= $startPos) and ($interestingPos <= $stopPos))
-				{
-					$interesting = 1;
-				}
-			}
-			
-			my $ref = $alignment_aref->[0];
-			my $query = $alignment_aref->[1];
-			
-			if($interesting)
-			{
-				my %gt_per_position;
-				my $ref_pos = $startPos - 1;
-				my $running_allele = '';
-				for(my $i = 0; $i < length($ref); $i++)
-				{
-					my $c_ref = substr($ref, $i, 1);
-					my $c_query = substr($query, $i, 1);
-					
-					if(($c_ref eq '-') or ($c_ref eq '*'))
-					{
-						$running_allele .= $c_query;
-					}
-					else
-					{
-						if($running_allele)
-						{
-							$gt_per_position{$ref_pos} = $running_allele;
-						}
-						
-						$running_allele = $c_query;
-						$ref_pos++;						
-					}
-				}
-				if($running_allele)
-				{
-					$gt_per_position{$ref_pos} = $running_allele;
-				}
-						
-				print "Positions $alignment_aref->[2] \n";
-				foreach my $interestingPos (@aroundPositions)
-				{
-					if(exists $gt_per_position{$interestingPos})
-					{
-						print "\t", $interestingPos, "\t", $gt_per_position{$interestingPos}, "\n";
-					}
-				}
-			}
-		}
-	}
-}
 
 __DATA__
 34558 chr21 28891726   4729

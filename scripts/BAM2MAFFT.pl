@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use Bio::DB::Sam;
 use Getopt::Long;   
@@ -476,35 +479,3 @@ sub reverseComplement
 	return $kMer;
 }
 
-
-
-sub get_windows_for_refLength
-{
-	my $refLength = shift;
-	die unless(defined $refLength);
-	my $desiredWindowLength = 100000;
-	
-	if($refLength <= $desiredWindowLength)
-	{
-		return ([1, $refLength]);
-	}
-	
-	my @forReturn;
-	my $currentEnd = $desiredWindowLength;
-	while($currentEnd < $refLength)
-	{
-		push(@forReturn, [$currentEnd - $desiredWindowLength + 1, $currentEnd]);
-		$currentEnd += $desiredWindowLength;
-	}
-	if($currentEnd > $refLength)
-	{
-		$currentEnd = $refLength;
-	}
-	die if($forReturn[$#forReturn][1] == $currentEnd);
-	
-	my $lastWindowStart = $forReturn[$#forReturn][1] + 1;
-	die unless($lastWindowStart <= $currentEnd);
-	push(@forReturn, [$lastWindowStart, $currentEnd]);
-	
-	return @forReturn;
-}

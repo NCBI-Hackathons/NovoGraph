@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -150,37 +153,5 @@ sub read_windowbams_info {
     close WINDOWS;
 
     return {%entry_hash};
-}
-
-sub readFASTA
-{
-	my $file = shift;	
-	my %R;
-	
-	open(F, '<', $file) or die "Cannot open $file";
-	my $currentSequence;
-	while(<F>)
-	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
-		my $line = $_;
-		chomp($line);
-		$line =~ s/[\n\r]//g;
-		if(substr($line, 0, 1) eq '>')
-		{
-			$currentSequence = substr($line, 1);
-			$currentSequence =~ s/\s.+//;
-		}
-		else
-		{
-			$R{$currentSequence} .= $line;
-		}
-	}	
-	close(F);
-		
-	return \%R;
 }
 

@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use Getopt::Long;   
 use Data::Dumper;
@@ -17,8 +20,7 @@ $| = 1;
 # ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
 # ./CALLMAFFT.pl --action processChunk --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --chunkI 0
 #samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam 
-#samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam 
-# ./fas2bam.pl --input /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.mfa --output /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam --ref "ref" --bamheader ../config/windowbam.header.txt; samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam; ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa
+#samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam
 
 # ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa
 # ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.fa
@@ -286,7 +288,6 @@ elsif($action eq 'processChunk')
 		
 		makeMSA($file, $msaFile);
 		makeBAM($msaFile, $bamFile);
-		#checkBAM($bamFile, $file);
 		# todo
 		#unlink($msaFile);
 	}
@@ -296,40 +297,6 @@ else
 	die "Specified unknown --action $action";
 }
 
-sub checkBAM
-{
-	my $BAM = shift;
-	my $fasta = shift;
-	
-	my $BAM_sorted = $BAM . '.sorted.bam';
-	my $BAM_sorted_bai = $BAM_sorted . '.bai';
-	
-	my $cmd_sort = qq(samtools sort -o $BAM_sorted $BAM);
-	if(system($cmd_sort))
-	{
-		die "Command $cmd_sort failed";
-	}
-	
-	my $cmd_index = qq(samtools index $BAM_sorted);
-	if(system($cmd_index))
-	{
-		die "Command $cmd_index failed";
-	}	
-	
-	unless(-e $BAM_sorted_bai)
-	{
-		die "Expected file $BAM_sorted_bai not present!";
-	}
-	
-	my $command_check = qq($validateMSABAM --BAM $BAM_sorted --referenceFasta $fasta);
-	if(system($command_check))
-	{
-		die "Command $command_check failed";
-	}
-	
-	unlink($BAM_sorted);
-	unlink($BAM_sorted_bai);
-}
 
 sub makeBAM
 {
@@ -530,25 +497,6 @@ sub validate_as_alignment
 		die "File $inputFile does not contain any sequences.";
 	}
 	
-}
-
-sub count_FASTA_sequences
-{
-	my $file = shift;
-	
-	my $n_sequences = 0;
-	open(F, '<', $file) or die "Cannot open $file";
-	while(<F>)
-	{
-		my $line = $_;
-		if($line and(substr($line, 0, 1) eq '>'))
-		{
-			$n_sequences++;
-		}
-	}
-	close(F);
-	
-	return $n_sequences;
 }
 
 sub find_present_alternative

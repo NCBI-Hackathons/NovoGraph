@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use Bio::DB::Sam;
 use Getopt::Long;   
@@ -36,8 +39,6 @@ while (<$fh>) {
   push @samples, $_;
 }
 close $fh;
-
-# printHeader();
 
 my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
@@ -106,13 +107,4 @@ sub outputVCF {
   }
 }
 
-sub printHeader {
-  my $columnsString = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO";
-  print qq{##fileformat=VCFv4.2
-##fileDate=20161026
-##source=BAM2VCF.pl
-##reference=file://$referenceFasta
-##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
-$columnsString
-};
-}
+

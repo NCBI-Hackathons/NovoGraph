@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -63,7 +66,6 @@ chomp($alignments_headerLine);
 my @alignments_headerFields = split(/\t/, $alignments_headerLine);
 die unless($alignments_headerFields[0] eq 'readID');
 
-#my $fn_truncated = 
 my $n_output_alignments = 0;
 my $n_chains_sum = 0;
 my $n_alignments_leftGapsRemoved = 0;
@@ -648,10 +650,6 @@ print "Sorting and indexing BAM with command:\n\t$cmd_bam_sort\n\n";
 die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
 
 print "Produced BAM file $outputFile\n\n";
-
-#unlink($bam_unsorted);
-#unlink($outputFile_sam);
-#unlink($outputFile_sam_filtered);
 
 sub which_max
 {
