@@ -18,13 +18,13 @@ samtools index SevenGenomesPlusGRCh38Alts.bam
 ## Check that there are no unmapped reads in the input BAM because this might lead to unknown behaviour:
 samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
 
-perl BAM2AARTI.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AartiInput
+perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
 
-## Expect output '../intermediate_files/AartiInput.sortedWithHeader' 
+## Expect output '../intermediate_files/AlignmentInput.sortedWithHeader'
 
 perl checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
 
-perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AartiInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
+perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
 
 perl BAM2MAFFT.pl --BAM ../intermediate_files/forMAFFT.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputDirectory .../intermediate_files/forMAFFT --inputTruncatedReads .../intermediate_files/truncatedReads 
 
