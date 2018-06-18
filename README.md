@@ -1,6 +1,6 @@
 # Graph Genome of Human Assemblies
 
-A genome graph representation of seven ethnically-diverse human genomes, constructed using an algorithmically novel approach.
+An algorithmically novel approach to construct a genome graph representation of seven ethnically-diverse human genomes.
 
 This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
 
