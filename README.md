@@ -68,7 +68,7 @@ perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram --ref
 
 Evan Biederstedt (NYGC, WCM)
 
-Alexander Dilthey (NIH)
+Alexander Dilthey (NHGRI-NIH, HHU/UKD)
 
 Nathan Dunn (LBNL)
 
