@@ -1,0 +1,171 @@
+
+
+## April 17, 2018
+
+library(VariantAnnotation)
+library(data.table)
+library(ggplot2)
+
+
+### http://www.internationalgenome.org/wiki/Analysis/vcf4.0/
+
+## if length(ALT) > length(REF), then insertion
+## if length(ALT) < length(REF), then deletion
+
+## dt = gr2dt(foo) ## convert GRanges to data.table
+##  INTERESTING BUG!!
+## ALT is a <DNAStringSet>
+
+
+chromY = readVcf('chrY_only.vcf') 
+
+fixed_chromY = fixed(chromY)
+
+fixed_chromY$QUAL = NULL
+
+fixed_chromY$FILTER = NULL
+
+fixed_chromY$ALT = CharacterList(fixed_chromY$ALT)
+
+dt = as.data.table(fixed_chromY)
+
+print(dim(dt))
+
+## CHR Y
+##  261585      2 
+
+
+dt$REF = as.character(dt$REF)
+
+dt$ALT = as.character(dt$ALT)
+
+
+counts = dt[, do.call(rbind, mapply(function(x, snd) {
+    lens = nchar(x[x!=""])
+    longer = lens[lens > snd]
+    if (length(longer) == 0L){
+        longer = 0L
+    }
+    shorter = lens[lens < snd]
+    if (length(shorter) == 0L){
+        shorter = 0L
+    }
+    list(list(longer), list(shorter))
+}, strsplit(ALT, ",| "), nchar(REF), SIMPLIFY=FALSE)), by=seq_len(dt[,.N])]
+
+
+
+counts[, INS_length := V1]
+counts[, DEL_length := V2]
+counts[, VCF_pos := seq_len]
+counts[, V1:= NULL]
+counts[, V2:=NULL]
+counts[, seq_len:=NULL]
+
+setcolorder(counts, c("VCF_pos", "INS_length", "DEL_length"))
+
+
+## now, create vector of insertions and deletions
+
+
+total_insertions = unlist(counts$INS_length)
+total_deletions = unlist(counts$DEL_length)
+
+
+print(length(total_insertions))
+## 292201  
+
+print(length(total_deletions))
+## 328778 
+
+
+
+### remove the zeros, as we won't need them
+
+total_insertions = total_insertions[total_insertions != 0]
+
+total_deletions = total_deletions[total_deletions != 0]
+
+
+print(length(total_insertions))
+## 75948 
+
+print(length(total_deletions))
+## 167367 
+
+
+
+insdt = data.table(insertions = total_insertions)
+
+
+deldt = data.table(deletions = total_deletions)
+
+
+##  > head(table(deldt))
+##  deldt
+##  1      2      3      4      5      6
+##  93068  3555  1213   624  1130   349 
+
+## > head(table(insdt))
+## insdt
+## 2     3     4     5     6     7
+## 21694  2451  1480 15854 10113  5167  
+
+
+## first plot lengths from 2 to 50, and then the rest
+
+
+
+print(max(insdt$insertions))
+## 184141
+
+print(max(deldt$deletions))
+## 183686 
+
+library(skitools)
+
+
+plt1 = ggplot(insdt, aes(x=insertions)) + geom_histogram(binwidth=1, col="#46ACC8") + scale_x_continuous(limits = c(1, 50)) + ylim(0, 22000) + 
+    labs(title="ChromY, Insertion lengths <= 50, binwidth=1") + labs(y="Count", x="Insertion Lengths")
+
+
+ppdf(print(plt1))
+
+
+
+plt2 = ggplot(deldt, aes(x=deletions)) + geom_histogram(binwidth=1, col="#46ACC8") + scale_x_continuous(limits = c(1, 50)) + ylim(0, 22000) + 
+    labs(title="ChromY, Deletions lengths <= 50, binwidth=1") + labs(y="Count", x="Deletion Lengths")  
+
+
+
+ppdf(print(plt2))
+
+
+########### now the rest
+
+print(dim(insdt)[1])
+## 75948
+
+print(dim(deldt)[1])  
+## 167367
+
+
+plt3 = ggplot(insdt, aes(x=insertions)) + geom_histogram(binwidth=5, col="#46ACC8") + scale_x_continuous(limits = c(51, 168000)) +
+    labs(title="ChromY, Insertion lengths > 50, binwidth=5") + labs(y="Count", x="Insertion Lengths")  
+
+
+ppdf(print(plt3))
+
+
+plt4 = ggplot(deldt, aes(x=deletions)) + geom_histogram(binwidth=5, col="#46ACC8") + scale_x_continuous(limits = c(51, 168000)) +
+    labs(title="ChromY, Deletion lengths > 50, binwidth=5") + labs(y="Count", x="Deletion Lengths")
+
+ppdf(print(plt4))
+
+
+fwrite(insdt, file = "chromY_insertions.csv", sep = ",")
+
+fwrite(deldt, file = "chromY_deletions.csv", sep = ",")   
+
+print('end')
+

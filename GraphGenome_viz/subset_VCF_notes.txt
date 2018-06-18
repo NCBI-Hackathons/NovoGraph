@@ -1,0 +1,499 @@
+
+## 15 April 2018
+
+ADDED TO HEADER
+
+bash:mskilab01:~/VCF 1012 $ head -n 35 graph_v2_test.vcf 
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr1,length=248956422>
+##contig=<ID=chr2,length=242193529>
+##contig=<ID=chr3,length=198295559>
+##contig=<ID=chr4,length=190214555>
+##contig=<ID=chr5,length=181538259>
+##contig=<ID=chr6,length=170805979>
+##contig=<ID=chr7,length=159345973>
+##contig=<ID=chr8,length=145138636>
+##contig=<ID=chr9,length=138394717>
+##contig=<ID=chr10,length=133797422>
+##contig=<ID=chr11,length=135086622>
+##contig=<ID=chr12,length=133275309>
+##contig=<ID=chr13,length=114364328>
+##contig=<ID=chr14,length=107043718>
+##contig=<ID=chr15,length=101991189>
+##contig=<ID=chr16,length=90338345>
+##contig=<ID=chr17,length=83257441>
+##contig=<ID=chr18,length=80373285>
+##contig=<ID=chr19,length=58617616>
+##contig=<ID=chr20,length=64444167>
+##contig=<ID=chr21,length=46709983>
+##contig=<ID=chr22,length=50818468>
+##contig=<ID=chrX,length=156040895>
+##contig=<ID=chrY,length=57227415>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+
+
+GREP COMMAND:
+
+grep -w '^#\|^#CHROM\|^chr1' uber_vcf.vcf > uber_vcf_chr1only.vcf
+
+
+
+VCF SIZES:
+
+-bash:mskilab01:~/VCF 1003 $ du -sh graph_v2.vcf
+93G	graph_v2.vcf
+-bash:mskilab01:~/VCF 1004 $ du -sh chr1_only.vcf
+4.8G	chr1_only.vcf
+-bash:mskilab01:~/VCF 1005 $ du -sh chr2_only.vcf
+498M	chr2_only.vcf
+-bash:mskilab01:~/VCF 1006 $ du -sh chr3_only.vcf
+662M	chr3_only.vcf
+-bash:mskilab01:~/VCF 1007 $ du -sh chr4_only.vcf
+2.3G	chr4_only.vcf
+-bash:mskilab01:~/VCF 1008 $ du -sh chr5_only.vcf
+749M	chr5_only.vcf
+-bash:mskilab01:~/VCF 1009 $ du -sh chr6_only.vcf
+1.1G	chr6_only.vcf
+-bash:mskilab01:~/VCF 1010 $ du -sh chr7_only.vcf
+1.1G	chr7_only.vcf
+-bash:mskilab01:~/VCF 1011 $ du -sh chr8_only.vcf
+87M	chr8_only.vcf
+-bash:mskilab01:~/VCF 1012 $ du -sh chr9_only.vcf
+1.7G	chr9_only.vcf
+-bash:mskilab01:~/VCF 1013 $ du -sh chr10_only.vcf
+1.2G	chr10_only.vcf
+-bash:mskilab01:~/VCF 1014 $ du -sh chr11_only.vcf
+595M	chr11_only.vcf
+-bash:mskilab01:~/VCF 1015 $ du -sh chr12_only.vcf
+970M	chr12_only.vcf
+-bash:mskilab01:~/VCF 1016 $ du -sh chr13_only.vcf
+2.0G	chr13_only.vcf
+-bash:mskilab01:~/VCF 1017 $ du -sh chr14_only.vcf
+138M	chr14_only.vcf
+-bash:mskilab01:~/VCF 1018 $ du -sh chr15_only.vcf
+440M	chr15_only.vcf
+-bash:mskilab01:~/VCF 1019 $ du -sh chr16_only.vcf
+2.0G	chr16_only.vcf
+-bash:mskilab01:~/VCF 1020 $ du -sh chr17_only.vcf
+159M	chr17_only.vcf
+-bash:mskilab01:~/VCF 1021 $ du -sh chr18_only.vcf
+1.4G	chr18_only.vcf
+-bash:mskilab01:~/VCF 1022 $ du -sh chr19_only.vcf
+366M	chr19_only.vcf
+-bash:mskilab01:~/VCF 1023 $ du -sh chr20_only.vcf
+1.5G	chr20_only.vcf
+-bash:mskilab01:~/VCF 1024 $ du -sh chr21_only.vcf
+833M	chr21_only.vcf
+-bash:mskilab01:~/VCF 1025 $ du -sh chr22_only.vcf
+131M	chr22_only.vcf
+-bash:mskilab01:~/VCF 1026 $ du -sh chrX_only.vcf
+3.4G	chrX_only.vcf
+-bash:mskilab01:~/VCF 1027 $ du -sh chrY_only.vcf
+582M	chrY_only.vcf
+
+
+-bash:mskilab01:~/VCF 1002 $ head chr15_only.vcf
+chr15	17007249	.	GC	G,GG	.	PASS	.
+chr15	17007280	.	C	A	.	PASS	.
+chr15	17007300	.	T	G	.	PASS	.
+chr15	17007329	.	T	A	.	PASS	.
+chr15	17007332	.	C	T	.	PASS	.
+chr15	17007386	.	C	A	.	PASS	.
+chr15	17007403	.	G	T	.	PASS	.
+chr15	17007407	.	C	T	.	PASS	.
+chr15	17007410	.	C	T	.	PASS	.
+chr15	17007439	.	A	T	.	PASS	.
+-bash:mskilab01:~/VCF 1003 $ tail chr15_only.vcf
+chr15	101980998	.	TAG	TTA	.	PASS	.
+chr15	101981012	.	AGGGGTTAGGGGTTAGGGGTTAG	A,AGGGGTTGGGGTTGGGGTTAGPASS	.
+chr15	101981039	.	G	A	.	PASS	.
+chr15	101981056	.	TAG	TA,TG	.	PASS	.
+chr15	101981091	.	TAGGG	T	.	PASS	.
+chr15	101981096	.	TTA	TAG	.	PASS	.
+chr15	101981101	.	G	T	.	PASS	.
+chr15	101981118	.	GGT	G	.	PASS	.
+chr15	101981162	.	T	G	.	PASS	.
+chr15	101981190	.	N	G	.	PASS	.
+
+
+
+
+
+-bash:mskilab01:~/VCF 1004 $ head chr16_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr16,length=90338345>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr16	10054	.	A	C	.	PASS	.
+chr16	10087	.	C	G	.	PASS	.
+chr16	10095	.	G	T	.	PASS	.
+chr16	10120	.	G	A	.	PASS	.
+
+
+-bash:mskilab01:~/VCF 1006 $ head chr21_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr21,length=46709983>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr21	5216481	.	T	A	.	PASS	.
+chr21	5216564	.	T	C	.	PASS	.
+chr21	5216710	.	A	T	.	PASS	.
+chr21	5216724	.	G	A	.	PASS	.
+
+
+
+-bash:mskilab01:~/VCF 1006 $ head chr22_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr22,length=50818468>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr22	10537143	.	TGA	TCG	.	PASS	.
+chr22	10537155	.	A	G	.	PASS	.
+chr22	10537170	.	ATG	ACA	.	PASS	.
+chr22	10537175	.	GAG	GGT	.	PASS	.
+
+
+-bash:mskilab01:~/VCF 1007 $ head chr22_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr22,length=50818468>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr22	10537143	.	TGA	TCG	.	PASS	.
+chr22	10537155	.	A	G	.	PASS	.
+chr22	10537170	.	ATG	ACA	.	PASS	.
+chr22	10537175	.	GAG	GGT	.	PASS	.
+
+
+
+-bash:mskilab01:~/VCF 1008 $ head chrY_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chrY,length=57227415>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chrY	2781476	.	NNNN	NTAA	.	PASS	.
+chrY	2781652	.	C	T	.	PASS	.
+chrY	2781761	.	CA	C	.	PASS	.
+chrY	2783842	.	CT	C	.	PASS	.
+
+
+-bash:mskilab01:~/VCF 1009 $ head chrX_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chrX,length=156040895>
+##contig=<ID=chrY,length=57227415>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chrX	13742	.	C	A	.	PASS	.
+chrX	13751	.	A	G	.	PASS	.
+chrX	13758	.	G	GA	.	PASS	.
+
+
+########################################
+
+
+-bash:mskilab01:~/VCF 1010 $ head chr1_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr1,length=248956422>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	10007	.	T	C	.	PASS	.
+chr1	10013	.	T	C	.	PASS	.
+chr1	10019	.	T	C	.	PASS	.
+chr1	10025	.	T	C	.	PASS	.
+-bash:mskilab01:~/VCF 1011 $ head chr2_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr2,length=242193529>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr2	10184	.	CTA	CCT	.	PASS	.
+chr2	10190	.	CCTAAC	CCTAACCCTAA,CTAA	.	PASS	.
+chr2	10211	.	T	TA,TAACA	.	PASS	.
+chr2	10213	.	C	A	.	PASS	.
+-bash:mskilab01:~/VCF 1012 $ head chr3_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr3,length=198295559>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr3	10013	.	CT	C	.	PASS	.
+chr3	10049	.	CTC	CCA,CTA	.	PASS	.
+chr3	10055	.	CTACCCTAACCCTAACCCTAACCCTCACCCTCACCCTCACTC	CCAACCCCAACCCCAACCCCAACCCCAACCCCAACCCC,CTT	.	PASS	.
+chr3	10107	.	CTC	CCA,CTA	.	PASS	.
+-bash:mskilab01:~/VCF 1013 $ head chr4_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr4,length=190214555>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr4	10037	.	C	A	.	PASS	.
+chr4	10052	.	TTA	T	.	PASS	.
+chr4	10056	.	C	A	.	PASS	.
+chr4	10059	.	T	C	.	PASS	.
+-bash:mskilab01:~/VCF 1014 $ head chr5_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr5,length=181538259>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr5	10021	.	ACCCTA	A,ACCTA	.	PASS	.
+chr5	10034	.	C	CA	.	PASS	.
+chr5	10038	.	AACCCT	A	.	PASS	.
+chr5	10069	.	AC	A	.	PASS	.
+-bash:mskilab01:~/VCF 1015 $ head chr5_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr5,length=181538259>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr5	10021	.	ACCCTA	A,ACCTA	.	PASS	.
+chr5	10034	.	C	CA	.	PASS	.
+chr5	10038	.	AACCCT	A	.	PASS	.
+chr5	10069	.	AC	A	.	PASS	.
+-bash:mskilab01:~/VCF 1015 $ head chr6_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr6,length=170805979>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr6	63842	.	CTT	C	.	PASS	.
+chr6	64519	.	C	G	.	PASS	.
+chr6	64857	.	A	T	.	PASS	.
+chr6	67961	.	C	T	.	PASS	.
+-bash:mskilab01:~/VCF 1016 $ head chr7_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr7,length=159345973>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr7	20249	.	T	A	.	PASS	.
+chr7	20259	.	G	C	.	PASS	.
+chr7	20273	.	G	A	.	PASS	.
+chr7	20284	.	A	G	.	PASS	.
+-bash:mskilab01:~/VCF 1017 $ head chr8_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr8,length=145138636>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr8	69608	.	GC	G	.	PASS	.
+chr8	69621	.	AAC	A	.	PASS	.
+chr8	69644	.	TG	T	.	PASS	.
+chr8	69893	.	TC	T	.	PASS	.
+-bash:mskilab01:~/VCF 1018 $ head chr9_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr9,length=138394717>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr9	10013	.	T	C	.	PASS	.
+chr9	10030	.	C	T	.	PASS	.
+chr9	10032	.	C	A	.	PASS	.
+chr9	10035	.	C	CTA	.	PASS	.
+-bash:mskilab01:~/VCF 1019 $ head chr10_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr10,length=133797422>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr10	10310	.	AC	A	.	PASS	.
+chr10	10904	.	C	G	.	PASS	.
+chr10	11027	.	G	A	.	PASS	.
+chr10	11059	.	G	C	.	PASS	.
+-bash:mskilab01:~/VCF 1020 $ head chr11_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr11,length=135086622>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr11	64119	.	A	AT	.	PASS	.
+chr11	64269	.	AT	A	.	PASS	.
+chr11	65109	.	A	ATT	.	PASS	.
+chr11	65409	.	TG	T	.	PASS	.
+-bash:mskilab01:~/VCF 1021 $ head chr12_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr12,length=133275309>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr12	10115	.	T	C	.	PASS	.
+chr12	10146	.	T	TA	.	PASS	.
+chr12	10151	.	C	T	.	PASS	.
+chr12	10165	.	AC	A	.	PASS	.
+-bash:mskilab01:~/VCF 1022 $ head chr13_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr13,length=114364328>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr13	16011677	.	ACTC	AACA	.	PASS	.
+chr13	16011688	.	C	G	.	PASS	.
+chr13	16011691	.	G	A	.	PASS	.
+chr13	16011699	.	C	A	.	PASS	.
+-bash:mskilab01:~/VCF 1023 $ head chr14_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr14,length=107043718>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr14	16023594	.	GA	G	.	PASS	.
+chr14	16023604	.	A	G	.	PASS	.
+chr14	16023633	.	TC	T	.	PASS	.
+chr14	16023650	.	GA	G	.	PASS	.
+-bash:mskilab01:~/VCF 1024 $ head chr15_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr15,length=101991189>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr15	17007249	.	GC	G,GG	.	PASS	.
+chr15	17007280	.	C	A	.	PASS	.
+chr15	17007300	.	T	G	.	PASS	.
+chr15	17007329	.	T	A	.	PASS	.
+-bash:mskilab01:~/VCF 1025 $ head chr16_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr16,length=90338345>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr16	10054	.	A	C	.	PASS	.
+chr16	10087	.	C	G	.	PASS	.
+chr16	10095	.	G	T	.	PASS	.
+chr16	10120	.	G	A	.	PASS	.
+-bash:mskilab01:~/VCF 1026 $ head chr17_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr17,length=83257441>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr17	62984	.	G	C	.	PASS	.
+chr17	63003	.	G	A	.	PASS	.
+chr17	63019	.	T	G	.	PASS	.
+chr17	63059	.	G	T	.	PASS	.
+-bash:mskilab01:~/VCF 1027 $ head chr18_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr18,length=80373285>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr18	10023	.	T	A	.	PASS	.
+chr18	10079	.	C	A	.	PASS	.
+chr18	10082	.	T	C	.	PASS	.
+chr18	10088	.	T	C	.	PASS	.
+-bash:mskilab01:~/VCF 1028 $ head chr19_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr19,length=58617616>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr19	61293	.	A	G	.	PASS	.
+chr19	62477	.	C	T	.	PASS	.
+chr19	62508	.	A	G	.	PASS	.
+chr19	62533	.	G	A	.	PASS	.
+-bash:mskilab01:~/VCF 1029 $ head chr20_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr20,length=64444167>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr20	60011	.	GG	G	.	PASS	.
+chr20	60134	.	T	C	.	PASS	.
+chr20	60158	.	A	G	.	PASS	.
+chr20	60179	.	AC	A	.	PASS	.
+-bash:mskilab01:~/VCF 1030 $ head chr21_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr21,length=46709983>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr21	5216481	.	T	A	.	PASS	.
+chr21	5216564	.	T	C	.	PASS	.
+chr21	5216710	.	A	T	.	PASS	.
+chr21	5216724	.	G	A	.	PASS	.
+-bash:mskilab01:~/VCF 1031 $ head chr22_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chr22,length=50818468>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chr22	10537143	.	TGA	TCG	.	PASS	.
+chr22	10537155	.	A	G	.	PASS	.
+chr22	10537170	.	ATG	ACA	.	PASS	.
+chr22	10537175	.	GAG	GGT	.	PASS	.
+-bash:mskilab01:~/VCF 1032 $ head chrX_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chrX,length=156040895>
+##contig=<ID=chrY,length=57227415>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chrX	13742	.	C	A	.	PASS	.
+chrX	13751	.	A	G	.	PASS	.
+chrX	13758	.	G	GA	.	PASS	.
+-bash:mskilab01:~/VCF 1033 $ head chrY_only.vcf
+##fileformat=VCFv4.2
+##fileDate=20161026
+##source=BAM2VCF.pl
+##reference=file:///data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##contig=<ID=chrY,length=57227415>
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
+chrY	2781476	.	NNNN	NTAA	.	PASS	.
+chrY	2781652	.	C	T	.	PASS	.
+chrY	2781761	.	CA	C	.	PASS	.
+chrY	2783842	.	CT	C	.	PASS	.
+-bash:mskilab01:~/VCF 1034 $ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

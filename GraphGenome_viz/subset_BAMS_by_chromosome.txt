@@ -1,0 +1,225 @@
+
+
+
+/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/subset_BAMs_by_chrom
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1005 $ pwd
+/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data
+$ cp *.contigs.bam subset_BAMs_by_chrom
+$ cp *.contigs.bam.bai subset_BAMs_by_chrom
+
+$ module unload samtools/1.1
+$ module load samtools/1.6
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/subset_BAMs_by_chrom 1020 $ which samtools
+/nfs/sw/samtools/samtools-1.6/bin/samtools
+
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1045 $ cp *no800.bam.bai subset_BAMs_by_chrom
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1046 $ cp *no800.bam subset_BAMs_by_chrom
+
+RECALL:
+
+## using these BAM's with supplementary alignments removed
+
+## samtools view -F 0x800 -b  Korean.contigs.bam > Korean.no800.bam
+## samtools view -F 0x800 -b  CHM13.contigs.bam > CHM13.no800.bam
+## samtools view -F 0x800 -b  CHM1.contigs.bam > CHM1.no800.bam
+## samtools view -F 0x800 -b  HG003.contigs.bam > HG003.no800.bam
+## samtools view -F 0x800 -b  HG004.contigs.bam > HG004.no800.bam
+## samtools view -F 0x800 -b  HX1.contigs.bam > HX1.no800.bam
+## samtools view -F 0x800 -b  NA19240.contigs.bam > NA19240.no800.bam
+
+
+samtools view CHM13.no800.bam chr1 -b > CHM13.no800.chr1.bam
+samtools view CHM13.no800.bam chr2 -b > CHM13.no800.chr2.bam
+samtools view CHM13.no800.bam chr3 -b > CHM13.no800.chr3.bam
+samtools view CHM13.no800.bam chr4 -b > CHM13.no800.chr4.bam
+samtools view CHM13.no800.bam chr5 -b > CHM13.no800.chr5.bam
+samtools view CHM13.no800.bam chr6 -b > CHM13.no800.chr6.bam
+samtools view CHM13.no800.bam chr7 -b > CHM13.no800.chr7.bam
+samtools view CHM13.no800.bam chr8 -b > CHM13.no800.chr8.bam
+samtools view CHM13.no800.bam chr9 -b > CHM13.no800.chr9.bam
+samtools view CHM13.no800.bam chr10 -b > CHM13.no800.chr10.bam
+samtools view CHM13.no800.bam chr11 -b > CHM13.no800.chr11.bam
+samtools view CHM13.no800.bam chr12 -b > CHM13.no800.chr12.bam
+samtools view CHM13.no800.bam chr13 -b > CHM13.no800.chr13.bam
+samtools view CHM13.no800.bam chr14 -b > CHM13.no800.chr14.bam
+samtools view CHM13.no800.bam chr15 -b > CHM13.no800.chr15.bam
+samtools view CHM13.no800.bam chr16 -b > CHM13.no800.chr16.bam
+samtools view CHM13.no800.bam chr17 -b > CHM13.no800.chr17.bam
+samtools view CHM13.no800.bam chr18 -b > CHM13.no800.chr18.bam
+samtools view CHM13.no800.bam chr19 -b > CHM13.no800.chr19.bam
+samtools view CHM13.no800.bam chr20 -b > CHM13.no800.chr20.bam
+samtools view CHM13.no800.bam chr21 -b > CHM13.no800.chr21.bam
+samtools view CHM13.no800.bam chr22 -b > CHM13.no800.chr22.bam
+samtools view CHM13.no800.bam chrX -b > CHM13.no800.chrX.bam
+samtools view CHM13.no800.bam chrY -b > CHM13.no800.chrY.bam
+
+
+
+
+samtools view CHM1.no800.bam chr1 -b > CHM1.no800.chr1.bam
+samtools view CHM1.no800.bam chr2 -b > CHM1.no800.chr2.bam
+samtools view CHM1.no800.bam chr3 -b > CHM1.no800.chr3.bam
+samtools view CHM1.no800.bam chr4 -b > CHM1.no800.chr4.bam
+samtools view CHM1.no800.bam chr5 -b > CHM1.no800.chr5.bam
+samtools view CHM1.no800.bam chr6 -b > CHM1.no800.chr6.bam
+samtools view CHM1.no800.bam chr7 -b > CHM1.no800.chr7.bam
+samtools view CHM1.no800.bam chr8 -b > CHM1.no800.chr8.bam
+samtools view CHM1.no800.bam chr9 -b > CHM1.no800.chr9.bam
+samtools view CHM1.no800.bam chr10 -b > CHM1.no800.chr10.bam
+samtools view CHM1.no800.bam chr11 -b > CHM1.no800.chr11.bam
+samtools view CHM1.no800.bam chr12 -b > CHM1.no800.chr12.bam
+samtools view CHM1.no800.bam chr13 -b > CHM1.no800.chr13.bam
+samtools view CHM1.no800.bam chr14 -b > CHM1.no800.chr14.bam
+samtools view CHM1.no800.bam chr15 -b > CHM1.no800.chr15.bam
+samtools view CHM1.no800.bam chr16 -b > CHM1.no800.chr16.bam
+samtools view CHM1.no800.bam chr17 -b > CHM1.no800.chr17.bam
+samtools view CHM1.no800.bam chr18 -b > CHM1.no800.chr18.bam
+samtools view CHM1.no800.bam chr19 -b > CHM1.no800.chr19.bam
+samtools view CHM1.no800.bam chr20 -b > CHM1.no800.chr20.bam
+samtools view CHM1.no800.bam chr21 -b > CHM1.no800.chr21.bam
+samtools view CHM1.no800.bam chr22 -b > CHM1.no800.chr22.bam
+samtools view CHM1.no800.bam chrX -b > CHM1.no800.chrX.bam
+samtools view CHM1.no800.bam chrY -b > CHM1.no800.chrY.bam
+
+
+
+samtools view Korean.no800.bam chr1 -b > Korean.no800.chr1.bam
+samtools view Korean.no800.bam chr2 -b > Korean.no800.chr2.bam
+samtools view Korean.no800.bam chr3 -b > Korean.no800.chr3.bam
+samtools view Korean.no800.bam chr4 -b > Korean.no800.chr4.bam
+samtools view Korean.no800.bam chr5 -b > Korean.no800.chr5.bam
+samtools view Korean.no800.bam chr6 -b > Korean.no800.chr6.bam
+samtools view Korean.no800.bam chr7 -b > Korean.no800.chr7.bam
+samtools view Korean.no800.bam chr8 -b > Korean.no800.chr8.bam
+samtools view Korean.no800.bam chr9 -b > Korean.no800.chr9.bam
+samtools view Korean.no800.bam chr10 -b > Korean.no800.chr10.bam
+samtools view Korean.no800.bam chr11 -b > Korean.no800.chr11.bam
+samtools view Korean.no800.bam chr12 -b > Korean.no800.chr12.bam
+samtools view Korean.no800.bam chr13 -b > Korean.no800.chr13.bam
+samtools view Korean.no800.bam chr14 -b > Korean.no800.chr14.bam
+samtools view Korean.no800.bam chr15 -b > Korean.no800.chr15.bam
+samtools view Korean.no800.bam chr16 -b > Korean.no800.chr16.bam
+samtools view Korean.no800.bam chr17 -b > Korean.no800.chr17.bam
+samtools view Korean.no800.bam chr18 -b > Korean.no800.chr18.bam
+samtools view Korean.no800.bam chr19 -b > Korean.no800.chr19.bam
+samtools view Korean.no800.bam chr20 -b > Korean.no800.chr20.bam
+samtools view Korean.no800.bam chr21 -b > Korean.no800.chr21.bam
+samtools view Korean.no800.bam chr22 -b > Korean.no800.chr22.bam
+samtools view Korean.no800.bam chrX -b > Korean.no800.chrX.bam
+samtools view Korean.no800.bam chrY -b > Korean.no800.chrY.bam
+
+
+samtools view HX1.no800.bam chr1 -b > HX1.no800.chr1.bam
+samtools view HX1.no800.bam chr2 -b > HX1.no800.chr2.bam
+samtools view HX1.no800.bam chr3 -b > HX1.no800.chr3.bam
+samtools view HX1.no800.bam chr4 -b > HX1.no800.chr4.bam
+samtools view HX1.no800.bam chr5 -b > HX1.no800.chr5.bam
+samtools view HX1.no800.bam chr6 -b > HX1.no800.chr6.bam
+samtools view HX1.no800.bam chr7 -b > HX1.no800.chr7.bam
+samtools view HX1.no800.bam chr8 -b > HX1.no800.chr8.bam
+samtools view HX1.no800.bam chr9 -b > HX1.no800.chr9.bam
+samtools view HX1.no800.bam chr10 -b > HX1.no800.chr10.bam
+samtools view HX1.no800.bam chr11 -b > HX1.no800.chr11.bam
+samtools view HX1.no800.bam chr12 -b > HX1.no800.chr12.bam
+samtools view HX1.no800.bam chr13 -b > HX1.no800.chr13.bam
+samtools view HX1.no800.bam chr14 -b > HX1.no800.chr14.bam
+samtools view HX1.no800.bam chr15 -b > HX1.no800.chr15.bam
+samtools view HX1.no800.bam chr16 -b > HX1.no800.chr16.bam
+samtools view HX1.no800.bam chr17 -b > HX1.no800.chr17.bam
+samtools view HX1.no800.bam chr18 -b > HX1.no800.chr18.bam
+samtools view HX1.no800.bam chr19 -b > HX1.no800.chr19.bam
+samtools view HX1.no800.bam chr20 -b > HX1.no800.chr20.bam
+samtools view HX1.no800.bam chr21 -b > HX1.no800.chr21.bam
+samtools view HX1.no800.bam chr22 -b > HX1.no800.chr22.bam
+samtools view HX1.no800.bam chrX -b > HX1.no800.chrX.bam
+samtools view HX1.no800.bam chrY -b > HX1.no800.chrY.bam
+
+
+
+
+
+samtools view HG003.no800.bam chr1 -b > HG003.no800.chr1.bam
+samtools view HG003.no800.bam chr2 -b > HG003.no800.chr2.bam
+samtools view HG003.no800.bam chr3 -b > HG003.no800.chr3.bam
+samtools view HG003.no800.bam chr4 -b > HG003.no800.chr4.bam
+samtools view HG003.no800.bam chr5 -b > HG003.no800.chr5.bam
+samtools view HG003.no800.bam chr6 -b > HG003.no800.chr6.bam
+samtools view HG003.no800.bam chr7 -b > HG003.no800.chr7.bam
+samtools view HG003.no800.bam chr8 -b > HG003.no800.chr8.bam
+samtools view HG003.no800.bam chr9 -b > HG003.no800.chr9.bam
+samtools view HG003.no800.bam chr10 -b > HG003.no800.chr10.bam
+samtools view HG003.no800.bam chr11 -b > HG003.no800.chr11.bam
+samtools view HG003.no800.bam chr12 -b > HG003.no800.chr12.bam
+samtools view HG003.no800.bam chr13 -b > HG003.no800.chr13.bam
+samtools view HG003.no800.bam chr14 -b > HG003.no800.chr14.bam
+samtools view HG003.no800.bam chr15 -b > HG003.no800.chr15.bam
+samtools view HG003.no800.bam chr16 -b > HG003.no800.chr16.bam
+samtools view HG003.no800.bam chr17 -b > HG003.no800.chr17.bam
+samtools view HG003.no800.bam chr18 -b > HG003.no800.chr18.bam
+samtools view HG003.no800.bam chr19 -b > HG003.no800.chr19.bam
+samtools view HG003.no800.bam chr20 -b > HG003.no800.chr20.bam
+samtools view HG003.no800.bam chr21 -b > HG003.no800.chr21.bam
+samtools view HG003.no800.bam chr22 -b > HG003.no800.chr22.bam
+samtools view HG003.no800.bam chrX -b > HG003.no800.chrX.bam
+samtools view HG003.no800.bam chrY -b > HG003.no800.chrY.bam
+
+
+samtools view HG004.no800.bam chr1 -b > HG004.no800.chr1.bam
+samtools view HG004.no800.bam chr2 -b > HG004.no800.chr2.bam
+samtools view HG004.no800.bam chr3 -b > HG004.no800.chr3.bam
+samtools view HG004.no800.bam chr4 -b > HG004.no800.chr4.bam
+samtools view HG004.no800.bam chr5 -b > HG004.no800.chr5.bam
+samtools view HG004.no800.bam chr6 -b > HG004.no800.chr6.bam
+samtools view HG004.no800.bam chr7 -b > HG004.no800.chr7.bam
+samtools view HG004.no800.bam chr8 -b > HG004.no800.chr8.bam
+samtools view HG004.no800.bam chr9 -b > HG004.no800.chr9.bam
+samtools view HG004.no800.bam chr10 -b > HG004.no800.chr10.bam
+samtools view HG004.no800.bam chr11 -b > HG004.no800.chr11.bam
+samtools view HG004.no800.bam chr12 -b > HG004.no800.chr12.bam
+samtools view HG004.no800.bam chr13 -b > HG004.no800.chr13.bam
+samtools view HG004.no800.bam chr14 -b > HG004.no800.chr14.bam
+samtools view HG004.no800.bam chr15 -b > HG004.no800.chr15.bam
+samtools view HG004.no800.bam chr16 -b > HG004.no800.chr16.bam
+samtools view HG004.no800.bam chr17 -b > HG004.no800.chr17.bam
+samtools view HG004.no800.bam chr18 -b > HG004.no800.chr18.bam
+samtools view HG004.no800.bam chr19 -b > HG004.no800.chr19.bam
+samtools view HG004.no800.bam chr20 -b > HG004.no800.chr20.bam
+samtools view HG004.no800.bam chr21 -b > HG004.no800.chr21.bam
+samtools view HG004.no800.bam chr22 -b > HG004.no800.chr22.bam
+samtools view HG004.no800.bam chrX -b > HG004.no800.chrX.bam
+samtools view HG004.no800.bam chrY -b > HG004.no800.chrY.bam
+
+
+
+samtools view NA19240.no800.bam chr1 -b > NA19240.no800.chr1.bam
+samtools view NA19240.no800.bam chr2 -b > NA19240.no800.chr2.bam
+samtools view NA19240.no800.bam chr3 -b > NA19240.no800.chr3.bam
+samtools view NA19240.no800.bam chr4 -b > NA19240.no800.chr4.bam
+samtools view NA19240.no800.bam chr5 -b > NA19240.no800.chr5.bam
+samtools view NA19240.no800.bam chr6 -b > NA19240.no800.chr6.bam
+samtools view NA19240.no800.bam chr7 -b > NA19240.no800.chr7.bam
+samtools view NA19240.no800.bam chr8 -b > NA19240.no800.chr8.bam
+samtools view NA19240.no800.bam chr9 -b > NA19240.no800.chr9.bam
+samtools view NA19240.no800.bam chr10 -b > NA19240.no800.chr10.bam
+samtools view NA19240.no800.bam chr11 -b > NA19240.no800.chr11.bam
+samtools view NA19240.no800.bam chr12 -b > NA19240.no800.chr12.bam
+samtools view NA19240.no800.bam chr13 -b > NA19240.no800.chr13.bam
+samtools view NA19240.no800.bam chr14 -b > NA19240.no800.chr14.bam
+samtools view NA19240.no800.bam chr15 -b > NA19240.no800.chr15.bam
+samtools view NA19240.no800.bam chr16 -b > NA19240.no800.chr16.bam
+samtools view NA19240.no800.bam chr17 -b > NA19240.no800.chr17.bam
+samtools view NA19240.no800.bam chr18 -b > NA19240.no800.chr18.bam
+samtools view NA19240.no800.bam chr19 -b > NA19240.no800.chr19.bam
+samtools view NA19240.no800.bam chr20 -b > NA19240.no800.chr20.bam
+samtools view NA19240.no800.bam chr21 -b > NA19240.no800.chr21.bam
+samtools view NA19240.no800.bam chr22 -b > NA19240.no800.chr22.bam
+samtools view NA19240.no800.bam chrX -b > NA19240.no800.chrX.bam
+samtools view NA19240.no800.bam chrY -b > NA19240.no800.chrY.bam
+
+
+
+
+
