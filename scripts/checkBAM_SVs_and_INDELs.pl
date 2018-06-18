@@ -1,8 +1,11 @@
 #!/usr/bin/perl
 
+<<<<<<< HEAD
 ## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
 
+=======
+>>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
 use strict;
 use Data::Dumper;
 use Bio::DB::Sam;
@@ -19,6 +22,13 @@ my $outputFile = 'fromBAM_lengthStatistics.txt';
 my $readsFasta;
 my $lenientOrder = 1;
 
+<<<<<<< HEAD
+=======
+# $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
+# $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
+
+
+>>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
 # HX1.000608F
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
@@ -534,6 +544,24 @@ sub convertAlignmentToHash
 	};
 }
 
+<<<<<<< HEAD
+=======
+# my $bam          = Bio::DB::Bam->open($BAM);
+# my $header       = $bam->header;
+# my $target_count = $header->n_targets;
+# my $target_names = $header->target_name;
+# while (my $align = $bam->read1) {
+	# my $seqid     = $target_names->[$align->tid];
+	# my $start     = $align->pos+1;
+	# my $end       = $align->calend;
+	# my $cigar     = $align->cigar_str;
+	# my $readID = $align->query->name;
+	
+	# die ref($align);
+	# die $align->padded_alignment;
+	# die $readID;
+# }
+>>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
  
 sub readFASTA
 {

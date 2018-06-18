@@ -1,0 +1,137 @@
+
+
+####### 1 MAY 2018
+
+This is taking forever. Try 21, and reduce the lengths of the alleles in the VCF
+
+##
+## chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa created with 
+## $ samtools faidx  GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+## $ samtools faidx GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa chr21 > chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+## 
+##
+## NA12878
+## NANCY: “The Platinum reads are available at https://www.illumina.com/platinumgenomes.html.”
+## I believe I downloaded the SAM and FASTA from https://www.ebi.ac.uk/ena/data/view/SAMEA1573618 using SRA sam-dump, etc.
+## This also looks reasonable  ‘wget ftp://ftp.sra.ebi.ac.uk/vol1/ERA172/ERA172924/bam/NA12878_S1.bam'
+## 
+## I’m only using chrom 21
+## Using `bamtools` to split into multiple chromosomes for the future
+## ``nice bamtools split -in NA12878.bam -reference``
+##
+
+
+##### REF graph, chromosome 21 only
+
+## Create vg and indices
+
+/gpfs/commons/home/biederstedte-934/evan_projects/new_VCF_28April2018
+
+$ module load vg/1.6.1
+
+nice vg construct -r chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa > chr21_ref.vg
+
+
+nice vg index -Z 1600 -b /gpfs/commons/home/biederstedte-934/tmp_vg3 -t 30 -k 16 -x chr21_ref.xg -g chr21_ref.gcsa chr21_ref.vg
+
+
+NOTE: no pruning was used, this worked!
+
+
+## align reads from BAM
+
+bash:mskilab01:~/evan_projects/new_VCF_28April2018 1015 $ cat run1.sh
+```
+#!/usr/bin/env bash
+
+source ~/.bash_profile
+
+module load vg/1.6.1
+
+cd /gpfs/commons/home/biederstedte-934/evan_projects/new_VCF_28April2018
+
+vg map -t 30 -b  chrom21_only_sorted_NA12878.REF_chr21.bam  -x chr21_ref.xg -g chr21_ref.gcsa > ref_NA12878_only_chr21.gam
+
+```
+
+##### Graph Genome, chromosome 21 only
+
+
+## Create vg and indices
+
+/gpfs/commons/home/biederstedte-934/evan_projects/new_VCF_28April2018
+
+
+## filter VCF by line width of 50K
+
+/gpfs/commons/home/biederstedte-934/evan_projects/new_VCF_28April2018
+
+$ module load mskiperl
+
+nice  perl -lne 'length()<50000 && print' chr21_only.vcf > chr21_only50K.vcf
+
+
+nice vg construct -r chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v chr21_only50K.vcf.gz  > chr21_only50K.vg
+
+
+## must use pruning, or it breaks
+
+nice vg index -Z 1600 -b /gpfs/commons/home/biederstedte-934/tmp_vg3 -t 40 -k 16 -x chr21_only50K.xg chr21_only50K.vg
+
+nice vg prune chr21_only50K.vg > chr21_only50K.pruned.vg
+
+nice vg index -Z 1600 -b /gpfs/commons/home/biederstedte-934/tmp_vg3 -t 40 -k 16 -g chr21_only50K.gcsa  chr21_only50K.pruned.vg
+
+
+
+$ cat run2.sh
+```
+#!/usr/bin/env bash
+
+source ~/.bash_profile
+
+module load vg/1.6.1
+
+cd /gpfs/commons/home/biederstedte-934/evan_projects/new_VCF_28April2018
+
+vg map -t 70 -b  chrom21_only_sorted_NA12878.REF_chr21.bam  -x chr21_only50K.xg -g chr21_only50K.gcsa > graph_NA12878_only_chr21.gam
+```
+
+
+bash:mskilab01:~/evan_projects/new_VCF_28April2018 1018 $ ls chr21_only*
+chr21_only50K.gcsa       chr21_only50K.vcf.gz      chr21_only50K.xg                                                   chr21_only.vcf
+chr21_only50K.gcsa.lcp   chr21_only50K.vcf.gz.tbi  chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa      chr21_only.vcf.gz
+chr21_only50K.pruned.vg  chr21_only50K.vg          chr21_only_GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa.fai  chr21_only.vcf.gz.tbi
+
+bash:mskilab01:~/evan_projects/new_VCF_28April2018 1019 $ ls chr21_ref*
+chr21_ref.gcsa  chr21_ref.gcsa.lcp  chr21_ref.vg  chr21_ref.xg
+
+bash:mskilab01:~/evan_projects/new_VCF_28April2018 1020 $ ls *.gam
+graph_NA12878_only_chr21.gam  ref_NA12878_only_chr21.gam
+
+
+Uploaded to NYGC public FTP server
+publicftp/chrom21_only3May2018
+
+chr21_only50K.gcsa                            100%  232MB 115.8MB/s   00:02    
+chr21_only50K.gcsa.lcp                        100%   95MB  95.2MB/s   00:01    
+chr21_only50K.pruned.vg                       100%   18MB  18.0MB/s   00:00    
+chr21_only50K.vcf.gz                          100% 2405KB   2.4MB/s   00:00    
+chr21_only50K.vcf.gz.tbi                      100%   19KB  19.4KB/s   00:00    
+chr21_only50K.vg                              100%   25MB  25.5MB/s   00:01    
+chr21_only50K.xg                              100%  156MB 155.8MB/s   00:01    
+chr21_only_GRCh38_full_plus_hs38d1_analysis_s 100%   45MB  45.3MB/s   00:01    
+chr21_only_GRCh38_full_plus_hs38d1_analysis_s 100%   23     0.0KB/s   00:00    
+chr21_only.vcf                                100%  832MB 138.7MB/s   00:06    
+chr21_only.vcf.gz                             100%   76MB  75.7MB/s   00:01    
+chr21_only.vcf.gz.tbi                         100%   20KB  19.8KB/s   00:00
+
+chr21_ref.gcsa                                100%  131MB 131.3MB/s   00:01    
+chr21_ref.gcsa.lcp                            100%   61MB  61.4MB/s   00:01    
+chr21_ref.vg                                  100%   11MB  10.9MB/s   00:00    
+chr21_ref.xg                                  100%   35MB  34.8MB/s   00:00 
+
+graph_NA12878_only_chr21.gam                  100% 1500MB 115.4MB/s   00:13    
+ref_NA12878_only_chr21.gam                    100% 1306MB 130.6MB/s   00:10 
+
+

@@ -1,0 +1,725 @@
+
+
+module load vg/1.6.0 (latest version as of 3 Jan. 2018)
+module load bcftools/1.4.1
+
+## fails for chromosomes 1-3
+
+bcftools concat -o first_three_chroms.vcf chr1.vcf chr2.vcf chr3.vcf
+
+
+## create variant graph
+
+vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v first_three_chroms.vcf >  first3chrs.vg 
+
+
+## convert to JSON for later visualization
+
+vg view -j first3chrs.vg > first3chrs.json
+
+
+## store in a rocksdb backed index (recommended for surjection to BAM later)
+vg index -t 100 -s -k 11 -d first3chrs.vg.index first3chrs.vg
+
+
+
+
+Note about VCFs:
+
+We grep'ed the uber_VCF to only use chromosomes. I then did the following to make the VCF valid via `vcf-validator`:
+
+15 Jan 2018
+"""
+So, it appears we need to add a `##contig` lines to each of the chromosome VCFs, following the VCF specification.
+
+I just added these using the chromosome lengths from hg38: https://www.ncbi.nlm.nih.gov/grc/human/data
+
+So, for the chromosome 1 VCF, I added `##contig=<ID=chr1,length=248956422>`, for chrom2.vcf I added `##contig=<ID=chr2,length=242193529>`, etc. 
+"""
+
+
+## download VCF
+
+wget https://s3.eu-central-1.amazonaws.com/platinum-genomes/2017-1.0/hg38/small_variants/NA12878/NA12878.vcf.gz
+
+https://s3.eu-central-1.amazonaws.com/platinum-genomes/2017-1.0/hg38/small_variants/NA12878/NA12878.vcf.gz.tbi
+
+## GATK
+
+module load java/1.8
+## module load  gatk/4.0.0 
+
+
+
+
+module load  picard/2.16.0
+
+## need to create *.dict for GATK to work
+
+picard CreateSequenceDictionary R= /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa  O= /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.dict
+
+
+/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa  
+
+/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.dict
+
+
+
+java -jar /gpfs/commons/home/biederstedte-934/software/GATK/GenomeAnalysisTK.jar \
+   -T FastaAlternateReferenceMaker \
+   -R /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa \
+   -o NA12878.fasta \
+   -V NA12878.vcf.gz 
+
+## index NA12878.vcf.gz.tbi must exist as well
+
+
+
+
+module load samtools/1.6
+samtools faidx NA12878.fasta 
+
+### grab a few regions on chrom1 and try mapping
+
+
+head -n 30000 NA12878.fasta
+
+~121 char’s
+
+CACACGGCTGACCAGATATCCGACACCTGAAGTGCACAGGCATGCAGCCCAGCCAGCGCA
+GAAAAGCTGAACAGAGGTTTCTGCTGCTGCCACACAAGAAAGACAGAGATAGACTGCCTG
+
+
+“””
+vg map -s CTACTGACAGCAGAAGTTTGCTGTGAAGATTAAATTAGGTGATGCTTG -x x.xg -g x.gcsa -k 22 >read.gam
+“””
+
+cd /gpfs/commons/home/biederstedte-934/vg_test_VCF_original 
+
+vg map -s CACACGGCTGACCAGATATCCGACACCTGAAGTGCACAGGCATGCAGCCCAGCCAGCGCAGAAAAGCTGAACAGAGGTTTCTGCTGCTGCCACACAAGAAAGACAGAGATAGACTGCCTG  -x first3chrs.xg -k 22 -t 100 > chr1read30K.gam
+
+
+
+
+### generate index
+
+```
+-bash:mskilab01:~/vg_test_VCF_original 1002 $ cat run_indexB.sh
+#!/usr/bin/env bash
+
+source ~/.bash_profile
+
+
+module load vg/1.6.0
+
+cd /gpfs/commons/home/biederstedte-934/vg_test_VCF_original
+
+vg index -t 10 -x first3chrs.xg -g first3chrs.gcsa -k 11 first3chrs.vg
+```
+
+
+
+
+
+
+
+
+### didn’t run this, cf. https://bioinformatics.stackexchange.com/questions/2486/vcf-merge-containing-cnv
+###
+####################################
+
+$ module unload samtools/1.1
+$ module load samtools/1.6
+$ module load bcftools/1.4.1
+
+cd /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/
+
+nice samtools mpileup -uf /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/CHM1.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/CHM13.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/HG003.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/HG004.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/HX1.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Korean.contigs.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/NA19240.contigs.bam |  bcftools call -mv -O z -o /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/variants_CSHL_allContigs.vcf.gz
+
+
+##########################################
+
+
+
+###  6 Feb 2018
+## Since vg team debugging, restart vg construction, indexing and mapping:
+##
+## all chromosomes
+
+bcftools concat -o all_chroms_together.vcf chr1.vcf chr2.vcf chr3.vcf chr4.vcf chr5.vcf chr6.vcf chr7.vcf chr8.vcf chr9.vcf chr10.vcf chr11.vcf chr12.vcf chr13.vcf chr14.vcf chr15.vcf chr16.vcf chr17.vcf chr18.vcf chr19.vcf chr20.vcf chr21.vcf chr22.vcf chrX.vcf chrY.vcf
+
+
+vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v all_chroms_together.vcf > all_chroms_together.vg
+
+
+
+####################################################################################
+####################################################################################
+
+
+
+
+### 8 Feb, 2018
+
+chromosomes 1, 2, 3
+
+vg map  
+
+Try pulling 75-300bp from the FASTA
+
+Each line has 50 characters, to get 3.5 Mb in on the first chromosome should be ~70000 or so?
+
+
+‘head -n 5000 GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa’ appears to output (a part of?) chr1 from NNNN to NNNN
+
+200bp
+
+TCACAAGAACAGCACAGGGGAAACTGCCCCCATGATTCAATTACCTCCACCTGGTCTCTCCCTTGACCTGTGGGGATTATGGGGACTATGGGGATTACAATTCAAGATGAGATTCAGGTGGGGATACAAAGCCTAACCATATCAGTAGGCATGTATTGAATTTTAAACTCAGAGAAAAATACTAGTGTTTTTATAGGATT
+
+
+
+
+
+`head -n 9000 GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa`
+
+100 bp
+
+TTTCTAGCCACTTTCATTAGACCAATGCAGCAGAGAAGAAAAGCCTCAATAATTATTATGACATGGCATGTTAGGATACCAAGTAAATTGCATTTGTAAA
+
+
+-bash:mskilab01:~/vg_test_VCF_original 1037 $ qsub -l h_rss=70G -pe smp 10 -j y -cwd -o /gpfs/commons/home/biederstedte-934/vg_test_VCF_original -V run_indexB.sh 
+Your job 404754 ("run_indexB.sh") has been submitted
+
+
+
+-bash:mskilab01:~/vg_test_VCF_original/create_index8Feb 1058 $ qsub -l h_rss=70G -pe smp 10 -j y -cwd -o /gpfs/commons/home/biederstedte-934/vg_test_VCF_original/create_index8Feb -V run_indexC.sh	
+Your job 404756 ("run_indexC.sh") has been submitted
+
+
+
+####################################################################################
+####################################################################################
+
+
+21 February 2018
+
+####################################
+HX1.contigs.primary.withheader.fasta 
+#####################################
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1035 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('HX1.contigs.primary.withheader.fasta'))))"
+
+855704225
+
+real	0m23.554s
+user	0m17.403s
+sys	0m2.594s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1036 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1036 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('HX1.contigs.primary.withheader.fasta'))))"
+591446904
+
+real	0m28.533s
+user	0m15.455s
+sys	0m3.040s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1037 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('HX1.contigs.primary.withheader.fasta'))))"
+591248258
+
+real	0m46.930s
+user	0m14.725s
+sys	0m2.393s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1038 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('HX1.contigs.primary.withheader.fasta'))))"
+856318480
+
+real	0m38.446s
+user	0m17.500s
+sys	0m2.268s
+
+
+#######################################
+HG003.contigs.primary.withheader.fasta
+#######################################
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1039 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('HG003.contigs.primary.withheader.fasta'))))"
+911294431
+
+real	0m21.083s
+user	0m17.484s
+sys	0m2.343s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1040 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('HG003.contigs.primary.withheader.fasta'))))"
+630273343
+
+real	0m15.801s
+user	0m13.557s
+sys	0m2.015s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1041 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('HG003.contigs.primary.withheader.fasta'))))"
+630101166
+
+real	0m16.514s
+user	0m14.050s
+sys	0m2.075s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1042 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('HG003.contigs.primary.withheader.fasta'))))"
+912662446
+
+real	0m18.955s
+user	0m16.751s
+sys	0m2.081s
+
+
+
+#######################################
+HG004.contigs.primary.withheader.fasta
+#######################################
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1043 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('HG004.contigs.primary.withheader.fasta'))))"
+903381563
+
+real	0m22.457s
+user	0m18.392s
+sys	0m2.812s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1044 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('HG004.contigs.primary.withheader.fasta'))))"
+623798629
+
+real	0m17.393s
+user	0m14.784s
+sys	0m2.566s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1045 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('HG004.contigs.primary.withheader.fasta'))))"
+624046989
+
+real	0m25.386s
+user	0m14.214s
+sys	0m2.437s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1046 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('HG004.contigs.primary.withheader.fasta'))))"
+903147295
+
+real	0m20.223s
+user	0m17.598s
+sys	0m2.606s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1047 $ 
+
+
+
+#######################################
+CHM1.contigs.primary.withheader.fasta
+#######################################
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1009 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('CHM1.contigs.primary.withheader.fasta'))))" 
+886172060
+
+real	0m37.977s
+user	0m17.102s
+sys	0m3.758s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1010 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('CHM1.contigs.primary.withheader.fasta'))))" 
+612397916
+
+real	0m22.361s
+user	0m15.091s
+sys	0m3.941s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1011 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('CHM1.contigs.primary.withheader.fasta'))))" 
+611911148
+
+real	0m33.509s
+user	0m15.802s
+sys	0m3.506s                                               
+"pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1013 $  time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('CHM1.contigs.primary.withheader.fasta')))) 
+885945169
+
+real	0m30.353s
+user	0m20.366s
+sys	0m4.611s
+
+
+#######################################
+CHM13.contigs.primary.withheader.fasta
+#######################################
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1051 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('CHM13.contigs.primary.withheader.fasta'))))"
+906584476
+
+real	0m24.697s
+user	0m18.261s
+sys	0m3.254s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1052 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('CHM13.contigs.primary.withheader.fasta'))))"
+625513349
+
+real	0m17.974s
+user	0m14.939s
+sys	0m2.980s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1053 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('CHM13.contigs.primary.withheader.fasta'))))"
+626598086
+
+real	0m31.318s
+user	0m14.425s
+sys	0m2.698s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1054 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('CHM13.contigs.primary.withheader.fasta'))))"
+906307252
+
+real	0m49.378s
+user	0m24.512s
+sys	0m4.196s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1055 $ 
+
+
+
+#######################################
+Korean.contigs.primary.withheader.fasta
+#######################################
+
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1005 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('Korean.contigs.primary.withheader.fasta'))))"
+847709071
+
+real	0m23.346s
+user	0m18.300s
+sys	0m3.415s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1006 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('Korean.contigs.primary.withheader.fasta'))))"
+585819362
+
+real	0m20.518s
+user	0m16.553s
+sys	0m3.801s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1007 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('Korean.contigs.primary.withheader.fasta'))))"
+
+586014684
+
+real	0m33.793s
+user	0m16.566s
+sys	0m4.007s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1008 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1008 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('Korean.contigs.primary.withheader.fasta'))))"
+847324632
+
+real	0m19.026s
+user	0m16.154s
+sys	0m2.814s
+
+
+
+#######################################
+NA19240.contigs.primary.withheader.fasta
+#######################################
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1047 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('NA19240.contigs.primary.withheader.fasta'))))"
+832294166
+
+real	0m20.661s
+user	0m16.418s
+sys	0m2.759s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1048 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('NA19240.contigs.primary.withheader.fasta'))))"
+574367726
+
+real	0m17.743s
+user	0m13.572s
+sys	0m2.550s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1049 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('NA19240.contigs.primary.withheader.fasta'))))"
+
+574524644 expect_equal(ggnew_dd$ploidy, NULL)
+user	0m13.967s
+sys	0m2.677s
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1050 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1050 $ time python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('NA19240.contigs.primary.withheader.fasta'))))"
+
+832470233
+
+real	0m30.019s
+user	0m16.951s
+sys	0m2.786s
+
+
+
+######### 22 FEB 2018 PLOTS
+
+
+HG003
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1020 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('hg003_p_and_a_ctg.fa'))))"
+
+911294431
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1021 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1021 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('hg003_p_and_a_ctg.fa'))))"
+630273343
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1022 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('hg003_p_and_a_ctg.fa'))))"
+630101166
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1023 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('hg003_p_and_a_ctg.fa'))))"
+912662446
+
+
+HG004
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1024 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('hg004_p_and_a_ctg.fa'))))"
+903381563
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1025 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('hg004_p_and_a_ctg.fa'))))"
+623798629
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1026 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('hg004_p_and_a_ctg.fa'))))"
+624046989
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1027 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('hg004_p_and_a_ctg.fa'))))"
+903147295
+
+HX1
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1028 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('hx1f4.3rdfixedv2.fa'))))"
+855704225
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1029 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('hx1f4.3rdfixedv2.fa'))))"
+591446904
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1030 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('hx1f4.3rdfixedv2.fa'))))"
+591248258
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1031 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('hx1f4.3rdfixedv2.fa'))))"
+856318480
+
+
+CHM13.fa
+
+
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1005 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('CHM13.fa'))))"
+906584476
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1006 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('CHM13.fa'))))"
+625513349
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1007 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('CHM13.fa'))))"
+626598086
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1008 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('CHM13.fa'))))"
+906307252
+
+
+
+CHM1.fa
+
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1009 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('CHM1.fa'))))"
+886172060
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1010 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('CHM1.fa'))))"
+612397916
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1011 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('CHM1.fa'))))"
+611911148
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1012 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1012 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('CHM1.fa'))))"
+885945169
+
+
+NA19240.fa
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1013 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('NA19240.fa'))))"
+832294166
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1014 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('NA19240.fa'))))"
+574367726
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1015 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('NA19240.fa'))))"
+574524644
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1016 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('NA19240.fa'))))"
+832470233
+
+
+Korean.fa
+
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1017 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('A') for title, seq in SimpleFastaParser(open('Korean.fa'))))"
+847709071
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1018 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('C') for title, seq in SimpleFastaParser(open('Korean.fa'))))"
+585819362
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1019 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('G') for title, seq in SimpleFastaParser(open('Korean.fa'))))"
+586014684
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1020 $ 
+(pythonVE-3.5.2) -bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1020 $ python -c "from Bio.SeqIO.FastaIO import SimpleFastaParser; print(sum(seq.count('T') for title, seq in SimpleFastaParser(open('Korean.fa'))))"
+847324632
+
+
+
+
+
+
+CHM13:
+LDOC03.7.fsa_nt.gz
+
+
+Korean:
+
+for file in `echo LPVO02.1.fsa_nt.gz LPVO02.2.fsa_nt.gz LPVO02.3.fsa_nt.gz LPVO02.4.fsa_nt.gz LPVO02.5.fsa_nt.gz LPVO02.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LP/VO/LPVO02/$file; done
+
+NA19240:
+
+for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB01.4.fsa_nt.gz LKPB01.5.fsa_nt.gz LKPB01.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LK/PB/LKPB01/$file; done
+
+
+CHM1:
+
+for file in `echo LJII01.1.fsa_nt.gz LJII01.10.fsa_nt.gz LJII01.11.fsa_nt.gz LJII01.12.fsa_nt.gz LJII01.13.fsa_nt.gz LJII01.14.fsa_nt.gz LJII01.15.fsa_nt.gz LJII01.2.fsa_nt.gz LJII01.3.fsa_nt.gz LJII01.4.fsa_nt.gz LJII01.5.fsa_nt.gz LJII01.6.fsa_nt.gz LJII01.7.fsa_nt.gz LJII01.8.fsa_nt.gz LJII01.9.fsa_nt.gz`; do echo $file; wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LJ/II/LJII01/$file; done
+
+ 
+CHM13:
+
+for file in `echo LDOC03.1.fsa_nt.gz LDOC03.2.fsa_nt.gz LDOC03.3.fsa_nt.gz LDOC03.4.fsa_nt.gz LDOC03.5.fsa_nt.gz LDOC03.6.fsa_nt.gz LDOC03.7.fsa_nt.gz`; do echo $file; wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LD/OC/LDOC03/$file; done
+
+
+
+
+NA19240
+Cat LKPB01.1.fsa_nt  LKPB01.2.fsa_nt  LKPB01.3.fsa_nt  LKPB01.4.fsa_nt  LKPB01.5.fsa_nt  LKPB01.6.fsa_nt > NA19240.fa
+
+
+Korean
+Cat LPVO02.1.fsa_nt  LPVO02.2.fsa_nt  LPVO02.3.fsa_nt  LPVO02.4.fsa_nt  LPVO02.5.fsa_nt  LPVO02.6.fsa_nt > Korean.fa
+ 
+
+CHM13
+Cat LDOC03.1.fsa_nt  LDOC03.2.fsa_nt  LDOC03.3.fsa_nt  LDOC03.4.fsa_nt  LDOC03.5.fsa_nt  LDOC03.6.fsa_nt  LDOC03.7.fsa_nt > CHM13.fa
+
+
+CHM1
+
+
+1035 $ cat LJII01.1.fsa_nt LJII01.2.fsa_nt LJII01.3.fsa_nt  LJII01.4.fsa_nt   LJII01.5.fsa_nt LJII01.6.fsa_nt  LJII01.7.fsa_nt LJII01.8.fsa_nt  LJII01.9.fsa_nt LJII01.10.fsa_nt LJII01.11.fsa_nt LJII01.12.fsa_nt LJII01.13.fsa_nt LJII01.14.fsa_nt LJII01.15.fsa_nt > CHM1.fa
+
+
+
+
+
+
+
+############################ vg, March 18, 2018
+
+
+
+
+
+-bash:mskilab01:~/vg_test_VCF_original 1018 $ module load vg/1.6.1
+	vg - use vg 1.6.1
+-bash:mskilab01:~/vg_test_VCF_original 1019 $ module load bcftools/1.4.1
+
+
+## let’s try first two chromosomes
+
+bcftools concat -o first_two_chroms.vcf chr1.vcf chr2.vcf chr3.vcf
+
+
+## create variant graph
+
+## without haplotypes
+
+vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v first_two_chroms.vcf  >  first2chrs.vg 
+
+nice vg index-t 20  -x first2chrs.xg -g first2chrs.gcsa first2chrs.vg 
+
+
+### create variant graph WITH HAPLOTYPES, https://github.com/vgteam/vg/wiki/Index-Construction
+
+bash:mskilab01:~/vg_test_VCF_original 1017 $ module load     htslib/1.7 
+bash:mskilab01:~/vg_test_VCF_original 1018 $ bgzip -c  first_two_chroms.vcf > first_two_chroms.vcf.gz
+bash:mskilab01:~/vg_test_VCF_original 1019 $ tabix -p vcf first_two_chroms.vcf.gz
+
+
+nice vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v first_two_chroms.vcf.gz -a > first2chrs_with_hap.vg
+
+
+```
+
+$ nice vg index -b /gpfs/commons/home/biederstedte-934/tmp_vg -t 20 -k 16 -x chr21_only.xg -g chr21_only.gcsa chr21_only.vg
+
+PathGraphBuilder::write(): Size limit exceeded, construction aborted
+
+```
+EVAN, MARCH 19, 2018
+
+So, let’s try “With a reference but without haplotypes”. We could also try with a smaller kmer value…
+
+
+
+vg index -b /gpfs/commons/home/biederstedte-934/tmp_vg -t 20 -k 16 -x chr21_only.xg chr21_only.vg 
+
+
+#### They recommend one chromosome; let’s do Chromosome 21
+
+
+## without haplotypes
+
+vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v chr21.vcf  >  chr21_only.vg 
+
+
+
+vg index -t 20 -x chr21_only.xg -g chr21_only.gcsa chr21_only.vg
+
+nice vg index -t 20 -k 16 -x chr21_only.xg -g chr21_only.gcsa chr21_only.vg
+
+
+
+### WORKING 
+
+nice vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v chr21.vcf.gz -a > chr21_only_with_hap.vg
+
+nice vg index -b /gpfs/commons/home/biederstedte-934/tmp_vg -t 20 -k 16 -x chr21_only.xg chr21_only.vg
+
+nice vg prune chr21_only.vg > chr21_only.prune.vg
+
+nice vg index -Z 1500 -b /gpfs/commons/home/biederstedte-934/tmp_vg -t 20 -k 16 -g chr21_only.gcsa chr21_only.prune.vg
+
+
+## THIS WORKS!! 
+
+$ nice vg index -Z 1500 -b /gpfs/commons/home/biederstedte-934/tmp_vg -t 20 -k 16 -g chr21_only.gcsa chr21_only.prune.vg
+
+
+### module unload samtools/1.1
+### module load samtools/1.6
+
+samtools faidx GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+
+samtools faidx GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa chr21 > chr21_only_fasta.fa 
+
+### cat chr21_only_fasta.fa, and take ~180 bp
+
+## 180 bp
+TCAGAGCAGAAAACATGCCCAGGCTGAGTATGGGTCGGACAGGAAGCATGAAAGGTAGCACAAGGCTAGCGTCCAAATGACCTTGAATTTGTAATAAACGTGTGAAGTCACTGGGAGCTGCTGCCACATTCCAAAGCAAGCAAGAGCAGCATCCCACCAGTGTATGAGGAGGATGCGGGG
+
+## 120 bp
+CTCTGCCTTTCTGATAAAGCTATGCAGAATACCAAGTTAGTACCTGGTTTCATATATGGTTTATAATACATTATTCCTGATACAATCTCAATTTACTGTTTTTATACAGCCTATTACTGC
+
+## 180 bp
+nice vg map -Z 1500  -s TCAGAGCAGAAAACATGCCCAGGCTGAGTATGGGTCGGACAGGAAGCATGAAAGGTAGCACAAGGCTAGCGTCCAAATGACCTTGAATTTGTAATAAACGTGTGAAGTCACTGGGAGCTGCTGCCACATTCCAAAGCAAGCAAGAGCAGCATCCCACCAGTGTATGAGGAGGATGCGGGG -x  chr21_only.xg  -g chr21_only.gcsa > read_chr21_180bp.gam
+
+## 120 bp
+
+ nice vg map -Z 1500  -s CTCTGCCTTTCTGATAAAGCTATGCAGAATACCAAGTTAGTACCTGGTTTCATATATGGTTTATAATACATTATTCCTGATACAATCTCAATTTACTGTTTTTATACAGCCTATTACTGC -x  chr21_only.xg  -g chr21_only.gcsa > read_chr21_120bp.gam
+
+
+### vg surject -x x.xg -b aln.gam >aln.bam
+
+
+nice vg surject -x  chr21_only.xg  -b read_chr21_180bp.gam > read_chr21_180bp.bam
+
+
+nice vg surject -x  chr21_only.xg  -b read_chr21_120bp.gam > read_chr21_120bp.bam
+
+
+
+
+## with haplotypes
+
+$ module load htslib/1.7 
+$ bgzip -c  chr21.vcf > chr21.vcf.gz
+$ tabix -p vcf chr21.vcf.gz
+
+
+
+
+screen -RD 27246.graphhap
+
+bash:mskilab01:~/vg_test_VCF_original 1022 $ module load     htslib/1.7                                                                            bash:mskilab01:~/vg_test_VCF_original 1023 $ bgzip -c  chr21.vcf > chr21.vcf.gz
+bash:mskilab01:~/vg_test_VCF_original 1024 $ tabix -p vcf chr21.vcf.gz
+bash:mskilab01:~/vg_test_VCF_original 1025 $ nice vg construct -r GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa -v chr21.vcf.gz -a > chr21_only_with_hap.vg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1 @@
+Using script https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/scripts/measure_indels_NM.py

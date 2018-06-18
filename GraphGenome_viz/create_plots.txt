@@ -1,0 +1,301 @@
+6-7 Feb 2018
+
+
+####
+#### Check the # of secondary alignments, etc. 
+#### 
+
+
+CHM13.contigs.bam
+CHM1.contigs.bam 
+HG003.contigs.bam 
+HG004.contigs.bam 
+HX1.contigs.bam 
+Korean.contigs.bam 
+NA19240.contigs.bam 
+
+
+### there are no secondary alignments
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1010 $ samtools flagstat CHM13.contigs.bam
+48674 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+36583 + 0 supplementary
+0 + 0 duplicates
+48674 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1011 $ samtools flagstat CHM1.contigs.bam 
+41535 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+37894 + 0 supplementary
+0 + 0 duplicates
+41535 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1012 $ samtools flagstat HG003.contigs.bam 
+72003 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+54130 + 0 supplementary
+0 + 0 duplicates
+71981 + 0 mapped (99.97% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1013 $ samtools flagstat HG004.contigs.bam 
+65343 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+48856 + 0 supplementary
+0 + 0 duplicates
+65333 + 0 mapped (99.98% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1014 $ samtools flagstat HX1.contigs.bam 
+32670 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+26827 + 0 supplementary
+0 + 0 duplicates
+32638 + 0 mapped (99.90% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1015 $ samtools flagstat Korean.contigs.bam 
+24845 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+21749 + 0 supplementary
+0 + 0 duplicates
+24845 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1016 $ samtools flagstat NA19240.contigs.bam 
+17930 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+14327 + 0 supplementary
+0 + 0 duplicates
+17930 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1017 $ 
+
+
+
+### CORRECT WAY TO REMOVE SUPPLEMENTARY ALIGNMENTS
+
+samtools view -F 0x800 -b  Korean.contigs.bam > Korean.no800.bam
+samtools view -F 0x800 -b  CHM13.contigs.bam > CHM13.no800.bam
+samtools view -F 0x800 -b  CHM1.contigs.bam > CHM1.no800.bam
+samtools view -F 0x800 -b  HG003.contigs.bam > HG003.no800.bam
+samtools view -F 0x800 -b  HG004.contigs.bam > HG004.no800.bam
+samtools view -F 0x800 -b  HX1.contigs.bam > HX1.no800.bam
+samtools view -F 0x800 -b  NA19240.contigs.bam > NA19240.no800.bam
+
+
+
+AFTER FILTERING
+
+################################################################################
+################################################################################
+
+
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1007 $ samtools flagstat CHM13.no800.bam
+12091 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+12091 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1008 $ samtools flagstat CHM1.no800.bam
+3641 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+3641 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1009 $ samtools flagstat HG003.no800.bam
+17873 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+17851 + 0 mapped (99.88% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1010 $ samtools flagstat HG004.no800.bam
+16487 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+16477 + 0 mapped (99.94% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1011 $ samtools flagstat Korean.no800.bam
+3096 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+3096 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1012 $ samtools flagstat NA19240.no800.bam
+3603 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+3603 + 0 mapped (100.00% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data 1013 $ samtools flagstat HX1.no800.bam
+5843 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+5811 + 0 mapped (99.45% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+
+
+
+
+################################################################################
+################################################################################
+
+CREATE CSVs
+
+Based on this: https://gigabaseorgigabyte.wordpress.com/2017/04/14/getting-the-edit-distance-from-a-bam-alignment-a-journey/
+
+
+```Python
+
+import pysam
+import pandas as pd
+
+def createDF(bam):
+    samfile = pysam.AlignmentFile(bam, "rb")
+    df = pd.DataFrame()
+    df['NM'] = [read.get_tag("NM") for read in samfile.fetch()]
+    df['length'] = [read.query_alignment_length for read in samfile.fetch()]
+    return df
+
+```
+
+################################################################################
+################################################################################
+
+PLOTTING
+
+
+R PLOTTING
+
+
+```R
+> ggplot(hx,aes(x=NM,y=length)) + stat_binhex(bins=500) + ylim(0, 1e6) + xlim(0, 4e4) 
+```
+
+
+```R
+library(ggplot2)
+library(data.table)
+chm1 = fread('/Users/ebiederstedt/Downloads/CHM1_nosupplementary.csv')
+chm13 =  fread('/Users/ebiederstedt/Downloads/CHM13_nosupplementary.csv')
+hg3 = fread('/Users/ebiederstedt/Downloads/HG003_nosupplementary.csv')
+hg4 = fread('/Users/ebiederstedt/Downloads/HG004_nosupplementary.csv')
+korean = fread('/Users/ebiederstedt/Downloads/Korean_nosupplementary.csv')
+na19240 = fread('/Users/ebiederstedt/Downloads/NA19240_nosupplementary.csv')
+hx1 = fread('/Users/ebiederstedt/Downloads/HX1_nosupplementary.csv')
+
+ggplot(hx1, aes(x=NM,y=length)) + stat_binhex(bins=200) + ylim(0, 5e5) + xlim(0, 13000) 
+```
+
+
+
+PYTHON PLOTTING 
+
+
+See notebooks, Dilthey_7Feb2018_plots2.ipynb
+
+
+
