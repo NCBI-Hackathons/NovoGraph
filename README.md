@@ -8,11 +8,11 @@ This project was initiated at an NCBI-style hackathon held before the 2016 Biolo
 
 Relying upon a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of genetic variation which exists. Within human genetics, relying upon a linear monoploid reference genome consequently both limits and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. We then focused directly on building a graph genome composed of seven human assemblies. We included the following assemblies within the genome graph:
 * AK1, Korean
-* HX1, Han Chinese
 * CHM1, European
 * CHM13, European
 * HG003, Ashkenazim
 * HG004, Ashkenazim
+* HX1, Han Chinese
 * NA19240, Yoruba
 
 
