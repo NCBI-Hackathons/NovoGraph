@@ -1,6 +1,6 @@
-# Graph Genome of Human Assemblies
+# Graph Genome of Multiple De Novo Assemblies
 
-An algorithmically novel approach to construct a genome graph representation of seven ethnically-diverse human genomes.
+An algorithmically novel approach to construct a genome graph representation of multiple de novo sequence assemblies. We provide a proof of principle by constructing a genome graph of seven ethnically-diverse human genomes. 
 
 This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
 
