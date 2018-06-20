@@ -18,11 +18,11 @@ my $preMAFFTBAM;
 my $finalOutputCRAM;
 my $samtools_path;
 GetOptions (
-	'MAFFTdir:s' => \$MAFFTdir, 
+	'MAFFTdir:s' => \$MAFFTdir,
 	'contigLengths:s' => \$contigLengths, 
 	'preMAFFTBAM:s' => \$preMAFFTBAM, 
 	'finalOutputCRAM:s' => \$finalOutputCRAM,
-        'samtools_path:s' => \$samtools_path,
+    'samtools_path:s' => \$samtools_path,
 );
 
 die unless($contigLengths);

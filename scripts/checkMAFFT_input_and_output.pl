@@ -12,23 +12,31 @@ use List::MoreUtils qw/mesh/;
 use Bio::DB::Sam;
 $| = 1;
 
+# Example command:
+# perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/
+#     --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
+#     --preMAFFTBAM /intermediate_files/forMAFFT_2.bam
+#     --finalOutputCRAM /intermediate_files/combined_2.cram &> output_checkMAFFT_v2
+
+
 my $contigLengths;
 my $MAFFTdir;
 my $preMAFFTBAM;
-#my $finalOutputBAM;
 my $finalOutputCRAM;
+my $samtools_path;
 GetOptions (
 	'MAFFTdir:s' => \$MAFFTdir, 
 	'contigLengths:s' => \$contigLengths, 
-	'preMAFFTBAM:s' => \$preMAFFTBAM, 
-	# 'finalOutputBAM:s' => \$finalOutputBAM, 
+	'preMAFFTBAM:s' => \$preMAFFTBAM,
 	'finalOutputCRAM:s' => \$finalOutputCRAM, 
+    'samtools_path:s' => \$samtools_path,
 );
 
 die unless($contigLengths);
 die unless($MAFFTdir);
 die unless($preMAFFTBAM);
-# die unless($finalOutputBAM);
+die unless($finalOutputCRAM);
+die unless($samtools_path);
 
 my $readWindowsInfo = read_windowbams_info($MAFFTdir);
 
@@ -50,7 +58,6 @@ my %contigs_fromMFA_fileSources;
 my %contigs_from_singleBAMs;
 foreach my $chr (keys %$readWindowsInfo)
 {
-	# next unless($chr eq 'chr21');
 	print "Reading $chr... - ", scalar(@{$readWindowsInfo->{$chr}}), " windows.\n";
 	my $windowI = 0;
 	foreach my $window (@{$readWindowsInfo->{$chr}})
@@ -110,7 +117,7 @@ foreach my $chr (keys %$readWindowsInfo)
 		
 		my %lengths_BAM;
 		my %BAM_href_seq2;
-		open(SINGLEBAM, "/data/projects/phillippy/software/samtools-1.4/samtools view $BAM |") or die "Cannot view $BAM $!";
+		open(SINGLEBAM, $samtools_path, " view $BAM |") or die "Cannot view $BAM $!";
 		while(<SINGLEBAM>)
 		{
 			my $l = $_;
@@ -170,7 +177,7 @@ foreach my $chr (keys %$readWindowsInfo)
 
 my %preMAFFT_BAM_lengths;
 my %preMAFFT_BAM_sequence;
-open(PREMAFFT, "/data/projects/phillippy/software/samtools-1.4/samtools view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
+open(PREMAFFT, $samtools_path, " view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
 while(<PREMAFFT>)
 {
 	my $l = $_;
@@ -224,7 +231,6 @@ else
 	close(OUTPUT);
 }
 
-# my %combinedKeys = map {$_ => 1} ((keys %expectedLengts), (keys %contigs_fromFASTA), (keys %preMAFFT_BAM_lengths));
 my %combinedKeys = map {$_ => 1} ((keys %preMAFFT_BAM_lengths), (keys %contigs_fromFASTA));
 
 foreach my $k (keys %combinedKeys)
@@ -300,11 +306,6 @@ sub readFASTA
 	my $currentSequence;
 	while(<F>)
 	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
