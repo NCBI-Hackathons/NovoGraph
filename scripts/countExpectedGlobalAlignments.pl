@@ -4,7 +4,7 @@
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
 
 use strict;
-use Bio::DB::Sam;
+use Bio::DB::HTS;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
@@ -20,7 +20,7 @@ GetOptions (
 die "Please specify --BAM" unless($BAM);
 die "--BAM $BAM not existing" unless(-e $BAM);
 
-my $sam = Bio::DB::Sam->new(-bam => $BAM);
+my $sam = Bio::DB::HTS->new(-bam => $BAM);
 
 my %total_contig_IDs;
 my %contigID_atLeastOneAlignment;
