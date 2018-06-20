@@ -6,7 +6,9 @@ This project was initiated at an NCBI-style hackathon held before the 2016 Biolo
 
 ## Genome Graph of Seven Human Assemblies
 
-Employing a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both limits and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. We then focused directly on building a graph genome composed of seven human assemblies. We included the following assemblies within the genome graph:
+Employing a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both limits and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. We then focused directly on building a graph genome composed of seven human assemblies. 
+
+The following assemblies were included within the genome graph:
 * AK1, Korean
 * CHM1, European
 * CHM13, European
