@@ -587,9 +587,5 @@ sub outputMSAInto
 			warn "Length problem with $sequence_title - $seq_length vs " . length($sequence);
 		}
 	}
-	
-	
-	
-	
 	close(OUT);
 }
