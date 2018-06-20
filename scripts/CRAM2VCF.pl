@@ -117,7 +117,7 @@ my %alignments_per_referenceSequenceID;
 my $total_alignments = 0;
 mkdir('forVCF');
 die unless(-e 'forVCF');
-# @referenceSequenceIDs = qw/chr21/; # todo
+
 my $fn_cmds = $output . '_CRAM2VCF_commands.txt';
 my $fn_cmds_cat = $fn_cmds . '.cat';
 my $fn_gaps = $output . '_CRAM2VCF_gaps.txt';
@@ -199,10 +199,6 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
 			$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
 			
-			if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
-			{
-				# warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
-			}
 			my $gaps_left_side = 0;
 			my $gaps_right_side = 0;
 			
@@ -397,7 +393,7 @@ print "\nOK\n\n";
 close(CMDS);
 close(GAPSTRUCTURE);
 
-# print"\nExecute commands in $fn_cmds\n\n";
+
 print"\nNow launch launch_CRAM2VCF_C++.pl with the right parameters.\n\n";
 
 sub readFASTA
@@ -409,11 +405,6 @@ sub readFASTA
 	my $currentSequence;
 	while(<F>)
 	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
@@ -507,7 +498,6 @@ sub outputMSAInto
 					$gt_ref_per_position{$ref_pos} = $running_ref_allele;
 				}
 						
-				# print "Positions $alignment_aref->[2] \n";
 				foreach my $interestingPos (@aroundPositions)
 				{
 					if(exists $gt_per_position{$interestingPos})
