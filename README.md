@@ -31,7 +31,7 @@ Given that this genome graph has been designed to incorporate larger structural 
 * reference file GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
 * contigs file AllContigs.fa
 
-#### Preparation:
+###### Preparation:
 ```
 ## Requires samtools version >= 1.3
 
@@ -56,7 +56,7 @@ samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
 samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlusGRCh38Alts.bam
 ```
 
-#### Algorithm:
+###### Algorithm:
 ```
 
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
