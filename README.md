@@ -29,24 +29,32 @@ Given that this genome graph has been designed to incorporate larger structural 
 ## Pipeline
 
 * reference file GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
-* contigs file input_sequences.fa
+* contigs file AllContigs.fa
 
 ```
-## Requires samtools version >= 1.7
+## Requires samtools version >= 1.3
 
+## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa input_sequences.fa  | samtools view -Sb - > input_sequences_unsorted.bam
-samtools sort -o SevenGenomesPlusGRCh38Alts.bam input_sequences_unsorted.bam
+
+## Align the contigs FASTA against the reference, outputting a single BAM
+bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
+
+## Sort the resulting BAM
+samtools sort -o SevenGenomesPlusGRCh38Alts.bam allContigs_unsorted.bam
+
+## Index the resulting BAM
 samtools index SevenGenomesPlusGRCh38Alts.bam
 
-## Check that there are no unmapped reads in the input BAM because this might lead to unknown behaviour:
+## Check that there are no unmapped reads in the input BAM, because this might lead to unknown behaviour
 samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
+
 
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
 
 ## Expect output '../intermediate_files/AlignmentInput.sortedWithHeader'
 
-perl checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
+perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa
 
 perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
 
