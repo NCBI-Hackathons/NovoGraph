@@ -4,11 +4,16 @@ An algorithmically novel approach to construct a genome graph representation of 
 
 This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
 
+## Motivation 
+
+Employing a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both constrains and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. 
+
+The incentive for using de novo assembled genomes is to overcome the limitations posed by simply relying upon call sets derived from short-read sequencing. Constructing genome graphs using such call sets will result in graphs which contain SNPs but respectively few structural variants, especially at larger scales. In order to correct this bias, our algorithm has been designed to employ de novo contigs---these contigs not only incorporate SNPs but instrinsically contain more structural variants and their breakpoints at base resolution. Using our approach, the resulting graph genome should be respectively enriched in large-scale structural variation.
+
 ## Genome Graph of Seven Human Assemblies
 
-Employing a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both limits and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. We then focused directly on building a graph genome composed of seven human assemblies. 
+We then focused directly on building a graph genome composed of seven human assemblies. The following assemblies were included within the genome graph:
 
-The following assemblies were included within the genome graph:
 * AK1, Korean
 * CHM1, European
 * CHM13, European
@@ -16,6 +21,9 @@ The following assemblies were included within the genome graph:
 * HG004, Ashkenazim
 * HX1, Han Chinese
 * NA19240, Yoruba
+
+Given that this genome graph has been designed to incorporate larger structural variation, we encourage this result to be used for future investigation and testing within the community.
+
 
 
 ## Pipeline
