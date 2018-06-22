@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -19,6 +22,7 @@ my $outputFile = 'output.sam';
 my $lenientOrder = 1;
 my $outputTruncatedReads;
 my $outputReadLengths;
+my $endsFree_reference = 1;
 
 my $S_match = 1;
 my $S_mismatch = -1;
@@ -62,7 +66,6 @@ chomp($alignments_headerLine);
 my @alignments_headerFields = split(/\t/, $alignments_headerLine);
 die unless($alignments_headerFields[0] eq 'readID');
 
-#my $fn_truncated = 
 my $n_output_alignments = 0;
 my $n_chains_sum = 0;
 my $n_alignments_leftGapsRemoved = 0;
@@ -101,6 +104,8 @@ my $processReadLines = sub {
 			die unless($readID eq $line{readID});
 		}
 		
+		print "Processing $readID\n";
+		
 		if($line{completeReadSequence_plus})
 		{
 			die unless($line{completeReadSequence_minus});
@@ -131,14 +136,17 @@ my $processReadLines = sub {
 	my @finalScores_chromosome;
 	my @finalScores_strand;
 	
+	my %chainAddr_2_i;
 	foreach my $chromosome (keys %alignments_perChr_perStrand)
 	{
 		die unless(exists $reference_href->{$chromosome});
+		
 		foreach my $strand (keys %{$alignments_perChr_perStrand{$chromosome}})
 		{
-			my @chains = @{$alignments_perChr_perStrand{$chromosome}{$strand}};
-			die unless(scalar(@chains));
+			my @chains = enrichChains($alignments_perChr_perStrand{$chromosome}{$strand}, $completeReadSequence_plus, $completeReadSequence_minus, $reference_href, $chromosome);
 			
+			die unless(scalar(@chains));
+			 
 			foreach my $chain (@chains)
 			{
 				die unless((defined $chain->{n_matches}) and (defined $chain->{n_mismatches}) and (defined $chain->{n_gaps}));
@@ -161,31 +169,75 @@ my $processReadLines = sub {
 					$a->{firstPos_reference} <=> $b->{firstPos_reference}				
 				}
 			} @chains;
-			
+
+			%chainAddr_2_i = ();
+			if($strand eq '+')
+			{
+				print "Collected chains:\n";
+				for(my $chainI = 0; $chainI <= $#chains; $chainI++)
+				{
+					my $chain = $chains[$chainI];
+					$chain->{enrich} = 0 unless(defined $chain->{enrich});
+					print "Chain ${chainI}; reference ", $chain->{firstPos_reference}, " - ", $chain->{lastPos_reference}, ", read ", $chain->{firstPos_read}, " - ", $chain->{lastPos_read}, "; score ", $chain->{chainTraversalScore}, "; enrich $chain->{enrich}\n";
+					$chainAddr_2_i{$chain} = $chainI;
+				}
+				print "";
+				print "Sequence length: ", length($completeReadSequence_plus), ", reference length: ", length($reference_href->{$chromosome}), "\n\n";
+				
+			}
 			for(my $chainI = 0; $chainI <= $#chains; $chainI++)
 			{
 				my $chain = $chains[$chainI];
 				
 				my @inputScores;
 				my @inputScoreOrigins;
+				my @inputScores_preGaps;
 				
-				push(@inputScores, $S_gap * $chain->{firstPos_read});
-				push(@inputScoreOrigins, 0);
-				
-				for(my $chainII = 0; $chainII < $chainI; $chainII++)
+				if($endsFree_reference)
 				{
-					my $chain2 = $chains[$chainII];
-					if(($chain2->{lastPos_reference} < $chain->{firstPos_reference}) and ($chain2->{lastPos_read} < $chain->{firstPos_read}))
+					push(@inputScores, $S_gap * $chain->{firstPos_read});
+				}
+				else
+				{
+					push(@inputScores, $S_gap * ($chain->{firstPos_read} + $chain->{firstPos_reference}));
+				}
+				
+				push(@inputScoreOrigins, 0);
+				push(@inputScores_preGaps, 0);
+				
+				for(my $chainII = 0; $chainII < $#chains; $chainII++)
+				{
+					if($chainII < $chainI)
 					{
-						my $delta_reference = $chain->{firstPos_reference} - $chain2->{lastPos_reference} - 1;
-						my $delta_read = $chain->{firstPos_read} - $chain2->{lastPos_read} - 1;
-						die unless(defined $chain2->{chainOutputScore});
-						push(@inputScores, $chain2->{chainOutputScore} + $S_gap * ($delta_read + $delta_reference));
-						push(@inputScoreOrigins, $chain2);
+						my $chain2 = $chains[$chainII];
+						if(($chain2->{lastPos_reference} < $chain->{firstPos_reference}) and ($chain2->{lastPos_read} < $chain->{firstPos_read}))
+						{
+							my $delta_reference = $chain->{firstPos_reference} - $chain2->{lastPos_reference} - 1;
+							my $delta_read = $chain->{firstPos_read} - $chain2->{lastPos_read} - 1;
+							die unless(defined $chain2->{chainOutputScore});
+							push(@inputScores, $chain2->{chainOutputScore} + $S_gap * ($delta_read + $delta_reference));
+							push(@inputScores_preGaps, $chain2->{chainOutputScore});
+							push(@inputScoreOrigins, $chain2);
+						}
+					}
+					else
+					{
+						my $chain2 = $chains[$chainII];
+						die if(($chain2->{lastPos_reference} < $chain->{firstPos_reference}) and ($chain2->{lastPos_read} < $chain->{firstPos_read}));			
 					}
 				}
 				die unless($#inputScores == $#inputScoreOrigins);
 				
+				if(0 and $chainI == 40)
+				{
+					print "Chain $chainI incoming scores:\n";	
+					for(my $fromChainI = 0; $fromChainI <= $#inputScores; $fromChainI++)
+					{
+						my $origin = $inputScoreOrigins[$fromChainI];
+						$origin = ($origin) ? $chainAddr_2_i{$origin} : "ORIGIN";
+						print " - $origin $inputScores[$fromChainI] -- $inputScores_preGaps[$fromChainI] \n";
+					}
+				}
 				my $max_input = which_max(\@inputScores);
 				my $bestInputScore = $inputScores[$max_input];
 				my $bestInputScore_origin = $inputScoreOrigins[$max_input];
@@ -197,7 +249,14 @@ my $processReadLines = sub {
 			my @finalOutputScores;
 			my @finalOutputScoreOrigins;
 			
-			push(@finalOutputScores, $S_gap * length($completeReadSequence_plus));
+			if($endsFree_reference)
+			{
+				push(@finalOutputScores, $S_gap * (length($completeReadSequence_plus)));
+			}
+			else
+			{
+				push(@finalOutputScores, $S_gap * (length($completeReadSequence_plus) + length($reference_href->{$chromosome})));
+			}
 			push(@finalOutputScoreOrigins, 0);
 			
 			for(my $chainI = 0; $chainI <= $#chains; $chainI++)
@@ -206,7 +265,15 @@ my $processReadLines = sub {
 				die unless(defined $chain->{chainOutputScore});
 				die unless(defined $chain->{chainOutputScoreOrigin});
 				my $final_delta_read = length($completeReadSequence_plus) - $chain->{lastPos_read} - 1;
-				push(@finalOutputScores, $chain->{chainOutputScore} + $S_gap * $final_delta_read);
+				my $final_delta_ref = length($reference_href->{$chromosome}) - $chain->{lastPos_reference} - 1;
+				if($endsFree_reference)
+				{
+					push(@finalOutputScores, $chain->{chainOutputScore} + $S_gap * $final_delta_read);
+				}
+				else
+				{
+					push(@finalOutputScores, $chain->{chainOutputScore} + $S_gap * ($final_delta_read + $final_delta_ref));
+				}
 				push(@finalOutputScoreOrigins, $chain);
 			}			
 			
@@ -244,6 +311,7 @@ my $processReadLines = sub {
 	my $min_emitted_reference_position;
 	my $max_emitted_reference_position;
 	
+	my $leftOut_delta_reference = 0;
 	my $n_thisBacktrace_chains = 0;
 	while($last_emitted_read_position > 0)
 	{
@@ -252,6 +320,9 @@ my $processReadLines = sub {
 		{
 			my $missing_contig_sequence = substr($useReadSequence, 0, $last_emitted_read_position);
 			my $equivalent_reference_sequence_gap = ('-' x length($missing_contig_sequence));
+			
+			print "Left end, add delta ", $last_emitted_reference_position, "\n";
+			$leftOut_delta_reference += ($last_emitted_reference_position);	
 			
 			$bt_contig .= reverse($missing_contig_sequence);
 			$bt_reference .= $equivalent_reference_sequence_gap;
@@ -264,7 +335,17 @@ my $processReadLines = sub {
 			my $chain_for_consumption = $next_bt_position;
 			$n_thisBacktrace_chains++;
 			
+			if(exists $chainAddr_2_i{$chain_for_consumption})
+			{
+				print "Bt chain $chainAddr_2_i{$chain_for_consumption} \n";
+			}
 			my $delta_read = $last_emitted_read_position - $chain_for_consumption->{lastPos_read} - 1;
+			if($n_thisBacktrace_chains == 1)
+			{
+				print "Right end, add delta ", (length($reference_href->{$chromosome}) - $chain_for_consumption->{lastPos_reference} - 1), "\n";
+				
+				$leftOut_delta_reference += (length($reference_href->{$chromosome}) - $chain_for_consumption->{lastPos_reference} - 1);
+			}	
 			die unless($delta_read >= 0);
 			
 			my $betweenChains_read = '';
@@ -320,6 +401,13 @@ my $processReadLines = sub {
 		}
 	}
 	
+	if($last_emitted_reference_position != -1)
+	{
+		print "Final step with last_emitted_read_position = $last_emitted_read_position and last_emitted_reference_position = $last_emitted_reference_position :\n";
+		print $last_emitted_reference_position, "\n";
+		$leftOut_delta_reference += ($last_emitted_reference_position);	
+	}
+	
 	$bt_contig = reverse($bt_contig);
 	$bt_reference = reverse($bt_reference);
 	
@@ -357,8 +445,10 @@ my $processReadLines = sub {
 		}
 	}
 	
+	
 	die unless(length($bt_contig) == length($bt_reference));
 	my $score_reconstructed = 0;
+	my $n_mismatches = 0;
 	for(my $i = 0; $i < length($bt_contig); $i++)
 	{
 		my $c1 = substr($bt_contig, $i, 1);
@@ -367,6 +457,7 @@ my $processReadLines = sub {
 		if(($c1 eq '-') or ($c2 eq '-'))
 		{
 			$score_reconstructed += $S_gap;
+			$n_mismatches++;
 		}
 		else
 		{
@@ -377,10 +468,18 @@ my $processReadLines = sub {
 			else
 			{
 				$score_reconstructed += $S_mismatch;
+				$n_mismatches++;
 			}
 		}
 	
 	}
+	
+	my $score_before_endsFreeChange = $score_reconstructed;
+	
+	if(not $endsFree_reference)
+	{
+		$score_reconstructed += ($leftOut_delta_reference * $S_gap);
+	}	
 	
 	unless($score_reconstructed == $finalScores[$i_of_max_finalfinalScore])
 	{
@@ -552,10 +651,6 @@ die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
 
 print "Produced BAM file $outputFile\n\n";
 
-#unlink($bam_unsorted);
-#unlink($outputFile_sam);
-#unlink($outputFile_sam_filtered);
-
 sub which_max
 {
 	my $input_aref = shift;
@@ -603,3 +698,164 @@ sub readFASTA
 		
 	return \%R;
 }
+
+sub enrichChains
+{
+	my $chainsIn_aref = shift;
+	my $completeReadSequence_plus = shift;
+	my $completeReadSequence_minus = shift;
+	my $reference_href = shift;
+	my $chromosome = shift;
+	
+	die unless(defined $completeReadSequence_minus);
+	
+	my @chainsIn = @$chainsIn_aref;
+	
+	my %beginCoordinates_reference;
+	my %beginCoordinates_read;
+	foreach my $chain (@chainsIn)
+	{
+		$beginCoordinates_reference{$chain->{firstPos_reference}}++;
+		$beginCoordinates_read{$chain->{firstPos_read}}++;
+	}
+	
+	
+	my @chainsOut;	
+	for(my $chainI = 0; $chainI <= $#chainsIn; $chainI++)
+	{
+		my %createdEndPointForReferenceCoordinate;
+		my %createdEndPointForReadCoordinate;
+		
+		my $chain = $chainsIn[$chainI];
+		
+		my $useReadSequence = ($chain->{strand} eq '+') ? $completeReadSequence_plus : $completeReadSequence_minus;				
+	
+	
+		{
+			my $supposedReferenceSequence = substr($reference_href->{$chromosome}, $chain->{firstPos_reference}, $chain->{lastPos_reference} - $chain->{firstPos_reference} + 1);		
+			if(index($supposedReferenceSequence, 'N') == -1)
+			{
+				my $chainSequence_reference_noGaps = $chain->{alignment_reference};
+				$chainSequence_reference_noGaps =~ s/-//g;
+				die Dumper(length($supposedReferenceSequence), length($chainSequence_reference_noGaps), $supposedReferenceSequence, $chainSequence_reference_noGaps) unless($supposedReferenceSequence eq $chainSequence_reference_noGaps);		
+			}
+		}
+		push(@chainsOut, $chain);
+		
+		
+		my $n_matches = 0;
+		my $n_mismatches = 0;
+		my $n_gaps = 0;
+		my $alignment_reference = '';
+		my $alignment_read = '';
+		my $lastPos_reference = undef;
+		my $lastPos_read = undef;
+		for(my $alignmentPos = 0; $alignmentPos < length($chain->{alignment_reference}); $alignmentPos++)
+		{
+			my $character_reference = substr($chain->{alignment_reference}, $alignmentPos, 1);
+			my $character_read = substr($chain->{alignment_read}, $alignmentPos, 1);
+			
+			$alignment_reference .= $character_reference;
+			$alignment_read .= $character_read;
+			
+			if($character_reference eq $character_read)
+			{
+				$n_matches++;
+			}
+			else
+			{
+				if(($character_reference eq '-') or ($character_read eq '-'))
+				{
+					$n_gaps++;
+				}
+				else
+				{
+					$n_mismatches++;
+				}
+			}
+			
+			if($character_reference ne '-')
+			{
+				if(defined $lastPos_reference)
+				{
+					$lastPos_reference++;
+				}
+				else
+				{
+					$lastPos_reference = $chain->{firstPos_reference};
+				}
+				
+			}
+			if($character_read ne '-')
+			{
+				if(defined $lastPos_read)
+				{
+					$lastPos_read++;
+				}
+				else
+				{
+					$lastPos_read = $chain->{firstPos_read};
+				}			
+			}
+			
+			my $includeCurrentPositionAsEndpoint = 0;
+			if((defined $lastPos_reference) and (defined $lastPos_read))
+			{
+				if(exists $beginCoordinates_reference{$lastPos_reference + 1})
+				{
+					if(not $createdEndPointForReferenceCoordinate{$lastPos_reference + 1})
+					{
+						$includeCurrentPositionAsEndpoint = 1;
+					}
+				}
+				
+				if(exists $beginCoordinates_read{$lastPos_read + 1})
+				{
+					if(not $createdEndPointForReadCoordinate{$lastPos_read + 1})
+					{
+						$includeCurrentPositionAsEndpoint = 1;
+					}
+				}
+			}		
+
+			if($includeCurrentPositionAsEndpoint)
+			{
+				$createdEndPointForReferenceCoordinate{$lastPos_reference + 1} = 1;
+				$createdEndPointForReadCoordinate{$lastPos_read + 1} = 1;
+				
+				my $supposedReferenceSequence = substr($reference_href->{$chromosome}, $chain->{firstPos_reference}, $lastPos_reference - $chain->{firstPos_reference} + 1);
+				if($supposedReferenceSequence =~ /^[ACGT]+$/i)
+				{								
+					my $chainSequence_reference_noGaps = $alignment_reference;
+					$chainSequence_reference_noGaps =~ s/-//g;
+					die Dumper("Sequence mismatch", $supposedReferenceSequence, $chainSequence_reference_noGaps, $chain, $chromosome) unless($supposedReferenceSequence eq $chainSequence_reference_noGaps);
+				}
+				
+				my $supposedReadSequence = substr($useReadSequence, $chain->{firstPos_read}, $lastPos_read - $chain->{firstPos_read} + 1);
+				my $chainSequence_read_noGaps = $alignment_read;
+				$chainSequence_read_noGaps =~ s/-//g;
+				die Dumper($character_reference, $character_read, $alignmentPos, $chain->{firstPos_read}, $chain->{lastPos_read}, $lastPos_read, length($supposedReadSequence), length($chainSequence_read_noGaps)) unless($supposedReadSequence eq $chainSequence_read_noGaps);				
+
+				push(@chainsOut, {
+					readID => $chain->{readID},
+					chromosome => $chain->{chromosome},
+					firstPos_reference => $chain->{firstPos_reference},
+					lastPos_reference => $lastPos_reference,
+					firstPos_read => $chain->{firstPos_read},
+					lastPos_read => $lastPos_read, 
+					strand => $chain->{strand},
+					n_matches => $n_matches,
+					n_mismatches => $n_mismatches,
+					n_gaps => $n_gaps,
+					alignment_reference => $alignment_reference,
+					alignment_read => $alignment_read,
+					enrich => 1,
+				});
+			}			
+		}
+	}
+	
+	print "Chain enrichment: from ", scalar(@chainsIn), " to ", scalar(@chainsOut), " chains.\n";
+	return @chainsOut;
+}
+

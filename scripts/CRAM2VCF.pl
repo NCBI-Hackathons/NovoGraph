@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -11,9 +14,12 @@ use Bio::DB::HTS;
 $| = 1;
 
 # Example command:
-# To check correctness of INPUT for mafft:
-# 	./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts/uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output uber_vcf.vcf
-# ./BAM2VCF.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa --output uber_vcf.vcf
+# perl CRAM2VCF.pl --CRAM /intermediate_files/combined_2.cram
+#     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+#     --output VCF/graph_v2.vcf
+#     --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
+
+
 my $CRAM;
 my $referenceFasta;
 my $output;
@@ -23,23 +29,6 @@ unless(-e $bin_BAM2VCF)
 {
 	die "BAM2VCF binary $bin_BAM2VCF not present - run 'make all' in the directory.";
 }
-#printHaplotypesAroundPosition(2, {
-	# 0 => [
-		# ['AAAC', 'TTTT', 'r0', 0, 3],
-	# ],
-	# 2 => [
-		# ['ACGT', 'TTTT', 'r1', 2, 5],
-		# ['AC-GT', 'TTATT', 'r2', 2, 5],	
-		# ['ACGT', 'AA_A', 'r3', 2, 5],		
-	# ],
-	#2 => [
-		# ['-CGT', 'TTTT', 'r4', 3, 5],	
-	#	['ACG-', 'TTTT', 'r5', 2, 4],	
-	#],
-	#0 => [
-	#	 ['AAAC', 'TTT-', 'r7', 0, 3],
-	#],	
-#});
  
  
 GetOptions (
@@ -93,10 +82,7 @@ print OUT qq(##fileformat=VCFv4.2
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 #foreach my $referenceSequenceID (@sequence_ids)
 my @referenceSequenceIDs = @sequence_ids;
-if($CRAM =~ /TRY2/)
-{
-	# @referenceSequenceIDs = ("chr1");
-}
+
 my %alignments_starting_at_test;
 if($testing)
 {
@@ -126,23 +112,12 @@ if($testing)
 
 my %alignments_per_referenceSequenceID;
 
-# the following is just for testing!!
-# foreach my $referenceSequenceID (@referenceSequenceIDs)
-# {
-	# next unless($referenceSequenceID =~ /chr[\dXY]/);
-	# my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
-	# while(my $alignment = $alignment_iterator->next_seq)
-	# {
-		# $alignments_per_referenceSequenceID{$referenceSequenceID}++;
-	# }
-# }
 
-# die Dumper(\%alignments_per_referenceSequenceID, "testing");
 
 my $total_alignments = 0;
 mkdir('forVCF');
 die unless(-e 'forVCF');
-# @referenceSequenceIDs = qw/chr21/; # todo
+
 my $fn_cmds = $output . '_CRAM2VCF_commands.txt';
 my $fn_cmds_cat = $fn_cmds . '.cat';
 my $fn_gaps = $output . '_CRAM2VCF_gaps.txt';
@@ -159,12 +134,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my $l_ref_sequence = length($reference_href->{$referenceSequenceID});
 	my @gap_structure;
 	$#gap_structure = ($l_ref_sequence - 1);
-	#print "Set...";
-	#for(my $i = 0; $i < $l_ref_sequence; $i++)
-	#{
-	#	#$gap_structure[$i] = -1;
-	#}
-	#print " .. done.\n";
+
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
 	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
@@ -223,24 +193,12 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 				my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
 				die if($isDeletion and $isInsertion);
 				
-				if($isDeletion)
-				{
-					# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-				}
-				if($isInsertion)
-				{
-					# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-				}	
 			}
 			die unless(defined $firstMatch);
 			
 			$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
 			$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
 			
-			if($alignment->query->name eq 'Korean.gi|1078261939|gb|LPVO02001249.1|')
-			{
-				# warn Dumper($alignment->query->name, $ref_preAll, $query_preAll, $ref, $query);
-			}
 			my $gaps_left_side = 0;
 			my $gaps_right_side = 0;
 			
@@ -299,16 +257,9 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			die unless($gaps_right_side == 0);
 			
 			$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
-			$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
-			#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
-			#$query = substr($query, 0, length($query) - $gaps_right_side);		
+			$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);
 			die unless(length($ref) == length($query));
-			
-			if($alignment->query->name eq 'CHM13.gi|953910992|gb|LDOC03004332.1|')
-			{
-				#die Dumper($alignment_start_pos, $ref, $query);
-			}			
-		
+            
 			my $ref_pos = $alignment_start_pos - 1;
 			my $running_gaps = 0;
 			for(my $i = 0; $i < length($ref); $i++)
@@ -417,28 +368,8 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			my $targetPos = $targetPosData->[0];
 			my $outputFn = 'temp/' . $referenceSequenceID . '_around_' . $targetPos;
 			outputMSAInto($targetPos, \%alignments_starting_at, $outputFn);
-			# printHaplotypesAroundPosition($targetPos, \%alignments_starting_at);	
 		}
 	}
-	# next;
-	
-	
-	# todo
-	#if(system($cmd))
-	#{
-	#	die "Command $cmd failed";
-	#}
-	
-	# unless(-e $output_file)
-	# {
-		# die "File $output_file not existing";
-	# }
-	
-	# open(CHROUT, '<', $output_file) or die "Cannot open $output_file";
-	# while(<CHROUT>)
-	# {
-		# print OUT $_;
-	# }
 }
 
 close(OUT);
@@ -462,7 +393,7 @@ print "\nOK\n\n";
 close(CMDS);
 close(GAPSTRUCTURE);
 
-# print"\nExecute commands in $fn_cmds\n\n";
+
 print"\nNow launch launch_CRAM2VCF_C++.pl with the right parameters.\n\n";
 
 sub readFASTA
@@ -474,11 +405,6 @@ sub readFASTA
 	my $currentSequence;
 	while(<F>)
 	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
@@ -495,14 +421,6 @@ sub readFASTA
 	close(F);
 		
 	return \%R;
-}
-
-sub reverseComplement
-{
-	my $kMer = shift;
-	$kMer =~ tr/ACGT/TGCA/;
-	return reverse($kMer);
-	return $kMer;
 }
 
 sub outputMSAInto
@@ -580,7 +498,6 @@ sub outputMSAInto
 					$gt_ref_per_position{$ref_pos} = $running_ref_allele;
 				}
 						
-				# print "Positions $alignment_aref->[2] \n";
 				foreach my $interestingPos (@aroundPositions)
 				{
 					if(exists $gt_per_position{$interestingPos})
@@ -660,93 +577,5 @@ sub outputMSAInto
 			warn "Length problem with $sequence_title - $seq_length vs " . length($sequence);
 		}
 	}
-	
-	
-	
-	
 	close(OUT);
 }
-
-sub printHaplotypesAroundPosition
-{
-	my $posI = shift;
-	my $alignments_starting_at_href = shift;
-	
-	my @aroundPositions = grep {$_ >= 0} (($posI - 2) .. ($posI + 2));
-	foreach my $startPos (keys %{$alignments_starting_at_href})
-	{
-		foreach my $alignment_aref (@{$alignments_starting_at_href->{$startPos}})
-		{
-			my $apparent_startPos = $alignment_aref->[3];
-			if($apparent_startPos != $startPos)
-			{
-				warn Dumper("Apparent / startpos mismatch", $startPos, $apparent_startPos, $alignment_aref->[2]);
-			}
-			my $stopPos = $alignment_aref->[4];
-			die unless($stopPos >= $startPos);
-			my $interesting = 0;
-			foreach my $interestingPos (@aroundPositions)
-			{
-				if(($interestingPos >= $startPos) and ($interestingPos <= $stopPos))
-				{
-					$interesting = 1;
-				}
-			}
-			
-			my $ref = $alignment_aref->[0];
-			my $query = $alignment_aref->[1];
-			
-			if($interesting)
-			{
-				my %gt_per_position;
-				my $ref_pos = $startPos - 1;
-				my $running_allele = '';
-				for(my $i = 0; $i < length($ref); $i++)
-				{
-					my $c_ref = substr($ref, $i, 1);
-					my $c_query = substr($query, $i, 1);
-					
-					if(($c_ref eq '-') or ($c_ref eq '*'))
-					{
-						$running_allele .= $c_query;
-					}
-					else
-					{
-						if($running_allele)
-						{
-							$gt_per_position{$ref_pos} = $running_allele;
-						}
-						
-						$running_allele = $c_query;
-						$ref_pos++;						
-					}
-				}
-				if($running_allele)
-				{
-					$gt_per_position{$ref_pos} = $running_allele;
-				}
-						
-				print "Positions $alignment_aref->[2] \n";
-				foreach my $interestingPos (@aroundPositions)
-				{
-					if(exists $gt_per_position{$interestingPos})
-					{
-						print "\t", $interestingPos, "\t", $gt_per_position{$interestingPos}, "\n";
-					}
-				}
-			}
-		}
-	}
-}
-
-__DATA__
-34558 chr21 28891726   4729
-51120 chr21 46060140  31837
-50742 chr21 45802714 123647
-242   chr21  5289128   1247
-39875 chr21 34702674    946
-39778 chr21 34700642    628
-13832 chr21 10424743   2555
-39509 chr21 34695843    820
-39636 chr21 34697908    520
-39788 chr21 34700829    822

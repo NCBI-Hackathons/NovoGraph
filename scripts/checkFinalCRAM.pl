@@ -1,29 +1,35 @@
 #!/usr/bin/perl
 
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long;   
 use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
-use Bio::DB::Sam;
+use Bio::DB::HTS;
 $| = 1;
 
 my $contigLengths;
 my $MAFFTdir;
 my $preMAFFTBAM;
 my $finalOutputCRAM;
+my $samtools_path;
 GetOptions (
-	'MAFFTdir:s' => \$MAFFTdir, 
+	'MAFFTdir:s' => \$MAFFTdir,
 	'contigLengths:s' => \$contigLengths, 
 	'preMAFFTBAM:s' => \$preMAFFTBAM, 
-	'finalOutputCRAM:s' => \$finalOutputCRAM, 
+	'finalOutputCRAM:s' => \$finalOutputCRAM,
+    'samtools_path:s' => \$samtools_path,
 );
 
 die unless($contigLengths);
 die unless($MAFFTdir);
 die unless($preMAFFTBAM);
 die unless($finalOutputCRAM);
+die unless($samtools_path);
 
 my $readWindowsInfo = read_windowbams_info($MAFFTdir);
 
@@ -40,7 +46,7 @@ close(L);
 
 my %preMAFFT_BAM_lengths;
 my %preMAFFT_BAM_sequence;
-open(PREMAFFT, "/data/projects/phillippy/software/samtools-1.4/samtools view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
+open(PREMAFFT, $samtools_path, " view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
 while(<PREMAFFT>)
 {
 	my $l = $_;
@@ -58,7 +64,7 @@ close(PREMAFFT);
 
 my %finalOutput_BAM_lengths;
 my %finalOutput_BAM_sequence;
-open(OUTPUT, "/data/projects/phillippy/software/samtools-1.4/samtools view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
+open(OUTPUT, $samtools_path, " view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
 while(<OUTPUT>)
 {
 	my $l = $_;
@@ -74,8 +80,6 @@ while(<OUTPUT>)
 close(OUTPUT);
 
 
-# my %combinedKeys = map {$_ => 1} ((keys %expectedLengts), (keys %contigs_fromFASTA), (keys %preMAFFT_BAM_lengths));
-# my %combinedKeys = map {$_ => 1} ((keys %preMAFFT_BAM_lengths), (keys %contigs_fromFASTA));
 my %combinedKeys = map {$_ => 1} ((keys %preMAFFT_BAM_lengths));
 
 my $perfect = 0;
@@ -83,12 +87,8 @@ my $issues =  0;
 foreach my $k (keys %combinedKeys)
 {
 	my $l_expected = (exists $expectedLengts{$k}) ? $expectedLengts{$k} : "NOT_PRESENT";
-	# my $l_observed = (exists $contigs_fromFASTA{$k}) ? length($contigs_fromFASTA{$k}) : "NOT_PRESENT";
 	my $l_BAM_preMAFFT = (exists $preMAFFT_BAM_lengths{$k}) ? $preMAFFT_BAM_lengths{$k} : "NOT_PRESENT";
-	# my $l_MFA_postMafft = (exists $contigs_fromMFA{$k}) ? length($contigs_fromMFA{$k}) : "NOT_PRESENT";
-	# my $l_singleBAM_postMafft = (exists $contigs_from_singleBAMs{$k}) ? length($contigs_from_singleBAMs{$k}) : "NOT_PRESENT";
 	my $l_finalOutput = (exists $finalOutput_BAM_sequence{$k}) ? length($finalOutput_BAM_sequence{$k}) : "NOT_PRESENT";
-	# print join("\t", $k, $l_expected, $l_BAM_preMAFFT, $l_MFA_postMafft, $l_singleBAM_postMafft, $l_finalOutput), "\n";
 	print join("\t", $k, $l_expected, $l_BAM_preMAFFT, $l_finalOutput), "\n";
 	if($l_expected ne $l_finalOutput)
 	{
@@ -96,14 +96,7 @@ foreach my $k (keys %combinedKeys)
 		print "Discrepancy: $k \n";
 		print "\tExpected       : $l_expected \n";
 		print "\tPre-MAFFT, BAM : $l_BAM_preMAFFT \n";
-		# print "\tPost-MAFFT, mfa: $l_MFA_postMafft \n";
-		# print "\tPost-MAFFT, BAM: $l_singleBAM_postMafft \n";
 		print "\tCombined final : $l_finalOutput \n";
-		#print "\tFile sources:\n";
-		#foreach my $k (keys %{$contigs_fromFASTA_fileSources{$k}})
-		#{
-		#	print "\t - ", $k, "\n";
-		#}
 		$issues++;
 	}
 	else
@@ -150,37 +143,5 @@ sub read_windowbams_info {
     close WINDOWS;
 
     return {%entry_hash};
-}
-
-sub readFASTA
-{
-	my $file = shift;	
-	my %R;
-	
-	open(F, '<', $file) or die "Cannot open $file";
-	my $currentSequence;
-	while(<F>)
-	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
-		my $line = $_;
-		chomp($line);
-		$line =~ s/[\n\r]//g;
-		if(substr($line, 0, 1) eq '>')
-		{
-			$currentSequence = substr($line, 1);
-			$currentSequence =~ s/\s.+//;
-		}
-		else
-		{
-			$R{$currentSequence} .= $line;
-		}
-	}	
-	close(F);
-		
-	return \%R;
 }
 

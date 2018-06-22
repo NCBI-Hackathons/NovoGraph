@@ -1,11 +1,8 @@
 #!/usr/bin/perl
 
-<<<<<<< HEAD
-=======
 ## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
 
->>>>>>> 0325b61aa0acf5b1ae022975e803b85949c2554f
 use strict;
 use Data::Dumper;
 use Bio::DB::Sam;
@@ -14,22 +11,17 @@ $| = 1;
 
 # Example command:
 # To check correctness of INPUT for mafft:
-# 	./checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
+# 	./BAM2AARTI.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa
 
 my $referenceFasta;
 my $BAM;
-my $outputFile = 'fromBAM_lengthStatistics.txt';
+my $outputFile = 'forAarti.txt';
 my $readsFasta;
 my $lenientOrder = 1;
 
-<<<<<<< HEAD
 # $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
 # $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
 
-
-=======
->>>>>>> 0325b61aa0acf5b1ae022975e803b85949c2554f
-# HX1.000608F
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'BAM:s' => \$BAM, 
@@ -46,282 +38,103 @@ die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
 
-my $outputFile2 = 'fromBAM_lengthStatistics.txt.individualAlignments';
+print "Read $referenceFasta\n";
+my $reference_href = readFASTA($referenceFasta, 0);
+print "\tdone.\n";
 
-my $reference_href;
-my $reads_href;
+print "Read $readsFasta\n";
+my $reads_href = readFASTA($readsFasta, 0);
+print "\tdone.\n";
 
-my %read_reference_positions;
-my %read_got_primary_alignment;
+my @out_headerfields = qw/readID chromosome firstPos_reference lastPos_reference firstPos_read lastPos_read strand n_matches n_mismatches n_gaps alignment_reference alignment_read completeReadSequence_plus completeReadSequence_minus/;
 
-my $testing = 0;
-if($testing == 0)
-{
-	print "Read $referenceFasta\n";
-	$reference_href = readFASTA($referenceFasta, 0);
-	#my $reference_href = {};
-	print "\tdone.\n";
-
-	print "Read $readsFasta\n";
-	$reads_href = readFASTA($readsFasta, 0);
-	#my $reads_href = {};
-	print "\tdone.\n";
-
-	my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
-	my $iterator = $sam->features(-iterator=>1);
-
-	my $warnedAboutOrder;
-
-	while(my $alignment = $iterator->next_seq)
-	{
-		my $isPrimary  = (! $alignment->get_tag_values('NOT_PRIMARY'));
-		# die if(not $isPrimary);
-		next unless($alignment->seq_id eq 'chr20');
-		
-		if($alignment->seq_id ne 'chr1')
-		{
-			#warn "For testing purposes, stop after chr1"; # todo
-			#last;
-		}
-		
-		my $readID = $alignment->query->name;
-		# next unless($readID =~ /HG004.002266F/);
-		
-		print "Collecting alignment $readID ... \n";
-		
-		my $read_href = convertAlignmentToHash($alignment);	
-		
-		if($read_href)
-		{
-			if($isPrimary)
-			{
-				$read_got_primary_alignment{$readID} = 1;
-			}
-			
-			if(not defined $read_reference_positions{$readID})
-			{
-				$read_reference_positions{$readID} = [];
-				$#{$read_reference_positions{$readID}} = (length($reads_href->{$readID})-1);
-			}
-			
-			die unless($#{$read_reference_positions{$readID}} == (length($reads_href->{$readID})-1));	
-			
-			my $runningRefPos = $read_href->{firstPos_reference};
-			my $runningReadPos = $read_href->{firstPos_read};
-			for(my $alignmentPosI = 0; $alignmentPosI < length($read_href->{alignment_reference}); $alignmentPosI++)
-			{
-				my $c_ref = substr($read_href->{alignment_reference}, $alignmentPosI, 1);
-				my $c_read = substr($read_href->{alignment_read}, $alignmentPosI, 1);
-				
-				my $referencePos;
-				my $readPos;
-				if($c_ref eq '-')
-				{
-					$referencePos = -1;
-				}
-				else
-				{
-					$referencePos = $runningRefPos;
-				}
-				
-				if($c_read eq '-')
-				{
-					$readPos = -1;
-				}
-				else
-				{
-					$readPos = $runningReadPos; 
-				}		
-				
-				if($readPos != -1)
-				{
-					die unless($readPos >= 0); 
-					die unless($readPos <= $#{$read_reference_positions{$readID}});
-					if(defined $read_reference_positions{$readID}[$readPos]) 
-					{
-						warn "Read position $readPos in $readID covered by multiple alignments - existing reference value $read_reference_positions{$readID}[$readPos], want to set to $referencePos";
-					}
-					$read_reference_positions{$readID}[$readPos] = $referencePos;
-				}
-				
-				if($c_ref ne '-')
-				{
-					$runningRefPos++;
-				}	
-				if($c_read ne '-')
-				{
-					$runningReadPos++;
-				}	
-			}
-		}
-		
-		# last if(scalar(keys %read_reference_positions) > 10); # todo
-	}
-}
-else
-{
-	$reads_href->{testRead} = 'ACGTACGTACGTACGT';
-	$read_reference_positions{testRead} = [];
-	$read_reference_positions{testRead}[0] = -1;
-	$read_reference_positions{testRead}[1] = 1;
-	$read_reference_positions{testRead}[2] = 2;
-	$read_reference_positions{testRead}[3] = 3;
-	$read_reference_positions{testRead}[4] = 4;
-	$read_reference_positions{testRead}[5] = -1;
-	$read_reference_positions{testRead}[6] = 5;
-	$read_reference_positions{testRead}[7] = 6;
-	$read_reference_positions{testRead}[8] = 8;
-	$read_reference_positions{testRead}[9] = 10;
-	$read_reference_positions{testRead}[10] = 11;
-	$read_reference_positions{testRead}[11] = -1;
-	$read_reference_positions{testRead}[12] = 12;
-	$read_reference_positions{testRead}[13] = 13; 
-	$read_reference_positions{testRead}[14] = 14;
-	$read_reference_positions{testRead}[15] = undef;  
-	$read_got_primary_alignment{testRead} = 1;
-}
-
-my %minusOne_perRead;
-my $read_got_primary = 0;
-my $read_no_primary = 0;
-my %histograms;
-
-open(OUT2, '>', $outputFile2) or die "Cannot open $outputFile2";
-
-foreach my $readID (keys %read_reference_positions)
-{
-	print "Analyzing alignments for $readID ... \n";
-
-	die unless(scalar(@{$read_reference_positions{$readID}}) == length($reads_href->{$readID}));
-	for(my $posI = 0; $posI <= $#{$read_reference_positions{$readID}}; $posI++)
-	{
-		$read_reference_positions{$readID}[$posI] = -1 unless(defined $read_reference_positions{$readID}[$posI]);
-	}
-	
-	if($read_got_primary_alignment{$readID})
-	{
-		$read_got_primary++;
-		
-		print OUT2 "Read ", $readID, "\n";
-		my $first_definedPosition;
-		my $last_definedPosition;
-		for(my $readPos = 0; $readPos <= $#{$read_reference_positions{$readID}}; $readPos++)
-		{
-			if($read_reference_positions{$readID}[$readPos] != -1)
-			{
-				$first_definedPosition = $readPos unless(defined $first_definedPosition);
-				$last_definedPosition = $readPos;
-			}
-			print OUT2 $readPos, "\t", $read_reference_positions{$readID}[$readPos], "\n";
-		}
-		
-		my $padding_front;
-		my $padding_end;
-		if(defined $first_definedPosition)
-		{
-			my %local_histograms;
-			my $allConsistent = 1;
-			
-			$padding_front = $first_definedPosition;
-			$padding_end = $#{$read_reference_positions{$readID}} - $last_definedPosition;
-			
-			my $runningGapLength = 0;
-			my $lastRefPos;
-			for(my $readPos = $padding_front; $readPos <= $last_definedPosition; $readPos++)
-			{
-				if($read_reference_positions{$readID}[$readPos] != -1)
-				{
-					my $diff_refPos = (defined $lastRefPos) ? ($read_reference_positions{$readID}[$readPos] - $lastRefPos) : 1;
-					my $deletion_relative_to_reference = $diff_refPos - 1;
-					
-					$allConsistent = 0 if($deletion_relative_to_reference < 0);
-					$runningGapLength -= $deletion_relative_to_reference;
-					
-					if($runningGapLength)
-					{	
-						die unless($lastRefPos >= 0);
-						$local_histograms{$runningGapLength}++;
-					}
-					
-					$runningGapLength = 0;
-					$lastRefPos = $read_reference_positions{$readID}[$readPos];					
-				}
-				else
-				{
-					$runningGapLength++;
-				}
-				
-			}		
-			
-			die unless($runningGapLength == 0);
-			
-			$histograms{consistent}{$allConsistent}++;
-			
-			foreach my $k (keys %local_histograms)
-			{
-				if($allConsistent)
-				{
-					$histograms{INDELs}{$k} += $local_histograms{$k};
-					if($k == -1)
-					{
-						$minusOne_perRead{$readID} += $local_histograms{$k};				
-					}
-				}
-			}
-		
-		}
-		else
-		{
-			$padding_front = $#{$read_reference_positions{$readID}}+1;
-			$padding_end = 0;
-		}
-		
-		$histograms{frontPadding}{$padding_front}++;
-		$histograms{endPadding}{$padding_end}++;	
-		my $combinedPadding = $padding_front + $padding_end;
-		my $combinedPadding_perc = int(($combinedPadding / ($#{$read_reference_positions{$readID}}+1)) * 100);
-		$histograms{combinedPaddingPerc}{$combinedPadding_perc}++;		
-		
-	}
-	else
-	{
-		$read_no_primary++;
-	}
-}
-
-$histograms{primary}{1} = $read_got_primary;
-$histograms{primary}{0} = $read_no_primary;
-
-if($testing)
-{
-	die Dumper(\%histograms);
-}
+my $headerFn = $outputFile . '.header';
+open(HEADER, '>', $headerFn) or die "Cannot open $headerFn";
+print HEADER join("\t", @out_headerfields), "\n";
+close(HEADER);
 
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
 
-foreach my $category (keys %histograms)
+my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
+my $iterator = $sam->features(-iterator=>1);
+
+my $warnedAboutOrder;
+my %processedReadIDs;
+my $runningReadID;
+my %printed_complete_sequence;
+while(my $alignment = $iterator->next_seq)
 {
-	foreach my $l (keys %{$histograms{$category}})
+	if($alignment->seq_id ne 'chr1')
 	{
-		print OUT join("\t", $category, $l, $histograms{$category}{$l}), "\n";
+		#warn "For testing purposes, stop after chr1"; # todo
+		#last;
+	}
+	
+	my $readID = $alignment->query->name;
+	if($runningReadID ne $readID)
+	{
+		if($runningReadID)
+		{		
+			if($lenientOrder)
+			{
+				if(not $warnedAboutOrder)
+				{
+					die "Ordering constrains violated - we want a BAM ordered by read ID - violating read ID $readID" if($processedReadIDs{$readID});
+					$warnedAboutOrder++;
+				}
+			}
+			else
+			{
+				die "Ordering constrains violated - we want a BAM ordered by read ID - violating read ID $readID" if($processedReadIDs{$readID});
+			}
+			
+			$processedReadIDs{$runningReadID}++;
+		}
+		$runningReadID = $readID;
+	}
+	my $read_href = convertAlignmentToHash($alignment);	
+	
+	if($read_href)
+	{
+		if($printed_complete_sequence{$readID})
+		{
+			$read_href->{completeReadSequence_plus} = '';
+			$read_href->{completeReadSequence_minus} = '';
+		}
+		else
+		{
+			die unless($reads_href->{$readID});
+			$read_href->{completeReadSequence_plus} = $reads_href->{$readID};
+			$read_href->{completeReadSequence_minus} = reverseComplement($reads_href->{$readID});
+			$printed_complete_sequence{$readID}++;
+		}
+		
+		print OUT join("\t", map {die "Field $_ undefined" unless(defined $read_href->{$_}); $read_href->{$_}} @out_headerfields), "\n";
 	}
 }
-close(OUT);
 
-print "\n\nProduced output file $outputFile (only from reads that have primary information)\n";
-print "\t", "read_got_primary", ": ", $read_got_primary, "\n";
-print "\t", "read_no_primary", ": ", $read_no_primary, "\n";
+my $sorted_outputFile = $outputFile.'.sorted';
+#die "Implement this properly - first line issue!";
+# sed '1d' forAarti > AartiInput.forSort
 
-my $outputFile_2 = $outputFile . ".minus1PerRead";
-open(O, '>', $outputFile_2) or die "Cannot open $outputFile_2";
-foreach my $rID (keys %minusOne_perRead)
+my $sort_cmd = qq(sort $outputFile > $sorted_outputFile);
+if(system($sort_cmd))
 {
-	print O join("\t", $rID, $minusOne_perRead{$rID}), "\n";
+	die "Failed during command: $sort_cmd";
 }
-close(O);
+unless(-e $sorted_outputFile)
+{
+	die "Expected output file $sorted_outputFile not existing";
+}
 
-print "\n\nProduced output file $outputFile_2\n";
+my $combined_outputFile = $outputFile . '.sortedWithHeader';
+my $combine_cmd = qq(cat $headerFn $sorted_outputFile > $combined_outputFile);
+if(system($combine_cmd))
+{
+	die "Failed during command: $combine_cmd";
+}
 
+print "\n\nProduced output file $combined_outputFile\n";
 
 sub convertAlignmentToHash
 {
@@ -544,7 +357,6 @@ sub convertAlignmentToHash
 	};
 }
 
-<<<<<<< HEAD
 # my $bam          = Bio::DB::Bam->open($BAM);
 # my $header       = $bam->header;
 # my $target_count = $header->n_targets;
@@ -560,8 +372,6 @@ sub convertAlignmentToHash
 	# die $align->padded_alignment;
 	# die $readID;
 # }
-=======
->>>>>>> 0325b61aa0acf5b1ae022975e803b85949c2554f
  
 sub readFASTA
 {
