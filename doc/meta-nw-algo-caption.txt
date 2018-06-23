@@ -27,7 +27,7 @@
 
   <meta name="viewport" content="width=device-width">
   
-  <title>Graph_Genomes/meta-nw-algo.svg at June2018 · NCBI-Hackathons/Graph_Genomes</title>
+  <title>Graph_Genomes/meta-nw-algo-caption.txt at June2018 · NCBI-Hackathons/Graph_Genomes</title>
     <meta name="description" content="GitHub is where people build software. More than 28 million people use GitHub to discover, fork, and contribute to over 85 million projects.">
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
   <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
@@ -37,10 +37,10 @@
     <meta property="og:image" content="https://avatars3.githubusercontent.com/u/13666133?s=400&amp;v=4" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="NCBI-Hackathons/Graph_Genomes" /><meta property="og:url" content="https://github.com/NCBI-Hackathons/Graph_Genomes" /><meta property="og:description" content="Graph_Genomes - Building genome graphs from de novo assemblies" />
 
   <link rel="assets" href="https://assets-cdn.github.com/">
-  <link rel="web-socket" href="wss://live.github.com/_sockets/VjI6MjgyNjQ4ODc1OmY1ZDdkODVjMmFjZWI2Nzk2YTlkM2FhMTVmZjgxZjdhNTcyNjdiYjE4Y2E0ZGVkZWM0OWFjZGNjZmZmYWNkYjI=--20a72b7b4f2b01ccc94b80d741c364697fffffa8">
+  <link rel="web-socket" href="wss://live.github.com/_sockets/VjI6MjgyNjQ4ODc1OmU1YmNkYTVhMjA2YmExMTczMGNkMGY0Mzc3MmY0YWI3NTk2NTc2ODBjMzQ5MjhlMTAzNWUwYmJiNjE2MDJiYTU=--9a7403b7cc06102ed6c966baba6d25da00886aaa">
   <meta name="pjax-timeout" content="1000">
   <link rel="sudo-modal" href="/sessions/sudo_modal">
-  <meta name="request-id" content="914F:0A22:209A47E:3F2560E:5B2E95D8" data-pjax-transient>
+  <meta name="request-id" content="914F:0A22:209A433:3F25586:5B2E95D7" data-pjax-transient>
 
 
   
@@ -52,7 +52,7 @@
   <meta name="google-site-verification" content="GXs5KoUUkNCoaAZn7wPN-t01Pywp9M3sEjnt_3_ZWPc">
     <meta name="google-analytics" content="UA-3769691-2">
 
-<meta name="octolytics-host" content="collector.githubapp.com" /><meta name="octolytics-app-id" content="github" /><meta name="octolytics-event-url" content="https://collector.githubapp.com/github-external/browser_event" /><meta name="octolytics-dimension-request_id" content="914F:0A22:209A47E:3F2560E:5B2E95D8" /><meta name="octolytics-dimension-region_edge" content="iad" /><meta name="octolytics-dimension-region_render" content="iad" /><meta name="octolytics-actor-id" content="6968193" /><meta name="octolytics-actor-login" content="evanbiederstedt" /><meta name="octolytics-actor-hash" content="54072e85d46bb85e7d9eb0f871ce53a65fd7c2c2767b4c77d11d948296c9f24b" />
+<meta name="octolytics-host" content="collector.githubapp.com" /><meta name="octolytics-app-id" content="github" /><meta name="octolytics-event-url" content="https://collector.githubapp.com/github-external/browser_event" /><meta name="octolytics-dimension-request_id" content="914F:0A22:209A433:3F25586:5B2E95D7" /><meta name="octolytics-dimension-region_edge" content="iad" /><meta name="octolytics-dimension-region_render" content="iad" /><meta name="octolytics-actor-id" content="6968193" /><meta name="octolytics-actor-login" content="evanbiederstedt" /><meta name="octolytics-actor-hash" content="54072e85d46bb85e7d9eb0f871ce53a65fd7c2c2767b4c77d11d948296c9f24b" />
 <meta name="analytics-location" content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" />
 
 
@@ -67,7 +67,7 @@
     <meta name="user-login" content="evanbiederstedt">
 
       <meta name="expected-hostname" content="github.com">
-    <meta name="js-proxy-site-detection-payload" content="MjQ3Zjc1NDU5ZTcxYjI3YWFhYWE0N2QyMjA0YWEyYmRhMGRkMDQyYjg5NGEzMWVhNDkzMzNlNTc2ZTI4OWUxYnx7InJlbW90ZV9hZGRyZXNzIjoiNzUuMTI3LjE4Ny4xMzAiLCJyZXF1ZXN0X2lkIjoiOTE0RjowQTIyOjIwOUE0N0U6M0YyNTYwRTo1QjJFOTVEOCIsInRpbWVzdGFtcCI6MTUyOTc3OTY3MywiaG9zdCI6ImdpdGh1Yi5jb20ifQ==">
+    <meta name="js-proxy-site-detection-payload" content="M2MyM2ZkZjc2ZmE1MWM4NTVlMTQzYWI1MWI3NWEzOWMxNjc3OGQ0NTdmZDlkMmQ1Y2Q2M2RiNGZjMTFhMjA4OXx7InJlbW90ZV9hZGRyZXNzIjoiNzUuMTI3LjE4Ny4xMzAiLCJyZXF1ZXN0X2lkIjoiOTE0RjowQTIyOjIwOUE0MzM6M0YyNTU4Njo1QjJFOTVENyIsInRpbWVzdGFtcCI6MTUyOTc3OTY3MiwiaG9zdCI6ImdpdGh1Yi5jb20ifQ==">
 
     <meta name="enabled-features" content="UNIVERSE_BANNER,FREE_TRIALS,MARKETPLACE_INSIGHTS,MARKETPLACE_INSIGHTS_CONVERSION_PERCENTAGES">
 
@@ -84,7 +84,7 @@
   <meta name="octolytics-dimension-user_id" content="13666133" /><meta name="octolytics-dimension-user_login" content="NCBI-Hackathons" /><meta name="octolytics-dimension-repository_id" content="71797926" /><meta name="octolytics-dimension-repository_nwo" content="NCBI-Hackathons/Graph_Genomes" /><meta name="octolytics-dimension-repository_public" content="true" /><meta name="octolytics-dimension-repository_is_fork" content="false" /><meta name="octolytics-dimension-repository_network_root_id" content="71797926" /><meta name="octolytics-dimension-repository_network_root_nwo" content="NCBI-Hackathons/Graph_Genomes" /><meta name="octolytics-dimension-repository_explore_github_marketplace_ci_cta_shown" content="true" />
 
 
-    <link rel="canonical" href="https://github.com/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo.svg" data-pjax-transient>
+    <link rel="canonical" href="https://github.com/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo-caption.txt" data-pjax-transient>
 
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
@@ -153,7 +153,7 @@
           autocapitalize="off"
           aria-autocomplete="list"
           aria-controls="jump-to-results"
-          data-jump-to-suggestions-path="/_graphql/GetSuggestedNavigationDestinations#csrf-token=vBDVsGsvg8mytDdP/odA/WZuRPl/sXAmEZ8rp7dRDCJiZz3JUlmP4NoJAk3GfbnlOdyasSgqhg5GY8PqMQeLbA=="
+          data-jump-to-suggestions-path="/_graphql/GetSuggestedNavigationDestinations#csrf-token=FlUsj1v85g+N05tVy3C6ljbvnW3uKpJ01z40POX5iBXIIsT2YorqJuVurlfzikOOaV1DJbmxZFyAwtxxY68PWw=="
           spellcheck="false"
           autocomplete="off"
           >
@@ -317,7 +317,7 @@
           Settings
         </a></li>
 
-        <li><!-- '"` --><!-- </textarea></xmp> --></option></form><form class="logout-form" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="/dnYrVGasxcPSERqMAODQkgLwX/LsN99GiimF5A+NFj/IpoH8eD2whJrN1kxLzlqYBHpfkeHLuXd9jClAgoJcA==" />
+        <li><!-- '"` --><!-- </textarea></xmp> --></option></form><form class="logout-form" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="MgnYHEH9EWD3K0b1vYEXR8wAueUQ4EPrIRwqEJRGmpkw8pq24YdUteoINca8ra1v5BqR5JzXsnPmwryiBnKnsQ==" />
           <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
             Sign out
           </button>
@@ -329,7 +329,7 @@
 
 
 
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="sr-only right-0" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="bfBbSLyy9vwSPhKluiWk8r2X2+PaKMM10XMcanXJbENvCxniHMizKQ8dYZa7CR7alY3z4lYfMq0WrYrY5/1Raw==" />
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="sr-only right-0" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="kdhqGE8lzLurLOyd/uuP+pRgtPGOiKT+CfMFAZsecTeTIyiy71+JbrYPn67/xzXSvHqc8AK/VWbOLZOzCSpMHw==" />
           <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
             Sign out
           </button>
@@ -367,7 +367,7 @@
 
       <ul class="pagehead-actions">
   <li>
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-autosubmit="true" data-remote="true" class="js-social-container" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="G7mLSp68GdUn6TvpmrWCABT+fXKBOFD5DYqGXqm8WTLv2/lNNx8MRgGGQ83KJqtgUjnnluAVjG6YxMd1T95/VQ==" />      <input type="hidden" name="repository_id" id="repository_id" value="71797926" class="form-control" />
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-autosubmit="true" data-remote="true" class="js-social-container" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="CWoLxahyXyMMm9LhH4gonpQYil2ZGccT1GViyc1cjmr9CHnCAdFKsCr0qsVPGwH+0t8Qufg0G4RBKyPiKz6oDQ==" />      <input type="hidden" name="repository_id" id="repository_id" value="71797926" class="form-control" />
 
         <div class="select-menu js-menu-container js-select-menu">
           <a href="/NCBI-Hackathons/Graph_Genomes/subscription"
@@ -447,7 +447,7 @@
   <li>
     
   <div class="js-toggler-container js-social-container starring-container on">
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="starred js-social-form" action="/NCBI-Hackathons/Graph_Genomes/unstar" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="tgtdt6lLxsRRapOCpcvdze/koNN7pOeYx3lBcN/BEhhJm96jDa8a8SKaxxt09Qt1RGngbYn773tT23TLnAXPYg==" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="starred js-social-form" action="/NCBI-Hackathons/Graph_Genomes/unstar" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="MchMXK96pusC3bODRjvRanhcZ4mwJmJbaHAWNQaheILOWM9IC5563nEt5xqXBQfS09EnN0J5arj80iOORWWl+A==" />
       <input type="hidden" name="context" value="repository"></input>
       <button
         type="submit"
@@ -462,7 +462,7 @@
           11
         </a>
 </form>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="unstarred js-social-form" action="/NCBI-Hackathons/Graph_Genomes/star" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="OFn4H7cUI9ge0UQFAYB1barAfLTzyO+6eCPjTYN5sdpYhyMcRKmEvvRmKmdmwNdjHloGyDXw9OFMx2tgYUDs9Q==" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="unstarred js-social-form" action="/NCBI-Hackathons/Graph_Genomes/star" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="T63kVuIJ2glCk2TRcgxr4z6SQUcZdby2oX7K6nz8m/Mvcz9VEbR9b6gkCrMVTMntigg7O99Np+2VmkLHnsXG3A==" />
       <input type="hidden" name="context" value="repository"></input>
       <button
         type="submit"
@@ -577,9 +577,9 @@
   <div class="repository-content ">
 
     
-  <a class="d-none js-permalink-shortcut" data-hotkey="y" href="/NCBI-Hackathons/Graph_Genomes/blob/102fce32c10236f51f921115d164e5616c085c5b/doc/meta-nw-algo.svg">Permalink</a>
+  <a class="d-none js-permalink-shortcut" data-hotkey="y" href="/NCBI-Hackathons/Graph_Genomes/blob/102fce32c10236f51f921115d164e5616c085c5b/doc/meta-nw-algo-caption.txt">Permalink</a>
 
-  <!-- blob contrib key: blob_contributors:v21:83c52bee2267342ff4732c494a828c35 -->
+  <!-- blob contrib key: blob_contributors:v21:c536d8d41748939f5683e081ee9a4312 -->
 
   
 
@@ -623,7 +623,7 @@
 
 
             <a class="select-menu-item js-navigation-item js-navigation-open selected"
-               href="/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo.svg"
+               href="/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo-caption.txt"
                data-name="June2018"
                data-skip-pjax="true"
                rel="nofollow">
@@ -633,7 +633,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/NCBI-Hackathons/Graph_Genomes/blob/fix_parallel/doc/meta-nw-algo.svg"
+               href="/NCBI-Hackathons/Graph_Genomes/blob/fix_parallel/doc/meta-nw-algo-caption.txt"
                data-name="fix_parallel"
                data-skip-pjax="true"
                rel="nofollow">
@@ -643,7 +643,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/NCBI-Hackathons/Graph_Genomes/blob/ignore-this-branch/doc/meta-nw-algo.svg"
+               href="/NCBI-Hackathons/Graph_Genomes/blob/ignore-this-branch/doc/meta-nw-algo-caption.txt"
                data-name="ignore-this-branch"
                data-skip-pjax="true"
                rel="nofollow">
@@ -653,7 +653,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/NCBI-Hackathons/Graph_Genomes/blob/master/doc/meta-nw-algo.svg"
+               href="/NCBI-Hackathons/Graph_Genomes/blob/master/doc/meta-nw-algo-caption.txt"
                data-name="master"
                data-skip-pjax="true"
                rel="nofollow">
@@ -664,7 +664,7 @@
             </a>
         </div>
 
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-create-branch select-menu-item select-menu-new-item-form js-navigation-item js-new-item-form" action="/NCBI-Hackathons/Graph_Genomes/branches" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="dRDNmLiLACh2PY5HTruaead4hFuoPAsI6qV/dEZrD++5GdQWD2YiWomhcL0VTn7yTsapDC3khuWw0fulTgOI2Q==" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-create-branch select-menu-item select-menu-new-item-form js-navigation-item js-new-item-form" action="/NCBI-Hackathons/Graph_Genomes/branches" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="AhEeKzpwReyYX+ez+dv8y7hLdSm10iGmkazjMGXrYsbOGAeljZ1nnmfDGUmiLhhAUfVYfjAKrEvL2GfhbYPl8A==" />
           <svg class="octicon octicon-git-branch select-menu-item-icon" viewBox="0 0 10 16" version="1.1" width="10" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M10 5c0-1.11-.89-2-2-2a1.993 1.993 0 0 0-1 3.72v.3c-.02.52-.23.98-.63 1.38-.4.4-.86.61-1.38.63-.83.02-1.48.16-2 .45V4.72a1.993 1.993 0 0 0-1-3.72C.88 1 0 1.89 0 3a2 2 0 0 0 1 1.72v6.56c-.59.35-1 .99-1 1.72 0 1.11.89 2 2 2 1.11 0 2-.89 2-2 0-.53-.2-1-.53-1.36.09-.06.48-.41.59-.47.25-.11.56-.17.94-.17 1.05-.05 1.95-.45 2.75-1.25S8.95 7.77 9 6.73h-.02C9.59 6.37 10 5.73 10 5zM2 1.8c.66 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2C1.35 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2zm0 12.41c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zm6-8c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"/></svg>
             <div class="select-menu-item-text">
               <span class="select-menu-item-heading">Create branch: <span class="js-new-item-name"></span></span>
@@ -672,7 +672,7 @@
             </div>
             <input type="hidden" name="name" id="name" class="js-new-item-value">
             <input type="hidden" name="branch" id="branch" value="June2018">
-            <input type="hidden" name="path" id="path" value="doc/meta-nw-algo.svg">
+            <input type="hidden" name="path" id="path" value="doc/meta-nw-algo-caption.txt">
 </form>
       </div>
 
@@ -701,89 +701,47 @@
       </clipboard-copy>
     </div>
     <div id="blob-path" class="breadcrumb">
-      <span class="repo-root js-repo-root"><span class="js-path-segment"><a data-pjax="true" href="/NCBI-Hackathons/Graph_Genomes/tree/June2018"><span>Graph_Genomes</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a data-pjax="true" href="/NCBI-Hackathons/Graph_Genomes/tree/June2018/doc"><span>doc</span></a></span><span class="separator">/</span><strong class="final-path">meta-nw-algo.svg</strong>
+      <span class="repo-root js-repo-root"><span class="js-path-segment"><a data-pjax="true" href="/NCBI-Hackathons/Graph_Genomes/tree/June2018"><span>Graph_Genomes</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a data-pjax="true" href="/NCBI-Hackathons/Graph_Genomes/tree/June2018/doc"><span>doc</span></a></span><span class="separator">/</span><strong class="final-path">meta-nw-algo-caption.txt</strong>
     </div>
   </div>
 
 
-  
-  <div class="commit-tease">
-      <span class="float-right">
-        <a class="commit-tease-sha" href="/NCBI-Hackathons/Graph_Genomes/commit/eb6ac9ed40428ff404cf43fcea14856348814dbc" data-pjax>
-          eb6ac9e
-        </a>
-        <relative-time datetime="2018-06-22T23:18:57Z">Jun 22, 2018</relative-time>
-      </span>
-      <div>
-        <a rel="contributor" data-skip-pjax="true" data-hovercard-user-id="1939813" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/jcoliver"><img class="avatar" src="https://avatars0.githubusercontent.com/u/1939813?s=40&amp;v=4" width="20" height="20" alt="@jcoliver" /></a>
-        <a class="user-mention" rel="contributor" data-hovercard-user-id="1939813" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/jcoliver">jcoliver</a>
-          <a data-pjax="true" title="Revive meta nw algo figure" class="message" href="/NCBI-Hackathons/Graph_Genomes/commit/eb6ac9ed40428ff404cf43fcea14856348814dbc">Revive meta nw algo figure</a>
-      </div>
+  <include-fragment src="/NCBI-Hackathons/Graph_Genomes/contributors/June2018/doc/meta-nw-algo-caption.txt" class="commit-tease commit-loader">
+    <div>
+      Fetching contributors&hellip;
+    </div>
 
     <div class="commit-tease-contributors">
-      <button type="button" class="btn-link muted-link contributors-toggle" data-facebox="#blob_contributors_box">
-        <strong>2</strong>
-         contributors
-      </button>
-          <a class="avatar-link" data-hovercard-user-id="1939813" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/NCBI-Hackathons/Graph_Genomes/commits/June2018/doc/meta-nw-algo.svg?author=jcoliver">
-      <img class="avatar" src="https://avatars0.githubusercontent.com/u/1939813?s=40&amp;v=4" width="20" height="20" alt="@jcoliver" /> 
-</a>    <a class="avatar-link" data-hovercard-user-id="6968193" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/NCBI-Hackathons/Graph_Genomes/commits/June2018/doc/meta-nw-algo.svg?author=evanbiederstedt">
-      <img class="avatar" src="https://avatars1.githubusercontent.com/u/6968193?s=40&amp;v=4" width="20" height="20" alt="@evanbiederstedt" /> 
-</a>
-
+        <img alt="" class="loader-loading float-left" src="https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif" width="16" height="16" />
+      <span class="loader-error">Cannot retrieve contributors at this time</span>
     </div>
-
-    <div id="blob_contributors_box" style="display:none">
-      <h2 class="facebox-header" data-facebox-id="facebox-header">Users who have contributed to this file</h2>
-      <ul class="facebox-user-list" data-facebox-id="facebox-description">
-          <li class="facebox-user-list-item">
-            <a class="d-inline-block" data-hovercard-user-id="1939813" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/jcoliver"><img src="https://avatars1.githubusercontent.com/u/1939813?s=48&amp;v=4" width="24" height="24" alt="@jcoliver" /></a>
-            <a data-hovercard-user-id="1939813" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/jcoliver">jcoliver</a>
-          </li>
-          <li class="facebox-user-list-item">
-            <a class="d-inline-block" data-hovercard-user-id="6968193" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/evanbiederstedt"><img src="https://avatars0.githubusercontent.com/u/6968193?s=48&amp;v=4" width="24" height="24" alt="@evanbiederstedt" /></a>
-            <a data-hovercard-user-id="6968193" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/evanbiederstedt">evanbiederstedt</a>
-          </li>
-      </ul>
-    </div>
-  </div>
-
+</include-fragment>
 
 
   <div class="file">
     <div class="file-header">
   <div class="file-actions">
-      <div class="BtnGroup">
-        <a class="btn btn-sm BtnGroup-item tooltipped tooltipped tooltipped-n source "
-          href="/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo.svg?short_path=3bf19a8" aria-label="Display the source blob">
-          <svg class="octicon octicon-code" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M9.5 3L8 4.5 11.5 8 8 11.5 9.5 13 14 8 9.5 3zm-5 0L0 8l4.5 5L6 11.5 2.5 8 6 4.5 4.5 3z"/></svg>
-        </a>
-        <a class="btn btn-sm BtnGroup-item tooltipped tooltipped-n rendered selected"
-          href="/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo.svg" aria-label="Display the rendered blob">
-          <svg class="octicon octicon-file" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6 5H2V4h4v1zM2 8h7V7H2v1zm0 2h7V9H2v1zm0 2h7v-1H2v1zm10-7.5V14c0 .55-.45 1-1 1H1c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h7.5L12 4.5zM11 5L8 2H1v12h10V5z"/></svg>
-        </a>
-      </div>
 
     <div class="BtnGroup">
-      <a id="raw-url" class="btn btn-sm BtnGroup-item" href="/NCBI-Hackathons/Graph_Genomes/raw/June2018/doc/meta-nw-algo.svg">Raw</a>
-        <a class="btn btn-sm js-update-url-with-hash BtnGroup-item" data-hotkey="b" href="/NCBI-Hackathons/Graph_Genomes/blame/June2018/doc/meta-nw-algo.svg">Blame</a>
-      <a rel="nofollow" class="btn btn-sm BtnGroup-item" href="/NCBI-Hackathons/Graph_Genomes/commits/June2018/doc/meta-nw-algo.svg">History</a>
+      <a id="raw-url" class="btn btn-sm BtnGroup-item" href="/NCBI-Hackathons/Graph_Genomes/raw/June2018/doc/meta-nw-algo-caption.txt">Raw</a>
+        <a class="btn btn-sm js-update-url-with-hash BtnGroup-item" data-hotkey="b" href="/NCBI-Hackathons/Graph_Genomes/blame/June2018/doc/meta-nw-algo-caption.txt">Blame</a>
+      <a rel="nofollow" class="btn btn-sm BtnGroup-item" href="/NCBI-Hackathons/Graph_Genomes/commits/June2018/doc/meta-nw-algo-caption.txt">History</a>
     </div>
 
         <a class="btn-octicon tooltipped tooltipped-nw"
-           href="github-mac://openRepo/https://github.com/NCBI-Hackathons/Graph_Genomes?branch=June2018&amp;filepath=doc%2Fmeta-nw-algo.svg"
+           href="github-mac://openRepo/https://github.com/NCBI-Hackathons/Graph_Genomes?branch=June2018&amp;filepath=doc%2Fmeta-nw-algo-caption.txt"
            aria-label="Open this file in GitHub Desktop"
            data-ga-click="Repository, open with desktop, type:mac">
             <svg class="octicon octicon-device-desktop" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15 2H1c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h5.34c-.25.61-.86 1.39-2.34 2h8c-1.48-.61-2.09-1.39-2.34-2H15c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 9H1V3h14v8z"/></svg>
         </a>
 
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" action="/NCBI-Hackathons/Graph_Genomes/edit/June2018/doc/meta-nw-algo.svg" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="uTfYHldTnthEA7/6dxWsMja0Tw86E0y/DDX5oJTAHAUNjfIRNDxVdeKma57krm9XmnAUR0gbITLxi6lf9wppZw==" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" action="/NCBI-Hackathons/Graph_Genomes/edit/June2018/doc/meta-nw-algo-caption.txt" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="ucTaIJ9bgx9d9IsLHp92dLdCkOKrH42C0/5faira+FLbBYSL+UjYJSAu66HvHlZDMnmmJPDU2xF0Tfi+ju1iTw==" />
             <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
               aria-label="Edit this file" data-hotkey="e" data-disable-with>
               <svg class="octicon octicon-pencil" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 12v3h3l8-8-3-3-8 8zm3 2H1v-2h1v1h1v1zm10.3-9.3L12 6 9 3l1.3-1.3a.996.996 0 0 1 1.41 0l1.59 1.59c.39.39.39 1.02 0 1.41z"/></svg>
             </button>
 </form>
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/NCBI-Hackathons/Graph_Genomes/delete/June2018/doc/meta-nw-algo.svg" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="u3Mv0muw988+nrx2NNDNUh9+654j8qWZprjQF3HMn7u+JUMA1GJv9iwtOHCkTjElm2WBD7JJKfxHKn9GWfB4Hw==" />
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/NCBI-Hackathons/Graph_Genomes/delete/June2018/doc/meta-nw-algo-caption.txt" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="neBK+zCD4yz3EvDS9BULRTHxv9o8uKhpt+8kcIVUb0b6igpnQs5t9V0wogGF9Ua7Sx8d6v+OwaZSVb16xNin0g==" />
           <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
             aria-label="Delete this file" data-disable-with>
             <svg class="octicon octicon-trashcan" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"/></svg>
@@ -791,26 +749,33 @@
 </form>  </div>
 
   <div class="file-info">
-      15149 lines (15147 sloc)
+      1 lines (1 sloc)
       <span class="file-info-divider"></span>
-    925 KB
+    707 Bytes
   </div>
 </div>
 
     
 
-  <div itemprop="text" class="blob-wrapper data type-svg">
-      
-  <div class="render-wrapper">
-    <div class="render-container is-render-pending js-render-target "
-      data-identity="9cfc7008-2683-45f4-898d-6832613837b9"
-      data-host="https://render.githubusercontent.com"
-      data-type="svg">
-      <img class="octospinner" alt="" src="https://assets-cdn.github.com/images/spinners/octocat-spinner-128.gif" width="64" height="64" />
-      <div class="render-viewer-error">Sorry, something went wrong. <a href="https://github.com/NCBI-Hackathons/Graph_Genomes/blob/June2018/doc/meta-nw-algo.svg">Reload?</a></div>
-      <div class="render-viewer-fatal">Sorry, we cannot display this file.</div>
-      <div class="render-viewer-invalid">Sorry, this file is invalid so it cannot be displayed.</div>
-      <iframe class="render-viewer" src="https://render.githubusercontent.com/view/svg?commit=102fce32c10236f51f921115d164e5616c085c5b&amp;enc_url=68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f4e4342492d4861636b6174686f6e732f47726170685f47656e6f6d65732f313032666365333263313032333666353166393231313135643136346535363136633038356335622f646f632f6d6574612d6e772d616c676f2e737667&amp;nwo=NCBI-Hackathons%2FGraph_Genomes&amp;path=doc%2Fmeta-nw-algo.svg&amp;repository_id=71797926&amp;repository_type=Repository#9cfc7008-2683-45f4-898d-6832613837b9" sandbox="allow-scripts allow-same-origin allow-top-navigation ">Viewer requires iframe.</iframe>
+  <div itemprop="text" class="blob-wrapper data type-text">
+      <table class="highlight tab-size js-file-line-container" data-tab-size="8">
+      <tr>
+        <td id="L1" class="blob-num js-line-number" data-line-number="1"></td>
+        <td id="LC1" class="blob-code blob-code-inner js-file-line">Figure meta-nw.  Schematic of modified Needleman-Wunch algorithm for global alignment to a reference genome. The process starts with contigs (blue diagonals) that are locally aligned to a reference genome (A). All possible combinations of these local alignments are enumerated by realizing all paths connecting contigs from the upper left to lower right corner of the matrix (B). Each alignment is scored: matches contribute positive scores (dark blue lines in C), while indels (red) and mismatches (gold) incur a penalty (D). The alignment with the highest score is selected as the best global alignment (E) for the next step in graph genome creation; ties among global alignments are resolved arbitrarily.</td>
+      </tr>
+</table>
+
+  <div class="BlobToolbar position-absolute js-file-line-actions dropdown js-menu-container js-select-menu d-none" aria-hidden="true">
+    <button class="btn-octicon ml-0 px-2 p-0 bg-white border border-gray-dark rounded-1 js-menu-target" type="button" aria-expanded="false" aria-haspopup="true" aria-label="Inline file action toolbar" aria-controls="inline-file-actions">
+      <svg class="octicon octicon-kebab-horizontal" viewBox="0 0 13 16" version="1.1" width="13" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM13 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+    </button>
+    <div class="dropdown-menu-content js-menu-content" id="inline-file-actions">
+      <ul class="BlobToolbar-dropdown dropdown-menu dropdown-menu-se mt-2">
+        <li><clipboard-copy class="dropdown-item" id="js-copy-lines" style="cursor:pointer;" data-original-text="Copy lines">Copy lines</clipboard-copy></li>
+        <li><clipboard-copy class="dropdown-item" id="js-copy-permalink" style="cursor:pointer;" data-original-text="Copy permalink">Copy permalink</clipboard-copy></li>
+        <li><a class="dropdown-item js-update-url-with-hash" id="js-view-git-blame" href="/NCBI-Hackathons/Graph_Genomes/blame/102fce32c10236f51f921115d164e5616c085c5b/doc/meta-nw-algo-caption.txt">View git blame</a></li>
+          <li><a class="dropdown-item" id="js-new-issue" href="/NCBI-Hackathons/Graph_Genomes/issues/new">Open new issue</a></li>
+      </ul>
     </div>
   </div>
 
@@ -839,7 +804,7 @@
 <div class="footer container-lg px-3" role="contentinfo">
   <div class="position-relative d-flex flex-justify-between pt-6 pb-2 mt-6 f6 text-gray border-top border-gray-light ">
     <ul class="list-style-none d-flex flex-wrap ">
-      <li class="mr-3">&copy; 2018 <span title="0.44818s from unicorn-7f7fc46d4-sn8fx">GitHub</span>, Inc.</li>
+      <li class="mr-3">&copy; 2018 <span title="0.31686s from unicorn-4077206669-16pz3">GitHub</span>, Inc.</li>
         <li class="mr-3"><a data-ga-click="Footer, go to terms, text:terms" href="https://github.com/site/terms">Terms</a></li>
         <li class="mr-3"><a data-ga-click="Footer, go to privacy, text:privacy" href="https://github.com/site/privacy">Privacy</a></li>
         <li class="mr-3"><a href="https://help.github.com/articles/github-security/" data-ga-click="Footer, go to security, text:security">Security</a></li>
