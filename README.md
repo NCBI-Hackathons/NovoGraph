@@ -47,11 +47,14 @@ samtools sort -o SevenGenomesPlusGRCh38Alts.bam allContigs_unsorted.bam
 ## Index the resulting BAM
 samtools index SevenGenomesPlusGRCh38Alts.bam
 
-## Check that there are no unmapped reads in the input BAM, because this might lead to unknown behaviour
+## Check that there are no unmapped reads in the input BAM, as this might lead to unknown behaviour
 samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
 
-## If there is no output with the above command, continue. Otherwise, if you do find unmapped reads in the input BAM,
-## please remove these as follows, and use 'SevenGenomesPlusGRCh38Alts.filtered.bam' for the remainder of the pipeline
+## If there is no output with the above command, continue. 
+
+## Otherwise, if you do find unmapped reads in the input BAM,
+## please remove these as follows,
+## and then use 'SevenGenomesPlusGRCh38Alts.filtered.bam' for the remainder of the pipeline
 
 samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlusGRCh38Alts.bam
 ```
