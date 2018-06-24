@@ -421,11 +421,6 @@ sub readFASTA
 	my $currentSequence;
 	while(<F>)
 	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
