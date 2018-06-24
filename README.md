@@ -61,8 +61,8 @@ samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlu
 ```
 
 ###### Algorithm:
-```
 
+```
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
 
 ## Expect output '../intermediate_files/AlignmentInput.sortedWithHeader'
@@ -101,7 +101,6 @@ perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
 perl launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
 
 perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf
-
 ```
 
 ## Instructions to Download and Process Input Assemblies
