@@ -34,7 +34,7 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 ##### Preparation:
 ```
-## Requires SAMtools version >= 1.3
+## Requires SAMtools version >= 1.4
 ## Requires BWA version >= 0.7.15
 
 ## Index the reference FASTA
@@ -67,7 +67,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 ##### Algorithm:
 
 ```
-## Requires SAMtools version >= 1.3
+## Requires SAMtools version >= 1.4
 ## Requires BWA version >= 0.7.15
 ## Requires MAFFT version >= 7
 
