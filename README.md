@@ -37,6 +37,7 @@ Given that this genome graph has been designed to incorporate larger structural 
 ## Requires SAMtools version >= 1.3
 ## Requires BWA version >= 0.7.15
 
+
 ## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
@@ -76,7 +77,8 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 ## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                      --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
+                      --readsFasta AllContigs.fa 
+                      --outputFile /intermediate_files/AlignmentInput
 
 ## Output:
 ## '../intermediate_files/AlignmentInput.sortedWithHeader'
