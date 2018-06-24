@@ -21,12 +21,11 @@ my $BAM;
 my $outputDirectory;
 my $inputTruncatedReads;
 my $readsFasta;
-my $paranoid = 1;
+
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'BAM:s' => \$BAM, 
 	'outputDirectory:s' => \$outputDirectory,	
-	'paranoid:s' => \$paranoid,	
 	'readsFasta:s' => \$readsFasta,	
 	'inputTruncatedReads:s' => \$inputTruncatedReads,	
 );
@@ -35,6 +34,8 @@ die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --inputTruncatedReads" unless($inputTruncatedReads);
 die "Please specify --outputDirectory" unless($outputDirectory);
+die "Please specify --readsFasta" unless($readsFasta);
+die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
 
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
@@ -48,13 +49,7 @@ unless((-e $outputDirectory) and (-d $outputDirectory))
 	mkdir($outputDirectory) or die "Cannot mkdir $outputDirectory directory";
 }
 
-my $reads_href;
-if($paranoid)
-{
-	die "Please specify --readsFasta" unless($readsFasta);
-	die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
-	$reads_href = readFASTA($readsFasta, 0);
-}
+my $reads_href = readFASTA($readsFasta, 0);
 
 my $reference_href = readFASTA($referenceFasta);
 my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM);
