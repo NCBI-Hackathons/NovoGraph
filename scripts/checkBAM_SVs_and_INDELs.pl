@@ -10,7 +10,7 @@ use Getopt::Long;
 $| = 1;
 
 # Example command:
-# To check correctness of INPUT for mafft:
+# To check correctness of INPUT for MAFFT:
 # 	./checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
 
 my $referenceFasta;
@@ -19,7 +19,6 @@ my $outputFile = 'fromBAM_lengthStatistics.txt';
 my $readsFasta;
 my $lenientOrder = 1;
 
-# HX1.000608F
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
 	'BAM:s' => \$BAM, 
@@ -44,132 +43,98 @@ my $reads_href;
 my %read_reference_positions;
 my %read_got_primary_alignment;
 
-my $testing = 0;
-if($testing == 0)
+
+print "Read $referenceFasta\n";
+$reference_href = readFASTA($referenceFasta, 0);
+print "\tdone.\n";
+
+print "Read $readsFasta\n";
+$reads_href = readFASTA($readsFasta, 0);
+print "\tdone.\n";
+
+my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
+my $iterator = $sam->features(-iterator=>1);
+
+my $warnedAboutOrder;
+
+while(my $alignment = $iterator->next_seq)
 {
-	print "Read $referenceFasta\n";
-	$reference_href = readFASTA($referenceFasta, 0);
-	#my $reference_href = {};
-	print "\tdone.\n";
-
-	print "Read $readsFasta\n";
-	$reads_href = readFASTA($readsFasta, 0);
-	#my $reads_href = {};
-	print "\tdone.\n";
-
-	my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
-	my $iterator = $sam->features(-iterator=>1);
-
-	my $warnedAboutOrder;
-
-	while(my $alignment = $iterator->next_seq)
+	my $isPrimary  = (! $alignment->get_tag_values('NOT_PRIMARY'));
+	# die if(not $isPrimary);
+	next unless($alignment->seq_id eq 'chr20');
+		
+	my $readID = $alignment->query->name;
+		
+	print "Collecting alignment $readID ... \n";
+		
+	my $read_href = convertAlignmentToHash($alignment);	
+		
+	if($read_href)
 	{
-		my $isPrimary  = (! $alignment->get_tag_values('NOT_PRIMARY'));
-		# die if(not $isPrimary);
-		next unless($alignment->seq_id eq 'chr20');
-		
-		if($alignment->seq_id ne 'chr1')
+		if($isPrimary)
 		{
-			#warn "For testing purposes, stop after chr1"; # todo
-			#last;
+			$read_got_primary_alignment{$readID} = 1;
 		}
 		
-		my $readID = $alignment->query->name;
-		# next unless($readID =~ /HG004.002266F/);
-		
-		print "Collecting alignment $readID ... \n";
-		
-		my $read_href = convertAlignmentToHash($alignment);	
-		
-		if($read_href)
+		if(not defined $read_reference_positions{$readID})
 		{
-			if($isPrimary)
-			{
-				$read_got_primary_alignment{$readID} = 1;
-			}
-			
-			if(not defined $read_reference_positions{$readID})
-			{
-				$read_reference_positions{$readID} = [];
-				$#{$read_reference_positions{$readID}} = (length($reads_href->{$readID})-1);
-			}
-			
-			die unless($#{$read_reference_positions{$readID}} == (length($reads_href->{$readID})-1));	
-			
-			my $runningRefPos = $read_href->{firstPos_reference};
-			my $runningReadPos = $read_href->{firstPos_read};
-			for(my $alignmentPosI = 0; $alignmentPosI < length($read_href->{alignment_reference}); $alignmentPosI++)
-			{
-				my $c_ref = substr($read_href->{alignment_reference}, $alignmentPosI, 1);
-				my $c_read = substr($read_href->{alignment_read}, $alignmentPosI, 1);
-				
-				my $referencePos;
-				my $readPos;
-				if($c_ref eq '-')
-				{
-					$referencePos = -1;
-				}
-				else
-				{
-					$referencePos = $runningRefPos;
-				}
-				
-				if($c_read eq '-')
-				{
-					$readPos = -1;
-				}
-				else
-				{
-					$readPos = $runningReadPos; 
-				}		
-				
-				if($readPos != -1)
-				{
-					die unless($readPos >= 0); 
-					die unless($readPos <= $#{$read_reference_positions{$readID}});
-					if(defined $read_reference_positions{$readID}[$readPos]) 
-					{
-						warn "Read position $readPos in $readID covered by multiple alignments - existing reference value $read_reference_positions{$readID}[$readPos], want to set to $referencePos";
-					}
-					$read_reference_positions{$readID}[$readPos] = $referencePos;
-				}
-				
-				if($c_ref ne '-')
-				{
-					$runningRefPos++;
-				}	
-				if($c_read ne '-')
-				{
-					$runningReadPos++;
-				}	
-			}
+			$read_reference_positions{$readID} = [];
+			$#{$read_reference_positions{$readID}} = (length($reads_href->{$readID})-1);
 		}
+			
+		die unless($#{$read_reference_positions{$readID}} == (length($reads_href->{$readID})-1));	
 		
-		# last if(scalar(keys %read_reference_positions) > 10); # todo
+		my $runningRefPos = $read_href->{firstPos_reference};
+		my $runningReadPos = $read_href->{firstPos_read};
+		for(my $alignmentPosI = 0; $alignmentPosI < length($read_href->{alignment_reference}); $alignmentPosI++)
+		{
+			my $c_ref = substr($read_href->{alignment_reference}, $alignmentPosI, 1);
+			my $c_read = substr($read_href->{alignment_read}, $alignmentPosI, 1);
+			
+			my $referencePos;
+			my $readPos;
+			if($c_ref eq '-')
+			{
+				$referencePos = -1;
+			}
+			else
+			{
+				$referencePos = $runningRefPos;
+			}
+			
+			if($c_read eq '-')
+			{
+				$readPos = -1;
+			}
+			else
+			{
+				$readPos = $runningReadPos; 
+			}		
+			
+			if($readPos != -1)
+			{
+				die unless($readPos >= 0); 
+				die unless($readPos <= $#{$read_reference_positions{$readID}});
+				if(defined $read_reference_positions{$readID}[$readPos]) 
+				{
+					warn "Read position $readPos in $readID covered by multiple alignments - existing reference value $read_reference_positions{$readID}[$readPos], want to set to $referencePos";
+				}
+				$read_reference_positions{$readID}[$readPos] = $referencePos;
+			}
+			
+			if($c_ref ne '-')
+			{
+				$runningRefPos++;
+			}	
+			if($c_read ne '-')
+			{
+				$runningReadPos++;
+			}	
+		}
 	}
 }
-else
-{
-	$reads_href->{testRead} = 'ACGTACGTACGTACGT';
-	$read_reference_positions{testRead} = [];
-	$read_reference_positions{testRead}[0] = -1;
-	$read_reference_positions{testRead}[1] = 1;
-	$read_reference_positions{testRead}[2] = 2;
-	$read_reference_positions{testRead}[3] = 3;
-	$read_reference_positions{testRead}[4] = 4;
-	$read_reference_positions{testRead}[5] = -1;
-	$read_reference_positions{testRead}[6] = 5;
-	$read_reference_positions{testRead}[7] = 6;
-	$read_reference_positions{testRead}[8] = 8;
-	$read_reference_positions{testRead}[9] = 10;
-	$read_reference_positions{testRead}[10] = 11;
-	$read_reference_positions{testRead}[11] = -1;
-	$read_reference_positions{testRead}[12] = 12;
-	$read_reference_positions{testRead}[13] = 13; 
-	$read_reference_positions{testRead}[14] = 14;
-	$read_reference_positions{testRead}[15] = undef;  
-	$read_got_primary_alignment{testRead} = 1;
-}
+
+
 
 my %minusOne_perRead;
 my $read_got_primary = 0;
@@ -282,10 +247,6 @@ foreach my $readID (keys %read_reference_positions)
 $histograms{primary}{1} = $read_got_primary;
 $histograms{primary}{0} = $read_no_primary;
 
-if($testing)
-{
-	die Dumper(\%histograms);
-}
 
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
 
