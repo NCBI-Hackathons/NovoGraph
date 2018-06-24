@@ -37,7 +37,6 @@ Given that this genome graph has been designed to incorporate larger structural 
 ## Requires SAMtools version >= 1.3
 ## Requires BWA version >= 0.7.15
 
-
 ## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
@@ -74,14 +73,17 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 
 
 ## Step 1: Find global alignments between individual input contigs and GRCh38
-## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'
+## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
+## (Here we place outputs into the subdirectory 'intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                      --readsFasta AllContigs.fa 
-                      --outputFile /intermediate_files/AlignmentInput
+                      --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput.txt
 
-## Output:
-## '../intermediate_files/AlignmentInput.sortedWithHeader'
+## Outputs:
+## '../intermediate_files/AlignmentInput.txt'
+## '../intermediate_files/AlignmentInput.txt.header'
+## '../intermediate_files/AlignmentInput.txt.sorted'
+## '../intermediate_files/AlignmentInput.txt.sortedWithHeader'
 
 ## Next, we perform local to global alignment with the calculation of a global alignment matrix. 
 ## The combined output for all contigs from all input assemblies is represented in a single SAM/CRAM file.
@@ -94,18 +96,21 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 ## Output:
 ## forMAFFT.bam
 
-perl BAM2MAFFT.pl --BAM ../intermediate_files/forMAFFT.bam 
+## Step 2: MSA computation
+perl BAM2MAFFT.pl --BAM forMAFFT.bam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                   --readsFasta AllContigs.fa 
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
 
+## Check
 perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
 
-## assumes you are using SGE to submit jobs
+## Assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
 perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
+
 
 perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ 
                              --msadir /intermediate_files/forMAFFT/ 
