@@ -63,15 +63,11 @@ my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);
 
 my @sequence_ids = $sam->seq_ids();
 
-my $testing = 0;
-
 my $reference_href;
-if(not $testing)
-{
-	print "Reading $referenceFasta\n";
-	$reference_href = readFASTA($referenceFasta);
-	print "\t...done.\n";
-}
+
+print "Reading $referenceFasta\n";
+$reference_href = readFASTA($referenceFasta);
+print "\t...done.\n";
 
 my %targetPos_printAlignments;
 open(OUT, ">", $output) or die "Cannot open $output";
@@ -80,35 +76,10 @@ print OUT qq(##fileformat=VCFv4.2
 ##source=BAM2VCF.pl
 ##reference=file://$referenceFasta), "\n";
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
-#foreach my $referenceSequenceID (@sequence_ids)
+
 my @referenceSequenceIDs = @sequence_ids;
 
 my %alignments_starting_at_test;
-if($testing)
-{
-	# ?CGT-A--CGT ref
-	# -CTT-A--CGT r0
-	#      AAACGT r1
-	#   GTAT      r2
-	#
-		 
-	@referenceSequenceIDs = qw/test1/;
-	$reference_href = {
-		test1 => "ACGTACGT",
-	};
-	
-	%alignments_starting_at_test = (
-	 1 => [
-		 ['CGT-A--CGT', 'CTT-A--CGT', 'r0', 1, 7],
-	 ],
-	 4 => [
-		 ['A--CGT', 'AAACGT', 'r1', 4, 7],
-	 ],	 
-	 2 => [
-		 ['GT-A', 'GTAT', 'r2', 2, 4],
-	 ],		 
-	);
-}
 
 my %alignments_per_referenceSequenceID;
 
