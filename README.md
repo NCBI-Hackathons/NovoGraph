@@ -115,37 +115,35 @@ perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/for
 perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ 
                              --msadir /intermediate_files/forMAFFT/ 
                              --contigs /intermediate_files/postGlobalAlignment_readLengths 
-                             --output /intermediate_files/combined_2.sam
+                             --output /intermediate_files/combined.sam
 
 perl validate_BAM_MSA.pl --BAM /intermediate_files/combined_sorted.bam 
                          --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
-# Create CRAM, via SAM sort
-samtools view -h -t GRCh38.headerfile.txt combined_2.sam > combined_2_with_header.sam
-samtools sort combined_2_with_header.sam -o combined_2_with_header_sorted.sam
+# Create CRAM and then index. 
+samtools view -h -t GRCh38.headerfile.txt combined.sam > combined_with_header.sam
+samtools sort combined_with_header.sam -o combined_with_header_sorted.sam
+cat combined_with_header_sorted.sam | samtools view -C -T GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa - > combined.cram
+samtools index combined.cram
 
-cat combined_2_with_header_sorted.sam | samtools view -C -T GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa - > combined_2.cram
 
-## Index the CRAM
-samtools index combined_2.cram
+perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/ 
+                                    --contigLengths /intermediate_files/postGlobalAlignment_readLengths
+                                    --preMAFFTBAM /intermediate_files/forMAFFT.bam 
+                                    --finalOutputCRAM /intermediate_files/combined.cram
 
-perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/ 
-                                    --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2 
-                                    --preMAFFTBAM /intermediate_files/forMAFFT_2.bam 
-                                    --finalOutputCRAM /intermediate_files/combined_2.cram
-
-perl CRAM2VCF.pl --CRAM /intermediate_files/combined_2.cram 
+perl CRAM2VCF.pl --CRAM /intermediate_files/combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                 --output VCF/graph_v2.vcf 
-                 --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
+                 --output VCF/graph.vcf 
+                 --contigLengths /intermediate_files/postGlobalAlignment_readLengths
 
-perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
+perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph.vcf
 
-perl launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
+perl launch_CRAM2VCF_C++.pl --output VCF/graph.vcf
 
-perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram 
+perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram 
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                                --output VCF/graph_v2.vcf
+                                --output VCF/graph.vcf
 ```
 
 ## Instructions to Download and Process Input Assemblies
