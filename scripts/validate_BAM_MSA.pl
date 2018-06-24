@@ -11,10 +11,8 @@ use Bio::DB::Sam;
 $| = 1;
 
 # Example command:
-# To check correctness of INPUT for mafft:
-# 	./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/Graph_Genomes_CSHL/scripts/uber_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 # 	./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/combined_sorted.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-#!/usr/bin/perl
+
 
 my $BAM;
 my $referenceFasta;
@@ -39,7 +37,6 @@ my $reference_href = readFASTA($referenceFasta);
 #print "\t...done.\n";
 
 foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
-#foreach my $referenceSequenceID ("chr21")
 {
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
@@ -155,18 +152,11 @@ foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
 		#$query = substr($query, 0, length($query) - $gaps_right_side);		
 		die unless(length($ref) == length($query));
 		
-		if($alignment->query->name eq 'HG003.002828F')
-		{
-			#die Dumper($alignment_start_pos, $ref, $query);
-		}
 		push(@{$alignments_starting_at{$alignment_start_pos}}, [$ref, $query, $alignment->query->name]);
-		
-		# print Dumper($alignment_start_pos-1, $alignment->query->name, $alignment->cigar_str, $ref, $query), "\n";
 		
 		$n_alignments++;
 		
 		my $start_pos = $alignment_start_pos-2;
-		#print "Pos start $start_pos for ", $alignment->query->name, "\n";
 		
 		my $ref_pos = $start_pos;
 		my $running_gaps = 0;
@@ -184,30 +174,15 @@ foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
 				{
 					die "Position $ref_pos not defined - length $l_ref_sequence";
 				}
-				if(($ref_pos >= 625) and ($ref_pos <= 630))
-				{
-					#print "Pos $ref_pos from ", $alignment->query->name, " value ", $running_gaps, "\n";
-				}	
 				if(($ref_pos >= 0) and ($ref_pos != $start_pos))
 				{				
 					if($gap_structure[$ref_pos] == -1)
 					{
-						
-						$gap_structure[$ref_pos] = $running_gaps;
-						
-						if($running_gaps != 0)
-						{
-							# print "Set $referenceSequenceID $ref_pos to $running_gaps from ", $alignment->query->name, "\n";
-						}
-						
+						$gap_structure[$ref_pos] = $running_gaps;	
 					}
 					else
 					{
 						die Dumper("Gap structure mismatch at position $referenceSequenceID $ref_pos - this is alignment $n_alignments, have existing value $gap_structure[$ref_pos], want to set $running_gaps", $alignment_start_pos-1, $alignment->query->name, $alignment->cigar_str, $ref, $query) unless($gap_structure[$ref_pos] == $running_gaps);
-						# print "Concordant $referenceSequenceID $ref_pos with $running_gaps , this ", $alignment->query->name, "\n";
-
-												
-						#warn Dumper("Gap structure mismatch at position $ref_pos - this is alignment $n_alignments, have existing value $gap_structure[$ref_pos], want to set $running_gaps", $alignment_start_pos-1, $alignment->query->name, $alignment->cigar_str) unless($gap_structure[$ref_pos] == $running_gaps);
 					}
 				}
 				$ref_pos++;
@@ -215,7 +190,6 @@ foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
 				
 			}
 		}
-		#print "\n";
 	}
 }	
 
@@ -229,12 +203,7 @@ sub readFASTA
 	open(F, '<', $file) or die "Cannot open $file";
 	my $currentSequence;
 	while(<F>)
-	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
+	{		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
@@ -242,7 +211,6 @@ sub readFASTA
 		{
 			$currentSequence = substr($line, 1);
 			$currentSequence =~ s/\s.+//;
-			# last if(($currentSequence ne 'chr1') or ($currentSequence ne 'ref')); # todo remove
 		}
 		else
 		{
