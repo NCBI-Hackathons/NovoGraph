@@ -10,17 +10,13 @@ use Getopt::Long;
 $| = 1;
 
 # Example command:
-# To check correctness of INPUT for mafft:
-# 	./BAM2AARTI.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa
+# 	./BAM2AARTI.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa --outputFile /intermediate_files/AlignmentInput.txt
 
 my $referenceFasta;
 my $BAM;
-my $outputFile = 'forAarti.txt';
+my $outputFile;
 my $readsFasta;
 my $lenientOrder = 1;
-
-# $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
-# $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
 
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
@@ -63,13 +59,7 @@ my %processedReadIDs;
 my $runningReadID;
 my %printed_complete_sequence;
 while(my $alignment = $iterator->next_seq)
-{
-	if($alignment->seq_id ne 'chr1')
-	{
-		#warn "For testing purposes, stop after chr1"; # todo
-		#last;
-	}
-	
+{	
 	my $readID = $alignment->query->name;
 	if($runningReadID ne $readID)
 	{
@@ -114,8 +104,7 @@ while(my $alignment = $iterator->next_seq)
 }
 
 my $sorted_outputFile = $outputFile.'.sorted';
-#die "Implement this properly - first line issue!";
-# sed '1d' forAarti > AartiInput.forSort
+
 
 my $sort_cmd = qq(sort $outputFile > $sorted_outputFile);
 if(system($sort_cmd))
@@ -356,22 +345,6 @@ sub convertAlignmentToHash
 		alignment_read => $alignment_read,
 	};
 }
-
-# my $bam          = Bio::DB::Bam->open($BAM);
-# my $header       = $bam->header;
-# my $target_count = $header->n_targets;
-# my $target_names = $header->target_name;
-# while (my $align = $bam->read1) {
-	# my $seqid     = $target_names->[$align->tid];
-	# my $start     = $align->pos+1;
-	# my $end       = $align->calend;
-	# my $cigar     = $align->cigar_str;
-	# my $readID = $align->query->name;
-	
-	# die ref($align);
-	# die $align->padded_alignment;
-	# die $readID;
-# }
  
 sub readFASTA
 {
@@ -382,12 +355,7 @@ sub readFASTA
 	open(F, '<', $file) or die "Cannot open $file";
 	my $currentSequence;
 	while(<F>)
-	{
-		if(($. % 1000000) == 0)
-		{
-		# 	print "\r", $.;
-		}
-		
+	{	
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
@@ -408,6 +376,7 @@ sub readFASTA
 		
 	return \%R;
 }
+
 
 sub reverseComplement
 {
