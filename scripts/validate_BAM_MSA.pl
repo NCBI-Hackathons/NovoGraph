@@ -77,16 +77,6 @@ foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
 			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
 			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
 			die if($isDeletion and $isInsertion);
-			
-			if($isDeletion)
-			{
-				# warn Dumper("Deletions before start?", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-			}
-			if($isInsertion)
-			{
-				# warn Dumper("One of the insertions!", $ref, $query, $alignment->query->name, $alignment->cigar_str);
-			}
-			
 		}
 		die if($firstMatch == -1);
 		
@@ -148,8 +138,7 @@ foreach my $referenceSequenceID (@sequence_ids) # todo reinstate
 		print "Sequence ", $alignment->query->name, " remove $gaps_left_side left and $gaps_right_side right \n";
 		$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
 		$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);		
-		#$ref = substr($ref, 0, length($ref) - $gaps_right_side);
-		#$query = substr($query, 0, length($query) - $gaps_right_side);		
+		
 		die unless(length($ref) == length($query));
 		
 		push(@{$alignments_starting_at{$alignment_start_pos}}, [$ref, $query, $alignment->query->name]);
