@@ -117,152 +117,140 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
 	my %alignments_starting_at;
-	if(not $testing)
+	
+	print "\t\tSet sequence ID to $referenceSequenceID\n";
+	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
+	while(my $alignment = $alignment_iterator->next_seq)
 	{
-		print "\t\tSet sequence ID to $referenceSequenceID\n";
-		my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
-		while(my $alignment = $alignment_iterator->next_seq)
-		{
-			$n_alignments++;		
+		$n_alignments++;		
  
-			my $alignment_start_pos = $alignment->start - 1;
-			my ($ref,$matches,$query) = $alignment->padded_alignment;
-			unless(length($ref) == length($query))
+		my $alignment_start_pos = $alignment->start - 1;
+		my ($ref,$matches,$query) = $alignment->padded_alignment;
+		unless(length($ref) == length($query))
+		{
+			warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
+			next;
+		}	
+		
+		if($contigLengths)
+		{
+			my $query_noGaps = $query;
+			$query_noGaps =~ s/[\-_\*]//g;
+			my $expectedLength = $expectedLengths{$alignment->query->name};
+			die "No length for " . $alignment->query->name unless(defined $expectedLength);
+			unless($expectedLength == length($query_noGaps))
 			{
-				warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
-				next;
-			}	
-			
-			if($contigLengths)
-			{
-				my $query_noGaps = $query;
-				$query_noGaps =~ s/[\-_\*]//g;
-				my $expectedLength = $expectedLengths{$alignment->query->name};
-				die "No length for " . $alignment->query->name unless(defined $expectedLength);
-				unless($expectedLength == length($query_noGaps))
-				{
-					die Dumper("Sequence length mismatch", $query_noGaps, length($query_noGaps), $expectedLength, length($alignment->query->dna), $alignment->query->name);
-				}
+				die Dumper("Sequence length mismatch", $query_noGaps, length($query_noGaps), $expectedLength, length($alignment->query->dna), $alignment->query->name);
 			}
-
-			
-			
-			my $ref_preAll = $ref;
-			my $query_preAll = $query;
-			
-			my $firstMatch;
-			my $lastMatch;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
-				{
-					$firstMatch = $i unless(defined $firstMatch);
-					$lastMatch = $i;
-				}
-				
-				my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
-				my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
-				die if($isDeletion and $isInsertion);
-				
-			}
-			die unless(defined $firstMatch);
-			
-			$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
-			$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
-			
-			my $gaps_left_side = 0;
-			my $gaps_right_side = 0;
-			
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-				{
-					last;
-				}
-				else
-				{
-					$gaps_left_side++;
-				}
-			}
-			
-			for(my $i = length($ref) - 1; $i >= 0; $i--)
-			{
-				if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
-				{
-					last;
-				}
-				else
-				{
-					$gaps_right_side++;
-				}
-			}
-			
-			my $starstar_left_side = 0;
-			my $starstar_right_side = 0;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-				{
-					$starstar_left_side++;
-				}
-				else
-				{
-					last;
-				}
-			}
-			
-			for(my $i = length($ref) - 1; $i >= 0; $i--)
-			{
-				if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
-				{
-					$starstar_right_side++;
-				}
-				else
-				{
-					last;
-				}
-			}
-			
-			
-			die unless($gaps_left_side == 0);
-			die unless($gaps_right_side == 0);
-			
-			$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
-			$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);
-			die unless(length($ref) == length($query));
-            
-			my $ref_pos = $alignment_start_pos - 1;
-			my $running_gaps = 0;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				my $c_ref = substr($ref, $i, 1);
-				my $c_query = substr($query, $i, 1);
-				
-				if(!(($c_ref eq '-') or ($c_ref eq '*')))
-				{
-					$ref_pos++;
-				}
-				
-				if(($c_ref ne '-') and ($c_ref ne '*') and ($c_query ne '-') and ($c_query ne '*'))
-				{
-					
-				}
-			}
-			
-			my $alignment_last_pos = $ref_pos - 1;
-			my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
-			push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
-			
-			print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
-			
-			$alignments_per_referenceSequenceID{$referenceSequenceID}[0]++;
-			(my $query_nonGap = $query) =~ s/[\-_\*]//g;
-			$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);
 		}
-	}
-	else
-	{
-		%alignments_starting_at = %alignments_starting_at_test;
+			
+		my $ref_preAll = $ref;
+		my $query_preAll = $query;
+			
+		my $firstMatch;
+		my $lastMatch;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*') and (substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*'))
+			{
+				$firstMatch = $i unless(defined $firstMatch);
+				$lastMatch = $i;
+			}
+			
+			my $isDeletion = (((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*')) and ((substr($query, $i, 1) eq '-') or (substr($query, $i, 1) eq '*')));
+			my $isInsertion = (((substr($query, $i, 1) ne '-') and (substr($query, $i, 1) ne '*')) and ((substr($ref, $i, 1) eq '-') or (substr($ref, $i, 1) eq '*')));
+			die if($isDeletion and $isInsertion);
+			
+		}
+		die unless(defined $firstMatch);
+		
+		$ref = substr($ref, $firstMatch, $lastMatch - $firstMatch + 1);
+		$query = substr($query, $firstMatch, $lastMatch - $firstMatch + 1);		
+		
+		my $gaps_left_side = 0;
+		my $gaps_right_side = 0;
+		
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+			{
+				last;
+			}
+			else
+			{
+				$gaps_left_side++;
+			}
+		}
+		
+		for(my $i = length($ref) - 1; $i >= 0; $i--)
+		{
+			if((substr($ref, $i, 1) ne '-') and (substr($ref, $i, 1) ne '*'))
+			{
+				last;
+			}
+			else
+			{
+				$gaps_right_side++;
+			}
+		}
+		
+		my $starstar_left_side = 0;
+		my $starstar_right_side = 0;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+			{
+				$starstar_left_side++;
+			}
+			else
+			{
+				last;
+			}
+		}
+		
+		for(my $i = length($ref) - 1; $i >= 0; $i--)
+		{
+			if((substr($ref, $i, 1) eq '*') and (substr($query, $i, 1) eq '*'))
+			{
+				$starstar_right_side++;
+			}
+			else
+			{
+				last;
+			}
+		}
+		
+		
+		die unless($gaps_left_side == 0);
+		die unless($gaps_right_side == 0);
+		
+		$ref = substr($ref, $gaps_left_side, length($ref) - $gaps_left_side - $gaps_right_side);
+		$query = substr($query, $gaps_left_side, length($query) - $gaps_left_side - $gaps_right_side);
+		die unless(length($ref) == length($query));
+            
+		my $ref_pos = $alignment_start_pos - 1;
+		my $running_gaps = 0;
+		for(my $i = 0; $i < length($ref); $i++)
+		{
+			my $c_ref = substr($ref, $i, 1);
+			my $c_query = substr($query, $i, 1);
+			
+			if(!(($c_ref eq '-') or ($c_ref eq '*')))
+			{
+				$ref_pos++;
+			}
+			
+		}
+		
+		my $alignment_last_pos = $ref_pos - 1;
+		my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
+		push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
+		
+		print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
+		
+		$alignments_per_referenceSequenceID{$referenceSequenceID}[0]++;
+		(my $query_nonGap = $query) =~ s/[\-_\*]//g;
+		$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);
 	}
 	
 	# reference gaps *before* the i-th reference character
