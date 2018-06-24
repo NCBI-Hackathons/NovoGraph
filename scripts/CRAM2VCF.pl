@@ -78,12 +78,7 @@ print OUT qq(##fileformat=VCFv4.2
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 
 my @referenceSequenceIDs = @sequence_ids;
-
-my %alignments_starting_at_test;
-
 my %alignments_per_referenceSequenceID;
-
-
 
 my $total_alignments = 0;
 mkdir('forVCF');
