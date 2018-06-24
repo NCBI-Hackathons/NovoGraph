@@ -65,14 +65,18 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam --reference
 
 ```
 ## Step 1: Find global alignments between individual input contigs and GRCh38
-## This step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'
+## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
 
 ## Output:
 ## '../intermediate_files/AlignmentInput.sortedWithHeader'
 
-
+## Next, we perform local to global alignment with the calculation of a global alignment matrix. 
+## The combined output for all contigs from all input assemblies is represented in a single SAM/CRAM file.
 perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
+
+## Output:
+## forMAFFT.bam
 
 perl BAM2MAFFT.pl --BAM ../intermediate_files/forMAFFT.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputDirectory .../intermediate_files/forMAFFT --inputTruncatedReads .../intermediate_files/truncatedReads 
 
