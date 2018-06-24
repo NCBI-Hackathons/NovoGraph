@@ -115,9 +115,9 @@ perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/for
 perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ 
                              --msadir /intermediate_files/forMAFFT/ 
                              --contigs /intermediate_files/postGlobalAlignment_readLengths 
-                             --output /intermediate_files/combined.sam
+                             --output combined.sam
 
-perl validate_BAM_MSA.pl --BAM /intermediate_files/combined_sorted.bam 
+perl validate_BAM_MSA.pl --BAM combined_sorted.bam 
                          --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
 # Create CRAM and then index. 
@@ -129,10 +129,10 @@ samtools index combined.cram
 
 perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/ 
                                     --contigLengths /intermediate_files/postGlobalAlignment_readLengths
-                                    --preMAFFTBAM /intermediate_files/forMAFFT.bam 
-                                    --finalOutputCRAM /intermediate_files/combined.cram
+                                    --preMAFFTBAM forMAFFT.bam 
+                                    --finalOutputCRAM combined.cram
 
-perl CRAM2VCF.pl --CRAM /intermediate_files/combined.cram 
+perl CRAM2VCF.pl --CRAM combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                  --output VCF/graph.vcf 
                  --contigLengths /intermediate_files/postGlobalAlignment_readLengths
@@ -141,7 +141,7 @@ perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph.vcf
 
 perl launch_CRAM2VCF_C++.pl --output VCF/graph.vcf
 
-perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram 
+perl CRAM2VCF_createFinalVCF.pl --CRAM combined.cram 
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                                 --output VCF/graph.vcf
 ```
