@@ -1,5 +1,4 @@
-#!/usr/bin/perl -w
-# $Id: $
+#!/usr/bin/perl
 
 ## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
@@ -43,10 +42,6 @@ my $fastadir = $Opt{'fastadir'};
 my $msadir = $Opt{'msadir'};
 my $output_file = $Opt{'output'};
 
-unless($Opt{bamheader} and (-e $Opt{bamheader}))
-{
-	# die "Please specify valid file for --bamheader";
-}
 
 my $contigs_file = $Opt{contigs};
 
@@ -64,7 +59,7 @@ my $missed_alignments =  0;
 my @entries = sort keys %{$rh_windowinfo};
 my %already_processed_contigs;
 foreach my $entry (@entries) {
-	# next unless($entry eq 'chr21'); # todo
+
     my %current_contigs = (); # Contigs that aren't "finished" yet.  If contig lengths are right, this will never get too big
 
     foreach my $rh_baminfo (@{$rh_windowinfo->{$entry}}) {
@@ -282,18 +277,6 @@ sub combine_contig_alignments {
     my $finalpos2 = $rh_second_align->{final_refpos};
 
     my $combined_cigar = $cigar1;
-	
-    #my $deleted_length = $pos2 - $finalpos1 - 1;
-	#print "deleted_length : $deleted_length\n"; # todo
-	
-    #if ($deleted_length < 0) {
-    #    print "Contig $contig REF $refentry:$globalpos-$finalpos1, then $refentry:$pos2-$finalpos2\n";
-    #    die "Something wrong!\n";
-    #}
- 
-    #if ($deleted_length) {
-    #    $combined_cigar .= $deleted_length.'D';
-    #}
 	
     $combined_cigar .= $cigar2;
     my $combined_seq = $seq1.$seq2;
