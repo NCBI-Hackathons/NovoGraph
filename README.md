@@ -52,22 +52,25 @@ samtools index SevenGenomesPlusGRCh38Alts.bam
 samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
 
 ## If there is no output with the above command, continue. 
-
 ## Otherwise, if you do find unmapped reads in the input BAM,
 ## please remove these as follows,
 ## and then use 'SevenGenomesPlusGRCh38Alts.filtered.bam' for the remainder of the pipeline
-
 samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlusGRCh38Alts.bam
+
+## Finally, check that these inputs are in the correct format for the MAFFT
+perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa
 ```
 
 ##### Algorithm:
 
 ```
+## Step 1: Find global alignments between individual input contigs and GRCh38
+## This step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
 
-## Expect output '../intermediate_files/AlignmentInput.sortedWithHeader'
+## Output:
+## '../intermediate_files/AlignmentInput.sortedWithHeader'
 
-perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa
 
 perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
 
