@@ -28,8 +28,9 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 ## Pipeline
 
-* reference file GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
-* contigs file AllContigs.fa
+###### Inputs:
+* reference file, GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
+* contigs file, AllContigs.fa
 
 ###### Preparation:
 ```
