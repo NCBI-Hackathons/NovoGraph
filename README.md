@@ -109,30 +109,34 @@ perl BAM2MAFFT.pl --BAM forMAFFT.bam
 
 ## Assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
+
+## This script also contains commands to check submitted jobs and re-submit if necessary
 perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
 
-
+## Next, we concatenate windows into a global MSA, outputting a single SAM file
 perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ 
                              --msadir /intermediate_files/forMAFFT/ 
                              --contigs /intermediate_files/postGlobalAlignment_readLengths 
                              --output combined.sam
 
+## Check that these steps are successful
 perl validate_BAM_MSA.pl --BAM combined_sorted.bam 
                          --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
-# Create CRAM and then index. 
+# Create CRAM and then index
 samtools view -h -t GRCh38.headerfile.txt combined.sam > combined_with_header.sam
 samtools sort combined_with_header.sam -o combined_with_header_sorted.sam
 cat combined_with_header_sorted.sam | samtools view -C -T GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa - > combined.cram
 samtools index combined.cram
 
-
+## Validate that the CRAM is correct
 perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/ 
                                     --contigLengths /intermediate_files/postGlobalAlignment_readLengths
                                     --preMAFFTBAM forMAFFT.bam 
                                     --finalOutputCRAM combined.cram
-
+                                    
+## Now we convert the CRAM into a VCF 
 perl CRAM2VCF.pl --CRAM combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                  --output VCF/graph.vcf 
