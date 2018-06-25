@@ -12,9 +12,14 @@ use List::MoreUtils qw/mesh/;
 
 $| = 1;
 
-# Example command:
-# To check correctness of INPUT for mafft:
-# 	./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
+## Usage:
+## perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile <path to output of BAM2ALIGNMENT.pl, with extension *.sortedWithHeader>
+##                                --referenceFasta <path to reference FASTA>
+##                                --outputFile <name of output BAM>
+##                                --outputTruncatedReads <name of text outfile, e.g. 'truncatedReads'> 
+##                                --outputReadLengths <name of text outfile, e.g. 'postGlobalAlignment_readLengths'>
+## Example command:
+## 	./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
 
 my $alignmentsFile;
 my $referenceFasta;
