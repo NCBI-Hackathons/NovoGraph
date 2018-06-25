@@ -28,11 +28,16 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 ## Genome Graph Construction Pipeline
 
-##### Inputs:
+### Inputs:
 * reference file, GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
 * contigs file, AllContigs.fa
 
-##### Preparation:
+### Requirements:
+* SAMtools version >= 1.4
+* BWA version >= 0.7.15
+* MAFFT version >= 7
+
+### Preparation:
 ```
 ## Requires SAMtools version >= 1.4
 ## Requires BWA version >= 0.7.15
@@ -64,15 +69,16 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
                                 --readsFasta AllContigs.fa
 ```
 
-##### Algorithm:
+### Algorithm:
+
+##### Step 1: Find global alignments between individual input contigs and GRCh38
 
 ```
 ## Requires SAMtools version >= 1.4
 ## Requires BWA version >= 0.7.15
 ## Requires MAFFT version >= 7
 
-
-## Step 1: Find global alignments between individual input contigs and GRCh38
+## Execute BAM2ALIGNMENT.pl
 ## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
 ## (Here we place outputs into the subdirectory 'intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
@@ -100,9 +106,10 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 
 ## Provides diagnostics to validate that the resulting BAM is correct
 perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
+```
 
-
-## Step 2: MSA computation
+##### Step 2: MSA computation
+```
 perl BAM2MAFFT.pl --BAM forMAFFT.bam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                   --readsFasta AllContigs.fa 
@@ -143,7 +150,10 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/
                                     --preMAFFTBAM forMAFFT.bam 
                                     --finalOutputCRAM combined.cram
    
-   
+```
+
+##### Step 3: Compute an acyclic directed graph structure from the global MSA
+```
 ## Now we convert the CRAM into a VCF 
 perl CRAM2VCF.pl --CRAM combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
