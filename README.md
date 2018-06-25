@@ -96,7 +96,7 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 ## Output:
 ## forMAFFT.bam
 
-## Validate that the resulting BAM is correct
+## Provides diagnostics to validate that the resulting BAM is correct
 perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
 
 ## Step 2: MSA computation
