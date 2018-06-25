@@ -12,8 +12,14 @@ use File::Path;
 
 $| = 1;
 
-# Example command
-# ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
+## perl BAM2MAFFT.pl --BAM <path to BAM, output of FIND_GLOBAL_ALIGNMENTS.pl>
+##                  --referenceFasta <path to reference FASTA>
+##                  --readsFasta <path to contigs FASTA>
+##                  --outputDirectory <path to output directory for MAFFT, e.g. '/forMAFFT'>
+##                  --inputTruncatedReads <path to output of FIND_GLOBAL_ALIGNMENTS.pl, 'outputTruncatedReads'>
+##
+## Example command
+## ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
  
 
 my $referenceFasta;
