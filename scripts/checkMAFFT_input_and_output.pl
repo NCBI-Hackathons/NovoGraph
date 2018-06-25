@@ -12,11 +12,17 @@ use List::MoreUtils qw/mesh/;
 use Bio::DB::Sam;
 $| = 1;
 
-# Example command:
-# perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/
-#     --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
-#     --preMAFFTBAM /intermediate_files/forMAFFT_2.bam
-#     --finalOutputCRAM /intermediate_files/combined_2.cram &> output_checkMAFFT_v2
+## Usage:
+## perl checkMAFFT_input_and_output.pl --MAFFTdir <path to MAFFT directory used in BAM2MAFFT.pl and CALLMAFFT.pl>
+##                                     --contigLengths <path to file with contig names/lengths>
+##                                     --preMAFFTBAM <path to output BAM from outputFile, FIND_GLOBAL_ALIGNMENTS.pl>
+##                                     --finalOutputCRAM <path to CRAM>
+##
+## Example command:
+## ./checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/
+##                                  --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
+##                                  --preMAFFTBAM /intermediate_files/forMAFFT_2.bam
+##                                  --finalOutputCRAM /intermediate_files/combined_2.cram
 
 
 my $contigLengths;
