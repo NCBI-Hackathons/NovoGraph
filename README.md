@@ -174,7 +174,8 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/MtSi
 ## NA19240, Yoruba:
 for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB01.4.fsa_nt.gz LKPB01.5.fsa_nt.gz LKPB01.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LK/PB/LKPB01/$file; done
 ```
-Upon the successful download of these FASTAs, users should produce a sorted BAM of each assembly by both running BWA-MEM to align against the human reference and sorting the results via SAMtools.
+Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `AllContigs.fa`.
+Users should then produce a sorted BAM of each individual assembly by both running BWA-MEM to align against the human reference and sorting the results via SAMtools.
 
 
 
