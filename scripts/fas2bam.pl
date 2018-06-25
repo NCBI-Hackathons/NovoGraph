@@ -1,16 +1,15 @@
 #!/usr/bin/perl -w
 # $Id: $
 
+## Author: Nancy Hansen (NIH), Evan Biederstedt (NYGC), Alexander Dilthey (HHU/UKD, NHGRI-NIH), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
+
 use strict;
 use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use FileHandle;
 use Data::Dumper;
-
-## Author: Nancy Hansen (NIH), Evan Biederstedt (NYGC), Alexander Dilthey (HHU/UKD, NHGRI-NIH), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
-
 
 our %Opt;
 
