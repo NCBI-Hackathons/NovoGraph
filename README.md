@@ -96,6 +96,9 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 ## Output:
 ## forMAFFT.bam
 
+## Validate that the resulting BAM is correct
+perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
+
 ## Step 2: MSA computation
 perl BAM2MAFFT.pl --BAM forMAFFT.bam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
@@ -103,8 +106,6 @@ perl BAM2MAFFT.pl --BAM forMAFFT.bam
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
 
-## Check
-perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
 
 ## Assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
@@ -175,8 +176,6 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/MtSi
 for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB01.4.fsa_nt.gz LKPB01.5.fsa_nt.gz LKPB01.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LK/PB/LKPB01/$file; done
 ```
 Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `AllContigs.fa`.
-Users should then produce a sorted BAM of each individual assembly by both running BWA-MEM to align against the human reference and sorting the results via SAMtools.
-
 
 
 ## Contributors
