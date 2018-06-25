@@ -137,7 +137,9 @@ perl CRAM2VCF.pl --CRAM combined.cram
                  --output VCF/graph.vcf 
                  --contigLengths /intermediate_files/postGlobalAlignment_readLengths
 
+## Calculates the number of matches, mismatches, and the distribution of InDel sizes, 'graph.vcf.CRAM2VCF_INDELLengths'
 perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph.vcf
+
 
 perl launch_CRAM2VCF_C++.pl --output VCF/graph.vcf
 
