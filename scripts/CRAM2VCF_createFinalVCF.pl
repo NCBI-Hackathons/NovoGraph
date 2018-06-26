@@ -12,9 +12,9 @@ use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
 
-# Example command:
-# perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram
-#     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf
+## Example command:
+## ./CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram
+##     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph.vcf
 
 
 $| = 1;
