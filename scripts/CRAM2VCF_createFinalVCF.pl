@@ -13,8 +13,9 @@ use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
 
 ## Example command:
-## ./CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram
-##     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph.vcf
+##     ./CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram
+##                                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+##                                  --output VCF/graph.vcf
 
 
 $| = 1;
@@ -43,17 +44,17 @@ my @sequence_ids = $sam->seq_ids();
 open(OUT, ">", $output) or die "Cannot open $output";
 print OUT qq(##fileformat=VCFv4.2
 ##fileDate=20161026
-##source=BAM2VCF.pl
+##source=CRAM2VCF.pl
 ##reference=file://$referenceFasta), "\n";
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 #foreach my $referenceSequenceID (@sequence_ids)
 my @referenceSequenceIDs = @sequence_ids;
 foreach my $referenceSequenceID (@referenceSequenceIDs)
 {
-	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
-	my $fn_VCF = $fn_for_BAM2VCF . '.VCF';
+	my $fn_for_CRAM2VCF = $output . '.part_'. $referenceSequenceID;
+	my $fn_VCF = $fn_for_CRAM2VCF . '.VCF';
 	
-	die "File $fn_for_BAM2VCF not present? Have you run CRAM2VCF.pl?" unless(-e $fn_for_BAM2VCF);
+	die "File $fn_for_CRAM2VCF not present? Have you run CRAM2VCF.pl?" unless(-e $fn_for_CRAM2VCF);
 	
 	my $fn_VCF_done = $fn_VCF . '.done';
 	unless(get_done($fn_VCF_done))
@@ -68,11 +69,11 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 		next;
 	}
 	
-	my $last_update_time_inputforVCF = (stat($fn_for_BAM2VCF))[9];
+	my $last_update_time_inputforVCF = (stat($fn_for_CRAM2VCF))[9];
 	my $last_update_time_VCF = (stat($fn_VCF))[9];	
 	if($last_update_time_VCF < $last_update_time_inputforVCF)
 	{
-		warn "File $fn_VCF is older than $fn_for_BAM2VCF - skip, but generate big VCF anyway.";
+		warn "File $fn_VCF is older than $fn_for_CRAM2VCF - skip, but generate big VCF anyway.";
 		next;	
 	}
 	
