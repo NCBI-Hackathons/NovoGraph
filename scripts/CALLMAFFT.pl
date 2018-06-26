@@ -16,14 +16,9 @@ my $current_dir = getcwd;
 
 $| = 1;
 
-# Example command
-# ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
-# ./CALLMAFFT.pl --action processChunk --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --chunkI 0
-#samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam 
-#samtools sort -o /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.bam; samtools index /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam
-
-# ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_1.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_1.fa
-# ./validate_BAM_MSA.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/sorted_chr1_2.bam --referenceFasta /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT/chr1/chr1_2.fa
+## Example command
+## ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
+## ./CALLMAFFT.pl --action processChunk --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --chunkI 0
 
 my $mafft_bin = find_present_alternative('/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensions/install/bin/mafft');
 my $FAS2BAM_bin = find_present_alternative('./fas2bam.pl');
