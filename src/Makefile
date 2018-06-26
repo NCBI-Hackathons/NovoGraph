@@ -25,7 +25,7 @@ OBJS =
 #
 # list executable file names
 #
-EXECS = BAM2VCF
+EXECS = CRAM2VCF
 
 OUT_DIR = .
 
@@ -58,7 +58,7 @@ $(DIR_OBJ)/%.o: %.cpp %.h
 # odds and ends
 #
 clean:
-	/bin/rm BAM2VCF BAM2VCF.o
+	/bin/rm CRAM2VCF CRAM2VCF.o
 
 ${OUT_DIR}:
 	${MKDIR_P} ${OUT_DIR}
