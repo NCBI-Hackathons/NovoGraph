@@ -83,7 +83,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 ## (Here we place outputs into the subdirectory '/intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                      --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput.txt
+                      --readsFasta AllContigs.fa --outputFile .../intermediate_files/AlignmentInput.txt
 
 ## Outputs:
 ## '../intermediate_files/AlignmentInput.txt'
@@ -128,9 +128,9 @@ perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/
 
 
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
-perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ 
-                             --msadir /intermediate_files/forMAFFT/ 
-                             --contigs /intermediate_files/postGlobalAlignment_readLengths 
+perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/ 
+                             --msadir .../intermediate_files/forMAFFT/ 
+                             --contigs .../intermediate_files/postGlobalAlignment_readLengths 
                              --output combined.sam
 
 
@@ -147,8 +147,8 @@ samtools index combined.cram
 
 
 ## Validate that the CRAM is correct
-perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/ 
-                                    --contigLengths /intermediate_files/postGlobalAlignment_readLengths
+perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/ 
+                                    --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
                                     --preMAFFTBAM forMAFFT.bam 
                                     --finalOutputCRAM combined.cram
    
@@ -156,11 +156,16 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/
 
 ##### Step 3: Compute an acyclic directed graph structure from the global MSA
 ```
+## First, users are required compile the *cpp code within /src to create the executable 'CRAM2VCF'. 
+## In order to successfully compile this code, execute 'make' within /src
+## Users then must link to this executable when running the script 'CRAM2VCF.pl'
+
 ## Now we convert the CRAM into a VCF 
 perl CRAM2VCF.pl --CRAM combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                  --output VCF/graph.vcf 
-                 --contigLengths /intermediate_files/postGlobalAlignment_readLengths
+                 --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
+                 --CRAM2VCF_executable ../src/CRAM2VCF
 
 
 ## Calculates the number of matches, mismatches, and the distribution of InDel sizes, 'graph.vcf.CRAM2VCF_INDELLengths'
