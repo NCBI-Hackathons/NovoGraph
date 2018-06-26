@@ -123,6 +123,8 @@ perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMA
 ## This script also contains commands to check submitted jobs and re-submit if necessary
 perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
+perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/forMAFFT --chunkI 0
+
 
 
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
