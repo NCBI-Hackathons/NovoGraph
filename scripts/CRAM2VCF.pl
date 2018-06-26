@@ -23,11 +23,11 @@ $| = 1;
 my $CRAM;
 my $referenceFasta;
 my $output;
-my $bin_BAM2VCF = '../BAM2VCF/BAM2VCF';
+my $bin_CRAM2VCF = '../src/CRAM2VCF';
 my $contigLengths;
-unless(-e $bin_BAM2VCF)
+unless(-e $bin_CRAM2VCF)
 {
-	die "BAM2VCF binary $bin_BAM2VCF not present - run 'make all' in the directory.";
+	die "CRAM2VCF binary $bin_CRAM2VCF not present - run 'make all' in the directory.";
 }
  
  
@@ -73,7 +73,7 @@ my %targetPos_printAlignments;
 open(OUT, ">", $output) or die "Cannot open $output";
 print OUT qq(##fileformat=VCFv4.2
 ##fileDate=20161026
-##source=BAM2VCF.pl
+##source=CRAM2VCF.pl
 ##reference=file://$referenceFasta), "\n";
 print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 
@@ -103,11 +103,11 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
-	my $fn_for_BAM2VCF = $output . '.part_'. $referenceSequenceID;
-	my $fn_for_BAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
+	my $fn_for_CRAM2VCF = $output . '.part_'. $referenceSequenceID;
+	my $fn_for_CRAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
 	
-	open(D, '>', $fn_for_BAM2VCF) or die "Cannot open $fn_for_BAM2VCF";
-	open(D2, '>', $fn_for_BAM2VCF_SNPs) or die "Cannot open $fn_for_BAM2VCF_SNPs";
+	open(D, '>', $fn_for_CRAM2VCF) or die "Cannot open $fn_for_CRAM2VCF";
+	open(D2, '>', $fn_for_CRAM2VCF_SNPs) or die "Cannot open $fn_for_CRAM2VCF_SNPs";
 	
 	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
@@ -295,7 +295,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	close(D);
 	
 	$total_alignments += $n_alignments;
-	print "Have loaded $n_alignments alignments -- $fn_for_BAM2VCF.\n";
+	print "Have loaded $n_alignments alignments -- $fn_for_CRAM2VCF.\n";
 
 	for(my $refPos = 0; $refPos <= $#gap_structure; $refPos++)
 	{
@@ -305,9 +305,9 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			print GAPSTRUCTURE join("\t", $referenceSequenceID, $refPos, $n_gaps), "\n";
 		}
 	}	
-	my $cmd = qq($bin_BAM2VCF --input $fn_for_BAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt &);
+	my $cmd = qq($bin_CRAM2VCF --input $fn_for_CRAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt &);
 	
-	my $output_file = $fn_for_BAM2VCF . '.VCF';
+	my $output_file = $fn_for_CRAM2VCF . '.VCF';
 	
 	print CMDS $cmd, "\n";
 	
