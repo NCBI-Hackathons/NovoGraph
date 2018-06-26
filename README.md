@@ -80,7 +80,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 
 ## Execute BAM2ALIGNMENT.pl
 ## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
-## (Here we place outputs into the subdirectory 'intermediate_files'.)
+## (Here we place outputs into the subdirectory '/intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                       --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput.txt
