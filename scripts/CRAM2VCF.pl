@@ -23,19 +23,21 @@ $| = 1;
 my $CRAM;
 my $referenceFasta;
 my $output;
-my $bin_CRAM2VCF = '../src/CRAM2VCF';
+##my $bin_CRAM2VCF = '../src/CRAM2VCF';
+my $bin_CRAM2VCF;
 my $contigLengths;
-unless(-e $bin_CRAM2VCF)
-{
-	die "CRAM2VCF binary $bin_CRAM2VCF not present - run 'make all' in the directory.";
-}
+##unless(-e $bin_CRAM2VCF)
+##{
+##	die "CRAM2VCF binary $bin_CRAM2VCF not present - run 'make all' in the directory.";
+##}
  
  
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
 	'output:s' => \$output,
-	'contigLengths:s' => \$contigLengths, 	
+	'contigLengths:s' => \$contigLengths, 
+	'CRAM2VCF_executable:s' => \$bin_CRAM2VCF
 );
 	
 die "Please specify --CRAM" unless($CRAM);
@@ -44,6 +46,7 @@ die "Please specify --output" unless($output);
 
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
+die "--CRAM2VCF_executable $bin_CRAM2VCF not present; Please run 'make' in the directory /src." unless(-e $bin_CRAM2VCF);
 
 my %expectedLengths;
 if($contigLengths)
