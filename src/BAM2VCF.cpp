@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : BAM2VCF.cpp
+// Name        : CRAM2VCF.cpp
 // Author      : Alexander Dilthey
 // License     : The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
 //============================================================================
