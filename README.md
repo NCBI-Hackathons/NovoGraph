@@ -133,9 +133,9 @@ perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/
                              --output combined.sam
 
 
-## As input for the next script, conver the SAM to a sorted BAM
-samtools view -u combined.sam | samtools sort - > combined_sorted.bam 
+## As input for the next script, convert the SAM to a sorted BAM
 ## Index as well
+samtools view -u combined.sam | samtools sort - > combined_sorted.bam 
 samtools index combined_sorted.bam 
 
 
