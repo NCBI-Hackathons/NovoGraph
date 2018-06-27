@@ -126,12 +126,17 @@ perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/for
 perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/forMAFFT --chunkI 0
 
 
-
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
 perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/ 
                              --msadir .../intermediate_files/forMAFFT/ 
                              --contigs .../intermediate_files/postGlobalAlignment_readLengths 
                              --output combined.sam
+
+
+## As input for the next script, conver the SAM to a sorted BAM
+samtools view -u combined.sam | samtools sort - > combined_sorted.bam 
+## Index as well
+samtools index combined_sorted.bam 
 
 
 ## Check that these steps are successful
