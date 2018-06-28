@@ -36,6 +36,10 @@ Given that this genome graph has been designed to incorporate larger structural 
 * SAMtools version >= 1.4
 * BWA version >= 0.7.15
 * MAFFT version >= 7
+* Perl dependencies: 
+    * Bio-DB-HTS, https://github.com/Ensembl/Bio-DB-HTS
+    * Set::IntervalTree, https://metacpan.org/release/Set-IntervalTree
+    
 
 ### Preparation:
 ```
