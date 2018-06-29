@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
 	std::vector<std::string> ARG (argv + 1, argv + argc + !argc);
 	std::map<std::string, std::string> arguments;
 
-	arguments["input"] = "C:\\Users\\diltheyat\\Desktop\\Temp\\chr21";
-	arguments["referenceSequenceID"] = "chr21";
+	// arguments["input"] = "C:\\Users\\diltheyat\\Desktop\\Temp\\chr21";
+	// arguments["referenceSequenceID"] = "chr21";
 
 	std::map<std::string, std::map<long long, std::set<std::string>>> expectedAlleles;
 	
