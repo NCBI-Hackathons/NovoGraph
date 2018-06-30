@@ -101,6 +101,7 @@ perl countExpectedGlobalAlignments.pl --BAM forMAFFT.bam
 
 ##### Step 2: MSA computation
 ```
+## Execute BAM2MAFFT.pl
 perl BAM2MAFFT.pl --BAM forMAFFT.bam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                   --readsFasta AllContigs.fa 
