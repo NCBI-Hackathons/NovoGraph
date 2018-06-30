@@ -1,19 +1,9 @@
 #!/usr/bin/perl
 
-## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
-
-=======
-## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
-
-=======
->>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
->>>>>>> master
 use strict;
 use Data::Dumper;
 use Bio::DB::Sam;
-use Getopt::Long;
+use Getopt::Long;   
 $| = 1;
 
 # Example command:
@@ -26,27 +16,23 @@ my $outputFile = 'fromBAM_lengthStatistics.txt';
 my $readsFasta;
 my $lenientOrder = 1;
 
-=======
 # $referenceFasta = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\reference.fa';
 # $BAM = 'C:\\Users\\AlexanderDilthey\\Desktop\\Temp\\Ribosomes\\ribosome.bam';
 
 
-=======
->>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
->>>>>>> master
 # HX1.000608F
 GetOptions (
-	'referenceFasta:s' => \$referenceFasta,
-	'BAM:s' => \$BAM,
-	'outputFile:s' => \$outputFile,
-	'readsFasta:s' => \$readsFasta,
+	'referenceFasta:s' => \$referenceFasta, 
+	'BAM:s' => \$BAM, 
+	'outputFile:s' => \$outputFile,	
+	'readsFasta:s' => \$readsFasta,	
 	'lenientOrder:s' => \$lenientOrder
 );
 
 die "Please specify --BAM" unless($BAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --readsFasta" unless($readsFasta);
-die "Please specify --output" unless($outputFile);
+die "Please specify --output" unless($outputFile); 
 die "--BAM $BAM not existing" unless(-e $BAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
@@ -82,42 +68,42 @@ if($testing == 0)
 		my $isPrimary  = (! $alignment->get_tag_values('NOT_PRIMARY'));
 		# die if(not $isPrimary);
 		next unless($alignment->seq_id eq 'chr20');
-
+		
 		if($alignment->seq_id ne 'chr1')
 		{
 			#warn "For testing purposes, stop after chr1"; # todo
 			#last;
 		}
-
+		
 		my $readID = $alignment->query->name;
 		# next unless($readID =~ /HG004.002266F/);
-
+		
 		print "Collecting alignment $readID ... \n";
-
-		my $read_href = convertAlignmentToHash($alignment);
-
+		
+		my $read_href = convertAlignmentToHash($alignment);	
+		
 		if($read_href)
 		{
 			if($isPrimary)
 			{
 				$read_got_primary_alignment{$readID} = 1;
 			}
-
+			
 			if(not defined $read_reference_positions{$readID})
 			{
 				$read_reference_positions{$readID} = [];
 				$#{$read_reference_positions{$readID}} = (length($reads_href->{$readID})-1);
 			}
-
-			die unless($#{$read_reference_positions{$readID}} == (length($reads_href->{$readID})-1));
-
+			
+			die unless($#{$read_reference_positions{$readID}} == (length($reads_href->{$readID})-1));	
+			
 			my $runningRefPos = $read_href->{firstPos_reference};
 			my $runningReadPos = $read_href->{firstPos_read};
 			for(my $alignmentPosI = 0; $alignmentPosI < length($read_href->{alignment_reference}); $alignmentPosI++)
 			{
 				my $c_ref = substr($read_href->{alignment_reference}, $alignmentPosI, 1);
 				my $c_read = substr($read_href->{alignment_read}, $alignmentPosI, 1);
-
+				
 				my $referencePos;
 				my $readPos;
 				if($c_ref eq '-')
@@ -128,38 +114,38 @@ if($testing == 0)
 				{
 					$referencePos = $runningRefPos;
 				}
-
+				
 				if($c_read eq '-')
 				{
 					$readPos = -1;
 				}
 				else
 				{
-					$readPos = $runningReadPos;
-				}
-
+					$readPos = $runningReadPos; 
+				}		
+				
 				if($readPos != -1)
 				{
-					die unless($readPos >= 0);
+					die unless($readPos >= 0); 
 					die unless($readPos <= $#{$read_reference_positions{$readID}});
-					if(defined $read_reference_positions{$readID}[$readPos])
+					if(defined $read_reference_positions{$readID}[$readPos]) 
 					{
 						warn "Read position $readPos in $readID covered by multiple alignments - existing reference value $read_reference_positions{$readID}[$readPos], want to set to $referencePos";
 					}
 					$read_reference_positions{$readID}[$readPos] = $referencePos;
 				}
-
+				
 				if($c_ref ne '-')
 				{
 					$runningRefPos++;
-				}
+				}	
 				if($c_read ne '-')
 				{
 					$runningReadPos++;
-				}
+				}	
 			}
 		}
-
+		
 		# last if(scalar(keys %read_reference_positions) > 10); # todo
 	}
 }
@@ -180,9 +166,9 @@ else
 	$read_reference_positions{testRead}[10] = 11;
 	$read_reference_positions{testRead}[11] = -1;
 	$read_reference_positions{testRead}[12] = 12;
-	$read_reference_positions{testRead}[13] = 13;
+	$read_reference_positions{testRead}[13] = 13; 
 	$read_reference_positions{testRead}[14] = 14;
-	$read_reference_positions{testRead}[15] = undef;
+	$read_reference_positions{testRead}[15] = undef;  
 	$read_got_primary_alignment{testRead} = 1;
 }
 
@@ -202,11 +188,11 @@ foreach my $readID (keys %read_reference_positions)
 	{
 		$read_reference_positions{$readID}[$posI] = -1 unless(defined $read_reference_positions{$readID}[$posI]);
 	}
-
+	
 	if($read_got_primary_alignment{$readID})
 	{
 		$read_got_primary++;
-
+		
 		print OUT2 "Read ", $readID, "\n";
 		my $first_definedPosition;
 		my $last_definedPosition;
@@ -219,17 +205,17 @@ foreach my $readID (keys %read_reference_positions)
 			}
 			print OUT2 $readPos, "\t", $read_reference_positions{$readID}[$readPos], "\n";
 		}
-
+		
 		my $padding_front;
 		my $padding_end;
 		if(defined $first_definedPosition)
 		{
 			my %local_histograms;
 			my $allConsistent = 1;
-
+			
 			$padding_front = $first_definedPosition;
 			$padding_end = $#{$read_reference_positions{$readID}} - $last_definedPosition;
-
+			
 			my $runningGapLength = 0;
 			my $lastRefPos;
 			for(my $readPos = $padding_front; $readPos <= $last_definedPosition; $readPos++)
@@ -238,30 +224,30 @@ foreach my $readID (keys %read_reference_positions)
 				{
 					my $diff_refPos = (defined $lastRefPos) ? ($read_reference_positions{$readID}[$readPos] - $lastRefPos) : 1;
 					my $deletion_relative_to_reference = $diff_refPos - 1;
-
+					
 					$allConsistent = 0 if($deletion_relative_to_reference < 0);
 					$runningGapLength -= $deletion_relative_to_reference;
-
+					
 					if($runningGapLength)
-					{
+					{	
 						die unless($lastRefPos >= 0);
 						$local_histograms{$runningGapLength}++;
 					}
-
+					
 					$runningGapLength = 0;
-					$lastRefPos = $read_reference_positions{$readID}[$readPos];
+					$lastRefPos = $read_reference_positions{$readID}[$readPos];					
 				}
 				else
 				{
 					$runningGapLength++;
 				}
-
-			}
-
+				
+			}		
+			
 			die unless($runningGapLength == 0);
-
+			
 			$histograms{consistent}{$allConsistent}++;
-
+			
 			foreach my $k (keys %local_histograms)
 			{
 				if($allConsistent)
@@ -269,24 +255,24 @@ foreach my $readID (keys %read_reference_positions)
 					$histograms{INDELs}{$k} += $local_histograms{$k};
 					if($k == -1)
 					{
-						$minusOne_perRead{$readID} += $local_histograms{$k};
+						$minusOne_perRead{$readID} += $local_histograms{$k};				
 					}
 				}
 			}
-
+		
 		}
 		else
 		{
 			$padding_front = $#{$read_reference_positions{$readID}}+1;
 			$padding_end = 0;
 		}
-
+		
 		$histograms{frontPadding}{$padding_front}++;
-		$histograms{endPadding}{$padding_end}++;
+		$histograms{endPadding}{$padding_end}++;	
 		my $combinedPadding = $padding_front + $padding_end;
 		my $combinedPadding_perc = int(($combinedPadding / ($#{$read_reference_positions{$readID}}+1)) * 100);
-		$histograms{combinedPaddingPerc}{$combinedPadding_perc}++;
-
+		$histograms{combinedPaddingPerc}{$combinedPadding_perc}++;		
+		
 	}
 	else
 	{
@@ -331,21 +317,21 @@ print "\n\nProduced output file $outputFile_2\n";
 sub convertAlignmentToHash
 {
 	my $inputAlignment = shift;
-
+	
 	return undef if($inputAlignment->unmapped);
-
+	
 	my $readID = $inputAlignment->query->name;
 	my $chromosome = $inputAlignment->seq_id;
 	my $firstPos_reference = $inputAlignment->start - 1;
 	die unless($firstPos_reference >= 0);
-
+	
 	my $lastPos_reference;
 	my $firstPos_read = 0;
 	my $lastPos_read;
 	my $strand = $inputAlignment->strand;
 	die unless(($strand == 1) or ($strand == -1));
 	$strand = ($strand == 1) ? '+' : '-';
-
+	
 	my $n_matches = 0;
 	my $n_mismatches = 0;
 	my $n_insertions = 0;
@@ -353,15 +339,15 @@ sub convertAlignmentToHash
 	my $n_gaps;
 	my $alignment_reference;
 	my $alignment_read;
-
+	
 	my $cigar  = $inputAlignment->cigar_str;
 	my $remove_softclipping_front = 0;
-	my $remove_softclipping_back = 0;
+	my $remove_softclipping_back = 0;	
 	while($cigar =~ /^(\d+)([MIDHS])/)
 	{
 		my $number = $1;
 		my $action = $2;
-		$cigar =~ s/^(\d+)([MIDHS])//;
+		$cigar =~ s/^(\d+)([MIDHS])//;		
 		if(($action eq 'H') or ($action eq 'S'))
 		{
 			$firstPos_read += $number;
@@ -375,35 +361,35 @@ sub convertAlignmentToHash
 			last;
 		}
 	}
-
+	
 	{
 		my $cigar  = $inputAlignment->cigar_str;
 		while($cigar =~ /(\d+)([MIDHS])$/)
 		{
 			my $number = $1;
 			my $action = $2;
-			$cigar =~ s/(\d+)([MIDHS])$//;
+			$cigar =~ s/(\d+)([MIDHS])$//;					
 			if(($action eq 'H') or ($action eq 'S'))
 			{
 				if($action eq 'S')
 				{
-					$remove_softclipping_back += $number;
+					$remove_softclipping_back += $number; 
 				}
 			}
 			else
 			{
 				last;
 			}
-		}
+		}	
 	}
-
+	
 	my ($ref, $matches, $query) = $inputAlignment->padded_alignment;
 	unless(defined $ref)
 	{
 		warn "No reference sequence for $chromosome?";
 		return undef;
 	}
-
+	
 	if($remove_softclipping_front)
 	{
 		my $softclip_remove_ref = substr($ref, 0, $remove_softclipping_front);
@@ -416,18 +402,18 @@ sub convertAlignmentToHash
 	{
 		my $softclip_remove_ref = substr($ref, length($ref) - $remove_softclipping_back);
 		die unless(length($softclip_remove_ref) == $remove_softclipping_back);
-
+		
 		die "Weird softclipping for read" unless($softclip_remove_ref =~ /^\-+$/);
 		substr($ref, length($ref) - $remove_softclipping_back) = '';
 		substr($query, length($query) - $remove_softclipping_back) = '';
 	}
-
+	
 	$alignment_reference = $ref;
 	$alignment_read = $query;
-
+	
 	my $alignment_length = length($ref);
 	die unless(length($query) == $alignment_length);
-
+	
 	my $runningPos_query = 0;
 	my $runningPos_reference = $firstPos_reference - 1;
 	my $runningPos_read = $firstPos_read;
@@ -438,14 +424,14 @@ sub convertAlignmentToHash
 		die if(($c_ref eq '-') and ($c_query eq '-'));
 		if($c_ref eq '-')
 		{
-			$n_insertions++;
+			$n_insertions++;			
 			$runningPos_read++;
 		}
 		elsif($c_query eq '-')
 		{
 			$n_deletions++;
 			$runningPos_reference++;
-
+			
 		}
 		else
 		{
@@ -460,54 +446,54 @@ sub convertAlignmentToHash
 				$n_mismatches++;
 			}
 		}
-
+		
 		$lastPos_reference = $runningPos_reference;
 		$lastPos_read = $runningPos_read;
 	}
-
+	
 	die unless(defined $lastPos_reference);
 	die unless(defined $runningPos_read);
 	$lastPos_read--;
 	die unless($lastPos_read >= $firstPos_read);
-
+	
 	$n_gaps = $n_insertions + $n_deletions;
-
+	
 	die "Missing reference sequence for $chromosome" unless(exists $reference_href->{$chromosome});
 	my $supposed_reference_sequence = substr($reference_href->{$chromosome}, $firstPos_reference, $lastPos_reference - $firstPos_reference + 1);
-
+	
 	unless(exists $reads_href->{$readID})
 	{
 		warn "Missing read sequence for $readID";
 		return undef;
 	}
-
+	
 	my $read_sequence = $reads_href->{$readID};
 	if($strand eq '-')
 	{
 		$read_sequence = reverseComplement($read_sequence);
 	}
 	my $supposed_read_sequence = substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1);
-
+	
 	my $alignment_reference_noGaps = $alignment_reference;
 	$alignment_reference_noGaps =~ s/\-//g;
-
+	
 	my $alignment_read_noGaps = $alignment_read;
 	$alignment_read_noGaps =~ s/\-//g;
-
+	
 	if(index($supposed_reference_sequence, "N") == -1)
 	{
 		unless($alignment_reference_noGaps eq $supposed_reference_sequence)
 		{
 			print "Reference mismatch for read $readID\n";
 			print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
-			print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";
+			print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";			
 			print "\t", $ref, "\n";
 			print "\t", $query, "\n";
 			print "\t", "\$inputAlignment->start: ", $inputAlignment->start, "\n";
 			print "\t", "REF: ", $alignment_reference_noGaps, "\n";
 			print "\t", "RE2: ", substr($reference_href->{$chromosome}, $firstPos_reference - 10, 20), "\n";
 			print "\t", "ALG: ", $supposed_reference_sequence, "\n";
-			print "\t", "strand: ", $strand, "\n";
+			print "\t", "strand: ", $strand, "\n";			
 			print "\n";
 			return undef;
 		}
@@ -526,13 +512,13 @@ sub convertAlignmentToHash
 			print "\t", "alignment_query: ", $query, "\n";
 			print "\t", "strand: ", $strand, "\n";
 			print "\n";
-
+			
 			return undef;
 		}
 	}
-
+	
 	die "Mismatch query" unless($alignment_read_noGaps eq $supposed_read_sequence);
-
+	
 	return {
 		readID => $readID,
 		chromosome => $chromosome,
@@ -549,7 +535,6 @@ sub convertAlignmentToHash
 	};
 }
 
-=======
 # my $bam          = Bio::DB::Bam->open($BAM);
 # my $header       = $bam->header;
 # my $target_count = $header->n_targets;
@@ -560,21 +545,18 @@ sub convertAlignmentToHash
 	# my $end       = $align->calend;
 	# my $cigar     = $align->cigar_str;
 	# my $readID = $align->query->name;
-
+	
 	# die ref($align);
 	# die $align->padded_alignment;
 	# die $readID;
 # }
-=======
->>>>>>> 0a7b0c349026f369c5d0212fd2f07d0b1592ae2c
->>>>>>> master
-
+ 
 sub readFASTA
 {
-	my $file = shift;
+	my $file = shift;	
 	my $keepCompleteIdentier = shift;
 	my %R;
-
+	
 	open(F, '<', $file) or die "Cannot open $file";
 	my $currentSequence;
 	while(<F>)
@@ -583,7 +565,7 @@ sub readFASTA
 		{
 		# 	print "\r", $.;
 		}
-
+		
 		my $line = $_;
 		chomp($line);
 		$line =~ s/[\n\r]//g;
@@ -599,9 +581,9 @@ sub readFASTA
 		{
 			$R{$currentSequence} .= $line;
 		}
-	}
+	}	
 	close(F);
-
+		
 	return \%R;
 }
 

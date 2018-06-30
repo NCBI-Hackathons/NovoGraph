@@ -1,10 +1,7 @@
 #!/usr/bin/perl
 
-## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
-
 use strict;
-use Bio::DB::HTS;
+use Bio::DB::Sam;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
@@ -57,7 +54,7 @@ if($paranoid)
 }
 
 my $reference_href = readFASTA($referenceFasta);
-my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM);
+my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
 
 my %truncatedReads;
 open(TRUNCATED, '<', $inputTruncatedReads) or die "Cannot open $inputTruncatedReads";
@@ -93,6 +90,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 		next;
 	}
 	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
+	#next unless($referenceSequenceID eq 'chr1');
 	
 	my $chrDir = $referenceSequenceID;
 	$chrDir =~ s/\W//g;
@@ -102,6 +100,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
 	die "Length discrepancy between supplied FASTA reference and BAM index: " . $sam->length($referenceSequenceID) . " vs " . length($reference_href->{$referenceSequenceID}) unless($sam->length($referenceSequenceID) == length($reference_href->{$referenceSequenceID}));
 	next unless(defined $reference_href->{$referenceSequenceID});
+
+	# print "\tRegion $referenceSequenceID, have ", scalar(@alignments), " alignments.\n";
 	
 	my %sequences_per_window;
 	my @window_positions;
@@ -112,6 +112,12 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $n_alignment = 0;
 	while(my $alignment = $alignment_iterator->next_seq)
 	{
+		#if($n_alignment > 100)
+		#{
+		#	warn "For testing purposes, stop after chr1";
+		#	last;
+		#}
+			
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";
 		
@@ -130,7 +136,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 	
 		my $alignment_start_pos = $alignment->start;
 		my ($ref,$matches,$query) = $alignment->padded_alignment;
-        
+		# print $ref, "\n", $query, "\n\n";
 		die unless(length($ref) == length($query));
 		my $rel_idx = -1;	
 		for(my $i = 0; $i < length($ref); $i++)
@@ -158,6 +164,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $targetWindowSize = 10000;
 	for(my $potentialWindowPos = 0; $potentialWindowPos <= $#contig_coverage; $potentialWindowPos++)
 	{
+		# print "Window: ", $potentialWindowPos, "\n";
 		my $middleWindowPos = $potentialWindowPos + $targetWindowSize;
 		my $minWindowsPos = $middleWindowPos - $scanTarget;
 		my $maxWindowsPos = $middleWindowPos + $scanTarget;
@@ -198,6 +205,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 	}
 	
 	print "\tRegion $referenceSequenceID, have ", scalar(@window_positions), " windows.\n";
+	# print "Window starting positions (first window starting at 0 is implicit):\n";
+	# print join("\n", map {' - ' . $_} @window_positions), "\n";
 	die unless($#window_positions >= 0);
 	
 	my $intervalTree_windows = Set::IntervalTree->new;	
@@ -205,16 +214,19 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $max_pos = $#contig_coverage;
 	$window_switch_positions{$window_positions[0]} = 1;
 	$intervalTree_windows->insert('w0', 0, $window_positions[0]);
+	# print "Insert ", 0, " ", $window_positions[0], " as w0\n";	
 	$window_switch_positions{$window_positions[0]} = 'w1';
 	for(my $windowI = 1; $windowI <= $#window_positions; $windowI++)
 	{
 		my $windowID_for_tree = 'w'.$windowI;
 		$intervalTree_windows->insert($windowID_for_tree, $window_positions[$windowI-1], $window_positions[$windowI]);
+		# print "Insert ", $window_positions[$windowI-1], " ", $window_positions[$windowI], " as $windowID_for_tree\n";
 		$window_switch_positions{$window_positions[$windowI]} = 'w'.($windowI+1);		
 	}
 	
 	my $last_windowID_for_tree = 'w'.($#window_positions+1);
 	$intervalTree_windows->insert($last_windowID_for_tree, $window_positions[$#window_positions], $max_pos+1);
+	# print "Insert ", $window_positions[$#window_positions], " ", $max_pos+1, " as $last_windowID_for_tree\n";
 	
 	my $firstWindow_lastPos = $window_positions[0] - 1;
 	print WINDOWS join("\t", $referenceSequenceID, $chrDir, 0, 0, $firstWindow_lastPos, $contig_coverage[$firstWindow_lastPos], $contig_coverage_nonGap[$firstWindow_lastPos]), "\n";
@@ -268,6 +280,12 @@ foreach my $referenceSequenceID (@sequence_ids)
 	my $n_alignment = 0;
 	while(my $alignment = $alignment_iterator->next_seq)
 	{
+		#if($n_alignment > 100)
+		#{
+		#	warn "For testing purposes, stop after chr1";
+		#	last;
+		#}
+		
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";
 
@@ -407,6 +425,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 					print "Disagreement for $sequenceID\n";
 					print "\t", "length(\$trueSequence)", ": ", length($trueSequence), "\n";
 					print "\t", "length(\$supposedSequence)", ": ", length($supposedSequence), ", ", substr($supposedSequence, 0, 10), "\n";
+					#die;
 				}
 			}
 			delete($runningSequencesForReconstruction{$sequenceID});
@@ -457,3 +476,35 @@ sub reverseComplement
 	return $kMer;
 }
 
+
+
+sub get_windows_for_refLength
+{
+	my $refLength = shift;
+	die unless(defined $refLength);
+	my $desiredWindowLength = 100000;
+	
+	if($refLength <= $desiredWindowLength)
+	{
+		return ([1, $refLength]);
+	}
+	
+	my @forReturn;
+	my $currentEnd = $desiredWindowLength;
+	while($currentEnd < $refLength)
+	{
+		push(@forReturn, [$currentEnd - $desiredWindowLength + 1, $currentEnd]);
+		$currentEnd += $desiredWindowLength;
+	}
+	if($currentEnd > $refLength)
+	{
+		$currentEnd = $refLength;
+	}
+	die if($forReturn[$#forReturn][1] == $currentEnd);
+	
+	my $lastWindowStart = $forReturn[$#forReturn][1] + 1;
+	die unless($lastWindowStart <= $currentEnd);
+	push(@forReturn, [$lastWindowStart, $currentEnd]);
+	
+	return @forReturn;
+}

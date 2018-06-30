@@ -1,9 +1,5 @@
 #!/usr/bin/env perl
 
-## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
-
-
 use strict;
 use warnings;
 use Data::Dumper;
@@ -11,11 +7,6 @@ use Getopt::Long;
 use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
-
-# Example command:
-# perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram
-#     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf
-
 
 $| = 1;
 

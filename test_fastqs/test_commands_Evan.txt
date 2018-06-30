@@ -1,0 +1,127 @@
+####################################################
+
+module load bwa/0.7.15
+module load samtools/1.3.1
+module load perl/5.24.0
+
+
+bwa index /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/test_fastqs 1013 $ nice bwa mem  /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa insertion_chr1_hg38.fasta -t 20 | samtools view -Sb - > input_sequences_unsorted.bam
+
+
+samtools sort -o insertion_chr1_hg38.bam input_sequences_unsorted.bam
+samtools index insertion_chr1_hg38.bam
+
+## https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/tree/master/test_fastqs
+
+$ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/BAM2AARTI.pl --BAM /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/test_fastqs/insertion_chr1_hg38.bam --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/AllContigs.fa 
+
+## insertion_chr1_hg38.txt.sortedWithHeader
+## https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/tree/master/test_fastqs/outputs_bam2aarti
+
+
+
+$ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/FIND_GLOBAL_ALIGNMENTS.pl  --alignmentsFile /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_bam2aarti/insertion_chr1_hg38.txt.sortedWithHeader --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam  --outputTruncatedReads /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/truncatedReads_insertion_chr1_hg38.txt --outputReadLengths /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/postGlobalAlignment_readLengths_insertion_chr1_hg38.txt
+
+
+##
+## outputs of FIND_GLOBAL_ALIGNMENTS below
+##
+
+###########################
+###########################
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1030 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/FIND_GLOBAL_ALIGNMENTS.pl  --alignmentsFile /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_bam2aarti/insertion_chr1_hg38.txt.sortedWithHeader --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam  --outputTruncatedReads /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/truncatedReads_insertion_chr1_hg38.txt --outputReadLengths /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/postGlobalAlignment_readLengths_insertion_chr1_hg38.txt
+Read /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+	done.
+
+Done.
+
+Statistics:
+	Alignments: 1
+	Avg chains per alignment: 1
+	Alignments with both ends trimmed: 0
+	Alignments with left end trimmed: 0
+	Alignments with right end trimmed: 0
+
+
+Done. Produced SAM file /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered
+
+Filtering SAM with command: perl dealWithTooManyCIGAROperations.pl --input /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered --output /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered.filtered
+
+Removed 0 alignments.
+Converting to BAM with command:
+	samtools view -S -b -o/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered.filtered.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered.filtered
+
+Sorting and indexing BAM with command:
+	samtools sort -o/gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam.sam.unfiltered.filtered.bam; samtools index /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam
+
+Produced BAM file /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam
+
+###########################
+###########################
+
+
+
+
+
+$  perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/BAM2MAFFT.pl --BAM /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/insertion_chr1_hg38_forMAFFT.bam --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/test_fastqs/insertion_chr1_hg38.fasta  --outputDirectory /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_BAM2MAFFT_insertion_chr1_hg38 --inputTruncatedReads /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_forMAFFT/truncatedReads_insertion_chr1_hg38.txt
+
+
+
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1041 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/CALLMAFFT.pl --action kickOff --mafftDirectory /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/forMAFFT_insertion_chr1_hg38_TRY2  --qsub 1
+
+
+
+$ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/globalize_windowbams.pl --fastadir /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/forMAFFT_insertion_chr1_hg38_TRY2 --msadir /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/forMAFFT_insertion_chr1_hg38_TRY2 --bamheader /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/config/GRCh38.headerfile.txt --contigs /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/outputs_postGlobalAlignment_insertion_chr1_hg38_TRY2_forMAFFT --output /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.bam
+
+Printing SAM entry for contig INSERTCHR1_001 (expected 10200, current 10200)
+
+
+
+
+samtools sort -o /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.sorted.bam /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.bam
+
+
+samtools index /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.sorted.bam
+
+
+perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/validate_BAM_MSA.pl --BAM /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.sorted.bam --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+
+
+Sequence INSERTCHR1_001 remove 0 left and 0 right 
+Set chr1 5999999 to 0 from INSERTCHR1_001
+Set chr1 6000000 to 0 from INSERTCHR1_001
+Set chr1 6000001 to 0 from INSERTCHR1_001
+Set chr1 6000002 to 0 from INSERTCHR1_001
+Set chr1 6000003 to 0 from INSERTCHR1_001
+Set chr1 6000004 to 0 from INSERTCHR1_001
+Set chr1 6000005 to 0 from INSERTCHR1_001
+…
+Set chr1 6010494 to 0 from INSERTCHR1_001
+Set chr1 6010495 to 0 from INSERTCHR1_001
+Set chr1 6010496 to 0 from INSERTCHR1_001
+Set chr1 6010497 to 0 from INSERTCHR1_001
+Set chr1 6010498 to 0 from INSERTCHR1_001
+
+
+
+bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1039 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/BAM2VCF.pl --BAM /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.sorted.bam --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/VCF_TRY2/combined_TRY2_insertion_chr1_hg38.vcf
+
+
+
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1028 $ perl /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/BAM2VCF.pl --BAM /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/combined_TRY2_insertion_chr1_hg38.sorted.bam --referenceFasta /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/VCF_TRY2/combined_TRY2_insertion_chr1_hg38.vcf
+Reading /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+	...done.
+Processing chr1 .. 
+Set... .. done.
+Have loaded 1 alignments.
+Starting at position 6000497, have REF GG and alternative sequences G-G / GG-
+Starting at position 6002498, have REF T and alternative sequences T-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- / TGCAATACGCAATCACCAATCCGAGGTAATCACCCTGGGCCCGGTCCGGGGTCATAGCATCCGTGAGGTTGGATTGGGTAACAGAGTGCGGGGTGGCATTATTGTATGGGAACGAACCTTCAATTCATCTGGTAGGTAAGACGATGTACTTAAACCATGGCGATGGGCTCTACAATAGGCGACTGGTTACGGGGAGGGTCA
+Starting at position 6009998, have REF TAGCTGGGATTACAGGCACACATCACCACACCCAGCTAATTTTTGTATTTTTAGTAGAGAAGGGGTTTCGGTTTCACCACGTTGGCCAGGCTGGTCTCAAACTCCTGGCCCCAAGTGATCCACCCGCCTCAGCCTCCCAAAGTGCTGGCATTACAGGTGTGAGCCACCGTGTCCAGTCATATGTGCCATTTCTTAGCTTGCATTTCCTTTTTAGTTAGTTAAACTTATTTCTTAAATAAGCTTATTTTAAACTGAAACTTGATGTCCCTGCAATAAAGAACCAGCATTACTTGTCATCAATAAAAGGTAACTGGAGGCAGGCATGGTGGCTCACACCTGTAGTCCCATCTGCTTTCGAGGCTGAGGCAGGAGGATCTCTTGAACCCGAGAGTTCAAGTTCAACCTGGGCAACATAGCAAGACCTCCGGCCCTTAAAAAAATAAAAAGTAACTGGAAAAATAAGTGGATCAATATTAACTTCAAGGCCTGTCTCAAGTGTGGC and alternative sequences T---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Processing chr2 .. 
+Sequence ID chr2 not defined in /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa at /gpfs/commons/home/biederstedte-934/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts/BAM2VCF.pl line 51.
+-bash:mskilab01:~/evan_projects/CSHL_hackathon_data/Graph_Genomes_CSHL-master/scripts 1029 
+

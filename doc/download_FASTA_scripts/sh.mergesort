@@ -1,0 +1,6 @@
+#!/bin/bash
+#$ -l mem_free=6G,h_vmem=6G
+#$ -o /cluster/ifs/projects/seqSim/DataScienceHackathon2016/GenomeGraph/bwamem_genome_aligns/logs
+#$ -e /cluster/ifs/projects/seqSim/DataScienceHackathon2016/GenomeGraph/bwamem_genome_aligns/logs
+
+samtools merge $@

@@ -1,140 +1,19 @@
-# Graph Genome of Multiple De Novo Assemblies
+# Graph Genomes
+## CSHL Hackathon 24-26 October 2016
 
-An algorithmically novel approach to construct a genome graph representation of multiple de novo sequence assemblies. We then provide a proof of principle by constructing a genome graph of seven ethnically-diverse human genomes. 
+## Preliminary description of tools, inputs, and outputs
+### Problem: Whole genome graph creation from multiple assemblies
 
-This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
+[See Initial presentation Google doc here](https://docs.google.com/a/lbl.gov/presentation/d/17MTjobkF-wfgamiK2NDwoRGQzlEJ1nzw8VtPqNGBZDI/edit?usp=sharing)
 
-## Motivation 
-
-Employing a linear, one-dimensional character string as the monoploid reference is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both constrains and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple de novo assemblies. 
-
-The incentive for using de novo assembled genomes is to overcome the limitations posed by simply relying upon call sets derived from short-read sequencing. Constructing genome graphs using such call sets will result in graphs which contain SNPs but respectively few structural variants, especially at larger scales. In order to correct this bias, our algorithm has been designed to employ de novo contigs directly---these contigs not only incorporate SNPs but instrinsically contain more structural variants and their breakpoints at base resolution. Using our approach, the resulting graph genome should be respectively enriched in large-scale structural variation.
-
-## Genome Graph of Seven Human Assemblies
-
-We then focused directly on building a graph genome composed of seven human assemblies. The following assemblies were included within the genome graph:
-
-* AK1, Korean
-* CHM1, European
-* CHM13, European
-* HG003, Ashkenazim
-* HG004, Ashkenazim
-* HX1, Han Chinese
-* NA19240, Yoruba
-
-Given that this genome graph has been designed to incorporate larger structural variation, we encourage this result to be used for future investigation and testing within the community.
+[Tuesday presentation Google doc](https://docs.google.com/presentation/d/1sEx0Q0LdAuBQF0t-JJbwZuXHNvDDwxHrevyfoYrxi68/edit?usp=sharing)
 
 
-
-## Pipeline
-
-* reference file GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
-* contigs file AllContigs.fa
-
-###### Preparation:
-```
-## Requires samtools version >= 1.3
-
-## Index the reference FASTA
-bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-
-## Align the contigs FASTA against the reference, outputting a single BAM
-bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
-
-## Sort the resulting BAM
-samtools sort -o SevenGenomesPlusGRCh38Alts.bam allContigs_unsorted.bam
-
-## Index the resulting BAM
-samtools index SevenGenomesPlusGRCh38Alts.bam
-
-## Check that there are no unmapped reads in the input BAM, because this might lead to unknown behaviour
-samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
-
-## If there is no output with the above command, continue. Otherwise, if you do find unmapped reads in the input BAM,
-## please remove these as follows, and use 'SevenGenomesPlusGRCh38Alts.filtered.bam' for the remainder of the pipeline
-
-samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlusGRCh38Alts.bam
-```
-
-###### Algorithm:
-```
-
-perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputFile /intermediate_files/AlignmentInput
-
-## Expect output '../intermediate_files/AlignmentInput.sortedWithHeader'
-
-perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa
-
-perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile forMAFFT.bam --outputTruncatedReads ../intermediate_files/truncatedReads --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
-
-perl BAM2MAFFT.pl --BAM ../intermediate_files/forMAFFT.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta AllContigs.fa --outputDirectory .../intermediate_files/forMAFFT --inputTruncatedReads .../intermediate_files/truncatedReads 
-
-perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
-
-## assumes you are using SGE to submit jobs
-perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
-perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
-perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
-
-perl globalize_windowbams.pl --fastadir /intermediate_files/forMAFFT/ --msadir /intermediate_files/forMAFFT/ --contigs /intermediate_files/postGlobalAlignment_readLengths --output /intermediate_files/combined_2.sam
-
-perl validate_BAM_MSA.pl --BAM /intermediate_files/combined_sorted.bam --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-
-# get CRAM, via SAM sort
-samtools view -h -t GRCh38.headerfile.txt /intermediate_files/combined_2.sam > /intermediate_files/combined_2_with_header.sam;\
-samtools sort /intermediate_files/combined_2_with_header.sam -o /intermediate_files/combined_2_with_header_sorted.sam
-
-cat /intermediate_files/combined_2_with_header_sorted.sam | samtools view -C -T GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa - > /intermediate_files/combined_2.cram
-
-samtools index /intermediate_files/combined_2.cram
-
-perl checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/ --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2 --preMAFFTBAM /intermediate_files/forMAFFT_2.bam --finalOutputCRAM /intermediate_files/combined_2.cram &> output_checkMAFFT_v2
-
-perl CRAM2VCF.pl --CRAM /intermediate_files/combined_2.cram --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
-
-perl CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
-
-perl launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
-
-perl CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined_2.cram --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --output VCF/graph_v2.vcf
-
-```
-
-## Instructions to Download and Process Input Assemblies
-
-The following commands were used to download the assembly FASTAs used for this project:
-
-```
-## AK1, Korean:
-for file in `echo LPVO02.1.fsa_nt.gz LPVO02.2.fsa_nt.gz LPVO02.3.fsa_nt.gz LPVO02.4.fsa_nt.gz LPVO02.5.fsa_nt.gz LPVO02.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LP/VO/LPVO02/$file; done
-
-## CHM1, European:
-for file in `echo LJII01.1.fsa_nt.gz LJII01.10.fsa_nt.gz LJII01.11.fsa_nt.gz LJII01.12.fsa_nt.gz LJII01.13.fsa_nt.gz LJII01.14.fsa_nt.gz LJII01.15.fsa_nt.gz LJII01.2.fsa_nt.gz LJII01.3.fsa_nt.gz LJII01.4.fsa_nt.gz LJII01.5.fsa_nt.gz LJII01.6.fsa_nt.gz LJII01.7.fsa_nt.gz LJII01.8.fsa_nt.gz LJII01.9.fsa_nt.gz`; do echo $file; wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LJ/II/LJII01/$file; done
- 
-## CHM13, European:
-for file in `echo LDOC03.1.fsa_nt.gz LDOC03.2.fsa_nt.gz LDOC03.3.fsa_nt.gz LDOC03.4.fsa_nt.gz LDOC03.5.fsa_nt.gz LDOC03.6.fsa_nt.gz LDOC03.7.fsa_nt.gz`; do echo $file; wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LD/OC/LDOC03/$file; done
-
-## HX1, Han Chinese:
-wget http://hx1.wglab.org/data/hx1f4.3rdfixedv2.fa.gz
-
-## HG003, Ashkenazim father:
-wget ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/MtSinai_PacBio_Assembly_falcon_03282016/hg003_p_and_a_ctg.fa
- 
-## HG004, Ashkenazim mother:
-wget ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/MtSinai_PacBio_Assembly_falcon_03282016/hg004_p_and_a_ctg.fa
-
-## NA19240, Yoruba:
-for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB01.4.fsa_nt.gz LKPB01.5.fsa_nt.gz LKPB01.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LK/PB/LKPB01/$file; done
-```
-Upon the successful download of these FASTAs, users should produce a sorted BAM of each assembly by both running BWA-MEM to align against the human reference and sorting the results via SAMtools.
-
-
-
-## Contributors
+# Contributors
 
 Evan Biederstedt (NYGC, WCM)
 
-Alexander Dilthey (NHGRI-NIH, HHU/UKD)
+Alexander Dilthey (NIH)
 
 Nathan Dunn (LBNL)
 
@@ -145,3 +24,126 @@ Nancy Hansen (NIH)
 Jeff Oliver (Arizona)
 
 Andrew Olsen (CSHL)
+
+
+## Workflow
+### Step 0: Align all contigs to GRCh38
+_This step is outside of our formalized pipeline. Users will be responsible for
+running BWA (or equivalent tool) to produce BAM alignment from a reference
+genome and additional assemblies_
++ Input:
+  + Reference genome (GRCh38)
+    + Format: _FASTA_ (text)
+  + Individual contigs
+    + Format: _FASTA_ (text)
++ Output:
+  + Single file of local alignments
+    + Format: _BAM_ (binary)
++ Tools:
+  + BWA
+
+### Step 1: Globally align all contigs
++ Input:
+  + Reference genome (GRCh38)
+    + Format: _FASTA_ (text)
+  + Individual contigs
+    + Format: _FASTA_ (text)
+  + Local alignment (output of step 0)
+    + Format: _BAM_ (binary)
++ Output:
+  + Global alignment where each contig has a single alignment
+    + Format: _BAM_ (binary)
++ Tools:
+  + Local To Global Alignment
+    + Assignees:
+      + Evan
+      + Aarti
+    + Status:
+      + In progress
+      + scripts/NeedlemanWunsch.ph & scripts/NW_alignment_scratch.ph on GitHub
+  + Wrappers
+    + Assignees:
+      + Nathan?
+      + Jeff
+    + Status: in progress
+      + scripts/gg-01.1-local.sh on GitHub
+
+### Step 2: Divide and conquer multiple sequence alignment
++ Input:
+  + Global alignment of all contigs (output of step 1)
+    + Format: _BAM_ (binary)
++ Output:
+  + Single global multiple sequence alignment
+    + Format: _BAM_ (binary)
++ Tools:
+  + MAFFT
+    + Status: _complete_ (installed)
+  + AMC
+    1. Identify window coordinates (start with windows of size ~10kb) in
+    alignment file
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
+    2. Extract sequence data for each window
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
+    3. Convert window to FASTA format
+      + Assignees:
+        + Alex
+      + Status: in progress
+        + BAM2MAFFT.pl in top-level of GitHub repo
+    4. Run MAFFT for each window [could be parallelized]
+      + Assignees:
+        + Nathan
+      + Status: in progress
+        + scripts/align_mafft.sh on GitHub
+    5. Convert MAFFT-produced FASTA alignments to BAM files (one for each
+    window)
+      + Assignees:
+        + Nancy
+      + Status: _complete_
+        + scripts/fas2bam.pl
+    6. Reassemble the individual BAM MSAs into a single BAM alignment file
+      + Assignees:
+        + Nancy
+      + Status: in progress
+        + _Location for any code?_
+  + Wrappers
+    + Window size specification?
+    + Call AMC
+    + Assignees
+      + Jeff?
+    + Status: **not started**
+
+### Step 3: Create graph genome!
++ Input:
+  + Single global multiple sequence alignment (output of step 2)
+    + Format: _BAM_ (binary)
++ Output:
+  + Graph representation of variation in reference genome + input contigs
+    + Format: _VG_, _GFA_?
++ Tools:
+  + BAM to VCF
+    + Assignees:
+      + Andrew
+    + Status: in progress
+      + _Location for any code?_
+  + Wrapper
+    + Convert BAM alignment to VCF
+    + Call vg to convert VCF to vg or gfa format
+    + Assignees:
+      + Jeff
+    + Status: **not started**
+
+### Step 4: Generate Docker container et al for distribution
++ Assignees:
+  + Nathan
++ Status: Done and working, but will need to be updated as code changes and there is a release
+  + Dockerfile in top-level of GitHub repo
+  + Publicly hosted here: https://hub.docker.com/r/ncbihackathons/graph_genomes_cshl/
+  + docker run -it ncbihackathons/graph_genomes_cshl
+    + contents in /app/scripts/
+    + Mount local volumes remotely use the -v option according to here https://docs.docker.com/engine/tutorials/dockervolumes/

@@ -1,10 +1,7 @@
 #!/usr/bin/perl
 
-## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Aarti Jajoo (Baylor), Nancy Hansen (NIH), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
-## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes_CSHL/blob/master/LICENSE
-
 use strict;
-use Bio::DB::HTS;
+use Bio::DB::Sam;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
@@ -20,7 +17,7 @@ GetOptions (
 die "Please specify --BAM" unless($BAM);
 die "--BAM $BAM not existing" unless(-e $BAM);
 
-my $sam = Bio::DB::HTS->new(-bam => $BAM);
+my $sam = Bio::DB::Sam->new(-bam => $BAM);
 
 my %total_contig_IDs;
 my %contigID_atLeastOneAlignment;
@@ -98,5 +95,16 @@ close(RLBYCAT);
 print "\nTotal contig entries:", scalar(keys %total_contig_IDs), "\n";
 print "\t", "Skipped: ", $n_ignored, " / ", sprintf("%.2f", $nbases_skipped/1e6), "Mb\n";
 print "\t", "Produce alignments: ", scalar(keys %contigID_atLeastOneAlignment), " / ", sprintf("%.2f", $nbases_used/1e6), "Mb\n";
+
+
+
+__END__
+
+D <- read.delim("_readLength_bySkippedOrNot", header = F)
+pdf("_readLength_bySkippedOrNot.pdf")
+D <- D[D[[2]] <= 100000,]
+hist(D[D[[1]] == "skipped",c(2)], nclass = 100, main = "Length histogram of contigs <= 100k that align to a non-chr contig")
+hist(D[D[[1]] == "taken",c(2)], nclass = 100, main = "Length histogram of contigs <= 100k that align to a chr* contig")
+dev.off()
 
 
