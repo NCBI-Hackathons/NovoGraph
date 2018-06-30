@@ -43,9 +43,6 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 ### Preparation:
 ```
-## Requires SAMtools version >= 1.4
-## Requires BWA version >= 0.7.15
-
 ## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 
@@ -78,10 +75,6 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
 ##### Step 1: Find global alignments between individual input contigs and GRCh38
 
 ```
-## Requires SAMtools version >= 1.4
-## Requires BWA version >= 0.7.15
-## Requires MAFFT version >= 7
-
 ## Execute BAM2ALIGNMENT.pl
 ## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
 ## (Here we place outputs into the subdirectory '/intermediate_files'.)
