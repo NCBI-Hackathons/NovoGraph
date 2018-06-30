@@ -2,8 +2,6 @@
 
 An algorithmically novel approach to construct a genome graph representation of multiple *de novo* sequence assemblies. We then provide a proof of principle by constructing a genome graph of seven ethnically-diverse human genomes. 
 
-This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
-
 ## Motivation 
 
 Employing a linear, one-dimensional character string as the reference genome is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both constrains and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple *de novo* assemblies. 
@@ -211,3 +209,5 @@ Nancy Hansen (NIH)
 Jeff Oliver (Arizona)
 
 Andrew Olsen (CSHL)
+
+This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
