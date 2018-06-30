@@ -130,7 +130,7 @@ perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/
                              --output combined.sam
 
 
-# Create CRAM and then index
+# Convert SAM to CRAM, and then index
 samtools view -h -t GRCh38.headerfile.txt combined.sam > combined_with_header.sam
 samtools sort combined_with_header.sam -o combined_with_header_sorted.sam
 cat combined_with_header_sorted.sam | samtools view -C -T GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa - > combined.cram
