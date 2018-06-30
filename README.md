@@ -137,17 +137,6 @@ perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/
                              --output combined.sam
 
 
-## As input for the next script, convert the SAM to a sorted BAM
-## Index as well
-samtools view -u combined.sam | samtools sort - > combined_sorted.bam 
-samtools index combined_sorted.bam 
-
-
-## Check that these steps are successful
-perl validate_BAM_MSA.pl --BAM combined_sorted.bam 
-                         --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-
-
 # Create CRAM and then index
 samtools view -h -t GRCh38.headerfile.txt combined.sam > combined_with_header.sam
 samtools sort combined_with_header.sam -o combined_with_header_sorted.sam
