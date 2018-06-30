@@ -350,9 +350,6 @@ print "\nOK\n\n";
 close(CMDS);
 close(GAPSTRUCTURE);
 
-
-print"\nNow launch launch_CRAM2VCF_C++.pl with the right parameters.\n\n";
-
 sub readFASTA
 {
 	my $file = shift;	
