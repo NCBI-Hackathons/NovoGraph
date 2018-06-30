@@ -60,8 +60,7 @@ samtools view -c -f 0x4 SevenGenomes.bam
 
 ## If there is no output with the above command, continue. 
 ## Otherwise, if you do find unmapped reads in the input BAM,
-## please remove these as follows,
-## and then use 'SevenGenomes.filtered.bam' for the remainder of the pipeline
+## please remove these as follows and use 'SevenGenomes.filtered.bam' for the remainder of the pipeline
 samtools view -F 0x4 -bo SevenGenomes.filtered.bam SevenGenomes.bam
 
 ## Finally, check that these inputs are in the correct format for the MAFFT
@@ -82,11 +81,8 @@ perl BAM2ALIGNMENT.pl --BAM SevenGenomes.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                       --readsFasta AllContigs.fa --outputFile .../intermediate_files/AlignmentInput.txt
 
-## Outputs:
-## '../intermediate_files/AlignmentInput.txt'
-## '../intermediate_files/AlignmentInput.txt.header'
-## '../intermediate_files/AlignmentInput.txt.sorted'
-## '../intermediate_files/AlignmentInput.txt.sortedWithHeader'
+## Output:
+## AlignmentInput.txt.sortedWithHeader
 
 
 ## Next, we perform local to global alignment with the calculation of a global alignment matrix. 
@@ -102,7 +98,7 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 
 
 ## Provides diagnostics to validate that the resulting BAM is correct
-perl countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
+perl countExpectedGlobalAlignments.pl --BAM forMAFFT.bam
 ```
 
 ##### Step 2: MSA computation
