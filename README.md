@@ -53,22 +53,22 @@ bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
 
 ## Sort the resulting BAM
-samtools sort -o SevenGenomesPlusGRCh38Alts.bam allContigs_unsorted.bam
+samtools sort -o SevenGenomes.bam allContigs_unsorted.bam
 
 ## Index the resulting BAM
-samtools index SevenGenomesPlusGRCh38Alts.bam
+samtools index SevenGenomes.bam
 
 ## Check that there are no unmapped reads in the input BAM, as this might lead to unknown behaviour
-samtools view -c -f 0x4 SevenGenomesPlusGRCh38Alts.bam
+samtools view -c -f 0x4 SevenGenomes.bam
 
 ## If there is no output with the above command, continue. 
 ## Otherwise, if you do find unmapped reads in the input BAM,
 ## please remove these as follows,
-## and then use 'SevenGenomesPlusGRCh38Alts.filtered.bam' for the remainder of the pipeline
-samtools view -F 0x4 -bo SevenGenomesPlusGRCh38Alts.filtered.bam SevenGenomesPlusGRCh38Alts.bam
+## and then use 'SevenGenomes.filtered.bam' for the remainder of the pipeline
+samtools view -F 0x4 -bo SevenGenomes.filtered.bam SevenGenomes.bam
 
 ## Finally, check that these inputs are in the correct format for the MAFFT
-perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
+perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                                 --readsFasta AllContigs.fa
 ```
@@ -85,7 +85,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomesPlusGRCh38Alts.bam
 ## Execute BAM2ALIGNMENT.pl
 ## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
 ## (Here we place outputs into the subdirectory '/intermediate_files'.)
-perl BAM2ALIGNMENT.pl --BAM SevenGenomesPlusGRCh38Alts.bam 
+perl BAM2ALIGNMENT.pl --BAM SevenGenomes.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                       --readsFasta AllContigs.fa --outputFile .../intermediate_files/AlignmentInput.txt
 
