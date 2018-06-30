@@ -132,6 +132,16 @@ if(system($combine_cmd))
 
 print "\n\nProduced output file $combined_outputFile\n";
 
+## remove extraneous files, e.g.
+## '../intermediate_files/AlignmentInput.txt'
+## '../intermediate_files/AlignmentInput.txt.header'
+## '../intermediate_files/AlignmentInput.txt.sorted'
+## only 'combined_outputFile' should remain
+
+unlink($headerFn);
+unlink($outputFile);
+unlink($sorted_outputFile);
+
 sub convertAlignmentToHash
 {
 	my $inputAlignment = shift;
