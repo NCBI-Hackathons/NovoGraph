@@ -276,10 +276,10 @@ foreach my $k (keys %combinedKeys)
 
 if($n_printed_errors)
 {
-	die "A total of $number_total_errors issues were detected";
+	die "A total of $number_total_errors issues were detected. Please see output above.";
 }
 
-print "Done.\n";
+print "Done. No errors found!\n";
 
 
 sub read_windowbams_info {
