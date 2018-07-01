@@ -44,6 +44,9 @@ die unless($preMAFFTBAM);
 die unless($finalOutputCRAM);
 die unless($samtools_path);
 
+## Keep track of all errors
+my $number_total_errors = 0;
+
 my $readWindowsInfo = read_windowbams_info($MAFFTdir);
 
 my %expectedLengts;
@@ -110,6 +113,10 @@ foreach my $chr (keys %$readWindowsInfo)
 				$mfaLength = length($seq);
 			}
 			warn Dumper("Problem with sequence lengths", $mfaFile, $mfaLength, length($seq), $seqID) unless(length($seq) == $mfaLength);
+			unless(length($seq) == $mfaLength)
+			{
+				$number_total_errors++; ## keep record of total number of errors
+			}
 			
 			my $seq_noGaps = $seq;
 			$seq_noGaps =~ s/[_\-]//g;
@@ -168,6 +175,7 @@ foreach my $chr (keys %$readWindowsInfo)
 			{
 				$redo_BAM = 1;
 				$printInfo->();
+				$number_total_errors++;  ## keep record of total number of errors
 			}
 		}	
 
@@ -250,6 +258,7 @@ foreach my $k (keys %combinedKeys)
 	print join("\t", $k, $l_expected, $l_BAM_preMAFFT, $l_MFA_postMafft, $l_singleBAM_postMafft, $l_finalOutput), "\n";
 	if($l_expected ne $l_finalOutput)
 	{
+	        $number_total_errors++;  ## keep record of total number of errors
 		my $contigFromBAM = $preMAFFT_BAM_sequence{$k};
 		print "Discrepancy: $k \n";
 		print "\tExpected       : $l_expected \n";
@@ -265,7 +274,13 @@ foreach my $k (keys %combinedKeys)
 	}
 }
 
+if($n_printed_errors)
+{
+	die "A total of $number_total_errors issues were detected";
+}
+
 print "Done.\n";
+
 
 sub read_windowbams_info {
     my $dir = shift;
