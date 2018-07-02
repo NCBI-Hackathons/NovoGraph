@@ -15,7 +15,7 @@ use Bio::DB::HTS;
 ## launch_CRAM2VCF_C++.pl --output <path to VCF created by CRAM2VCF.pl>
 ##
 ## Example command:
-## 	./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
+## ./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
 
 $| = 1;
 
