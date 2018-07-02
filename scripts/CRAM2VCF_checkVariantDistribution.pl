@@ -15,7 +15,7 @@ use Bio::DB::HTS;
 ## CRAM2VCF_checkVariantDistribution.pl --output <path to VCF created by CRAM2VCF.pl>
 ##
 ## Example command:
-## 	./CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
+## ./CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
 
 $| = 1;
 
