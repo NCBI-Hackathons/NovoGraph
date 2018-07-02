@@ -16,7 +16,10 @@ $| = 1;
 ##                  --outputFile <path to text file>
 ##
 ## Example command:
-## ./BAM2ALIGNMENT.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /home/data/contigs/AllContigs.fa --outputFile /intermediate_files/AlignmentInput.txt
+## ./BAM2ALIGNMENT.pl --BAM /home/data/alignments/SevenGenomesPlusGRCh38Alts.bam 
+##                    --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+##                    --readsFasta /home/data/contigs/AllContigs.fa 
+##                    --outputFile /intermediate_files/AlignmentInput.txt
 
 
 my $referenceFasta;
