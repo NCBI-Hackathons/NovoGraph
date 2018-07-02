@@ -13,7 +13,7 @@ use Bio::DB::Sam;
 $| = 1;
 
 ## Usage:
-## perl checkMAFFT_input_and_output.pl --MAFFTdir <path to MAFFT directory used in BAM2MAFFT.pl and CALLMAFFT.pl>
+## checkMAFFT_input_and_output.pl --MAFFTdir <path to MAFFT directory used in BAM2MAFFT.pl and CALLMAFFT.pl>
 ##                                     --contigLengths <path to file with contig names/lengths>
 ##                                     --preMAFFTBAM <path to output BAM from outputFile, FIND_GLOBAL_ALIGNMENTS.pl>
 ##                                     --finalOutputCRAM <path to CRAM>
