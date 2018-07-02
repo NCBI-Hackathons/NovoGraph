@@ -11,7 +11,7 @@ use Set::IntervalTree;
 use File::Path;
 
 ## Usage: 
-## perl countExpectedGlobalAlignments.pl --BAM <path to BAM output of FIND_GLOBAL_ALIGNMENTS.pl>
+## countExpectedGlobalAlignments.pl --BAM <path to BAM output of FIND_GLOBAL_ALIGNMENTS.pl>
 ##
 ## Example command:
 ## 	./countExpectedGlobalAlignments.pl --BAM .../intermediate_files/forMAFFT.bam
