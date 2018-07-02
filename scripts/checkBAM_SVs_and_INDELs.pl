@@ -9,9 +9,13 @@ use Bio::DB::Sam;
 use Getopt::Long;   
 $| = 1;
 
-# Example command:
-# To check correctness of INPUT for MAFFT:
-# 	./checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
+## Usage:
+## checkBAM_SVs_and_INDELs.pl --BAM <path to sorted, contigs BAM>
+##                            --referenceFasta <path to reference FASTA>
+##                            --readsFasta <path to FASTA of all contigs>
+##
+## Example command: 
+## 	./checkBAM_SVs_and_INDELs.pl --BAM /data/projects/phillippy/projects/hackathon/shared/alignments/SevenGenomesPlusGRCh38Alts.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa
 
 my $referenceFasta;
 my $BAM;
