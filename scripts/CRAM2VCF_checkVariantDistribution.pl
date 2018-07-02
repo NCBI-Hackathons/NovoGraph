@@ -11,6 +11,12 @@ use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
 
+## Usage:
+## CRAM2VCF_checkVariantDistribution.pl --output <path to VCF created by CRAM2VCF.pl>
+##
+## Example command:
+## 	./CRAM2VCF_checkVariantDistribution.pl --output VCF/graph_v2.vcf
+
 $| = 1;
 
 my $output;
