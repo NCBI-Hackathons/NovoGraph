@@ -12,7 +12,7 @@ use File::Path;
 
 $| = 1;
 
-## perl BAM2MAFFT.pl --BAM <path to BAM, output of FIND_GLOBAL_ALIGNMENTS.pl>
+## BAM2MAFFT.pl --BAM <path to BAM, output of FIND_GLOBAL_ALIGNMENTS.pl>
 ##                  --referenceFasta <path to reference FASTA>
 ##                  --readsFasta <path to contigs FASTA>
 ##                  --outputDirectory <path to output directory for MAFFT, e.g. '/forMAFFT'>
