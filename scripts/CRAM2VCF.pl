@@ -21,9 +21,9 @@ $| = 1;
 ##
 ## Example command:
 ## ./CRAM2VCF.pl --CRAM /intermediate_files/combined.cram
-##     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-##     --output VCF/graph.vcf
-##     --contigLengths /intermediate_files/postGlobalAlignment_readLengths
+##               --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
+##               --output VCF/graph.vcf
+##               --contigLengths /intermediate_files/postGlobalAlignment_readLengths
 
 
 my $CRAM;
