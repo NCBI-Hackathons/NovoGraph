@@ -20,7 +20,11 @@ $| = 1;
 ##                           --outputReadLengths <name of text outfile, e.g. 'postGlobalAlignment_readLengths'>
 ##
 ## Example command:
-## 	./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
+## ./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader 
+##                             --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+##                             --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam 
+##                             --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads 
+##                             --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
 
 my $alignmentsFile;
 my $referenceFasta;
@@ -296,12 +300,7 @@ my $processReadLines = sub {
 	
 	die unless(scalar(@finalScores));
 	my $i_of_max_finalfinalScore = which_max(\@finalScores);
-	
-	# print "For read ${readID}, found best alignment:\n";
-	# print "\t", "Score", ": ", $finalScores[$i_of_max_finalfinalScore], "\n";
-	# print "\t", "Chromosome", ": ", $finalScores_chromosome[$i_of_max_finalfinalScore], "\n";
-	# print "\t", "Strand", ": ", $finalScores_strand[$i_of_max_finalfinalScore], "\n";
-	
+
 	my $strand = $finalScores_strand[$i_of_max_finalfinalScore];
 	my $chromosome = $finalScores_chromosome[$i_of_max_finalfinalScore];
 	
