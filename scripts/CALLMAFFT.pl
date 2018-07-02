@@ -17,7 +17,11 @@ my $current_dir = getcwd;
 $| = 1;
 
 ## Usage:
-## 
+## CALLMAFFT.pl --action <'kickOff', 'check', 'reprocess', 'processChunk'> 
+##              --mafftDirectory <path to subdirectory forMAFFT>
+##              --qsub <only used with action 'kickOff', default set to 1>
+##              --chunkI <only used with action 'processChunk', JobID>
+##
 ## Example command
 ## ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
 ## ./CALLMAFFT.pl --action check --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
