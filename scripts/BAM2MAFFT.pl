@@ -19,7 +19,7 @@ $| = 1;
 ##                  --inputTruncatedReads <path to output of FIND_GLOBAL_ALIGNMENTS.pl, 'outputTruncatedReads'>
 ##
 ## Example command
-## ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
+## 	./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
  
 
 my $referenceFasta;
