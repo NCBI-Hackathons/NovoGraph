@@ -16,8 +16,12 @@ my $current_dir = getcwd;
 
 $| = 1;
 
+## Usage:
+## 
 ## Example command
 ## ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
+## ./CALLMAFFT.pl --action check --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
+## ./CALLMAFFT.pl --action reprocess --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
 ## ./CALLMAFFT.pl --action processChunk --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --chunkI 0
 
 my $mafft_bin = find_present_alternative('/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensions/install/bin/mafft');
