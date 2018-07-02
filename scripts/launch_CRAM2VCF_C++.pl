@@ -17,8 +17,6 @@ use Bio::DB::HTS;
 ## Example command:
 ## 	./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
 
-
-
 $| = 1;
 
 my $output;
