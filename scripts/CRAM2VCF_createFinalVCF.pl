@@ -17,9 +17,9 @@ use Bio::DB::HTS;
 ##                            --output <path to VCF created by CRAM2VCF.pl>
 ##
 ## Example command:
-##     ./CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram
-##                                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-##                                  --output VCF/graph.vcf
+## ./CRAM2VCF_createFinalVCF.pl --CRAM /intermediate_files/combined.cram
+##                              --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+##                              --output VCF/graph.vcf
 
 
 $| = 1;
