@@ -13,6 +13,12 @@ use Bio::DB::HTS;
 
 $| = 1;
 
+## Usage:
+## CRAM2VCF.pl --CRAM <path to CRAM> 
+##             --referenceFasta <path to reference FASTA> 
+##             --output <path to output VCF> 
+##             --contigLengths <path to text file output from FIND_GLOBAL_ALIGNMENTS.pl, 'outputReadLengths'>
+##
 ## Example command:
 ## ./CRAM2VCF.pl --CRAM /intermediate_files/combined.cram
 ##     --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
@@ -23,15 +29,9 @@ $| = 1;
 my $CRAM;
 my $referenceFasta;
 my $output;
-##my $bin_CRAM2VCF = '../src/CRAM2VCF';
 my $bin_CRAM2VCF;
 my $contigLengths;
-##unless(-e $bin_CRAM2VCF)
-##{
-##	die "CRAM2VCF binary $bin_CRAM2VCF not present - run 'make all' in the directory.";
-##}
- 
- 
+
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
