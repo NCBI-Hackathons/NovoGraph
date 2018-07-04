@@ -130,15 +130,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.69999999"
-     inkscape:cx="310.94374"
-     inkscape:cy="613.28749"
+     inkscape:zoom="2.8"
+     inkscape:cx="211.14093"
+     inkscape:cy="293.18278"
      inkscape:document-units="px"
-     inkscape:current-layer="g6122"
+     inkscape:current-layer="g7381-3"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1056"
-     inkscape:window-x="1920"
+     inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:object-nodes="true"
@@ -1419,7 +1419,7 @@
              x="544.38275"
              y="2557.3416"
              id="tspan8373-3-4-3"
-             style="font-size:7.16471958px">Step 3: Assemble genome graph</tspan></text>
+             style="font-size:7.16471958px">Step 3: Construct genome graph</tspan></text>
         <g
            id="g20607"
            transform="translate(20.239399,0)">
