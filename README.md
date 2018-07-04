@@ -2,13 +2,13 @@
 
 An algorithmically novel approach to construct a genome graph representation of long-read-based *de novo* sequence assemblies. We then provide a proof of principle by creating a genome graph of seven ethnically-diverse human genomes. 
 
-## Motivation 
+### Motivation 
 
 Employing a linear, one-dimensional character string as the reference genome is severely restrictive for genomic research, as such a reference cannot encompass the full breadth of existing genetic variation. Within human genetics, relying upon a linear monoploid reference genome consequently both constrains and biases our understanding into the full diversity of subpopulation variation. Motivated by the potential of genome graphs to address these shortcomings, we present a pipeline for constructing a graph genome from multiple *de novo* assemblies. 
 
 The incentive for using *de novo* assembled genomes is to overcome the limitations posed by simply depending upon call sets derived from short-read sequencing. Constructing genome graphs using such call sets will result in graphs which contain SNPs but respectively few structural variants, especially at larger scales. In order to correct this bias, our algorithm has been designed to employ *de novo* contigs directly---these contigs not only incorporate SNPs but instrinsically contain more structural variants and their breakpoints at base resolution. Using our approach, the resulting graph genome should be respectively enriched in large-scale structural variation.
 
-## Genome Graph of Seven Human Assemblies
+### Genome Graph of Seven Human Assemblies
 
 We then focused directly on building a graph genome composed of seven human assemblies. The following assemblies were included within the genome graph:
 
@@ -24,13 +24,13 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 
 
-## Genome Graph Construction Pipeline
+### Genome Graph Construction Pipeline
 
-### Inputs:
+#### Inputs:
 * reference file, GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa (GRCh38 without ALTs)
 * contigs file, AllContigs.fa
 
-### Requirements:
+#### Requirements:
 * SAMtools version >= 1.4
 * BWA version >= 0.7.15
 * MAFFT version >= 7
@@ -39,7 +39,7 @@ Given that this genome graph has been designed to incorporate larger structural 
     * Set::IntervalTree, https://metacpan.org/release/Set-IntervalTree
     
 
-### Preparation:
+#### Preparation:
 ```
 ## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
@@ -67,7 +67,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
                                 --readsFasta AllContigs.fa
 ```
 
-### Algorithm:
+#### Algorithm:
 
 ##### Step 1: Find global alignments between individual input contigs and GRCh38
 
@@ -168,7 +168,7 @@ perl CRAM2VCF_createFinalVCF.pl --CRAM combined.cram
                                 --output graph.vcf
 ```
 
-## Instructions to Download and Process Input Assemblies
+### Instructions to Download and Process Input Assemblies
 
 The following commands were used to download the assembly FASTAs used for this project:
 
@@ -197,7 +197,7 @@ for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB0
 Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `AllContigs.fa`.
 
 
-## Contributors
+### Contributors
 
 Evan Biederstedt (NYGC, WCM)
 
