@@ -2,6 +2,12 @@
 ## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Nancy Hansen (NIH), Aarti Jajoo (Baylor), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
 
+## To build:
+##    'make all'
+## To clean:
+##    'make clean'
+
+
 INCS = 
 LIBS = 
 
