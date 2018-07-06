@@ -23,10 +23,10 @@ MKDIR_P = mkdir -p
 default:
 	@echo "Directions: "
 	@echo
-	@echo " to build:"
+	@echo " To build:"
 	@echo "    make all"
 	@echo
-	@echo " to clean:"
+	@echo " To clean:"
 	@echo "    make clean"
 	@echo
 
