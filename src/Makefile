@@ -18,6 +18,19 @@ MKDIR_P = mkdir -p
 # END LIBRARY SETTINGS
 
 #
+# Directions for users
+#
+default:
+	@echo "Directions: "
+	@echo
+	@echo " to build:"
+	@echo "    make all"
+	@echo
+	@echo " to clean:"
+	@echo "    make clean"
+	@echo
+
+#
 # object and binary dirs  
 #
 
@@ -41,18 +54,6 @@ OUT_DIR = .
 
 directories: ${OUT_DIR}
 
-
-#
-# compile and link
-#
-default:
-	@echo
-	@echo " to build:"
-	@echo "    make all"
-	@echo
-	@echo " to clean:"
-	@echo "    make clean"
-	@echo
 
 all: directories $(EXECS)
 
