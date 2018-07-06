@@ -30,7 +30,6 @@ $| = 1;
 
 my $mafft_bin = find_present_alternative('/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensions/install/bin/mafft');
 my $FAS2BAM_bin = find_present_alternative('./fas2bam.pl');
-my $validateMSABAM = find_present_alternative('./validate_BAM_MSA.pl');
 my $GRCh38_header_file = find_present_alternative('../config/windowbam.header.txt');
 
 my $mafftDirectory;
