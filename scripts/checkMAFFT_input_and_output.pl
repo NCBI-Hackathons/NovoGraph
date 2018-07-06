@@ -35,7 +35,7 @@ GetOptions (
 	'contigLengths:s' => \$contigLengths, 
 	'preMAFFTBAM:s' => \$preMAFFTBAM,
 	'finalOutputCRAM:s' => \$finalOutputCRAM, 
-    'samtools_path:s' => \$samtools_path,
+	'samtools_path:s' => \$samtools_path,
 );
 
 die unless($contigLengths);
