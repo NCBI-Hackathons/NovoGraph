@@ -143,7 +143,7 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/
 ##### Step 3: Compute an acyclic directed graph structure from the global MSA
 ```
 ## First, users are required compile the *cpp code within /src to create the executable 'CRAM2VCF'. 
-## In order to successfully compile this code, execute 'make' within /src
+## In order to successfully compile this code, execute 'make all' within /src
 ## Users then must link to this executable when running the script 'CRAM2VCF.pl'
 
 ## Now we convert the CRAM into a VCF 
