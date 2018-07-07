@@ -211,7 +211,7 @@ my %finalOutput_BAM_lengths;
 my %finalOutput_BAM_sequence;
 if($finalOutputCRAM =~ /\.cram$/)
 {
-	open(OUTPUT, "/data/projects/phillippy/software/samtools-1.4/samtools view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
+	open(OUTPUT, $samtools_path, " view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
 	while(<OUTPUT>)
 	{
 		my $l = $_;
