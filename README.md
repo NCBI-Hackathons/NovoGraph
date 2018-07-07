@@ -137,7 +137,9 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/
                                     --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
                                     --preMAFFTBAM forMAFFT.bam 
                                     --finalOutputCRAM combined.cram
-   
+                                    --fas2bam_path fas2bam.pl
+                                    --samtools_path /usr/local/bin/samtools
+                                    --bamheader windowbam.header.txt
 ```
 
 ##### Step 3: Compute an acyclic directed graph structure from the global MSA
