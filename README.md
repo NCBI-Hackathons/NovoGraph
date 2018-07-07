@@ -1,6 +1,6 @@
-## NovoGraph: Whole Genome Graph of Long-read-based *De Novo* Assemblies
+## NovoGraph: Genome Graph of Long-read *De Novo* Assemblies
 
-An algorithmically novel approach to construct a genome graph representation of long-read-based *de novo* sequence assemblies. We then provide a proof of principle by creating a genome graph of seven ethnically-diverse human genomes. 
+An algorithmically novel approach to construct a whole genome graph representation of long-read-based *de novo* sequence assemblies. We then provide a proof of principle by creating a genome graph of seven ethnically-diverse human genomes. 
 
 ### Motivation 
 
