@@ -73,7 +73,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
 
 ```
 ## Execute BAM2ALIGNMENT.pl
-## This first step will output several *txt files which are to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
+## This first step will output a text file '*.sortedWithHeader' which is to be input into the next script, 'FIND_GLOBAL_ALIGNMENTS.pl'. 
 ## (Here we place outputs into the subdirectory '/intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomes.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
@@ -108,8 +108,8 @@ perl BAM2MAFFT.pl --BAM forMAFFT.bam
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
 
-
-## Assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
+## The next step is to execute 'CALLMAFFT.pl'
+## This step assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
 
 ## This script also contains commands to check submitted jobs and re-submit if necessary
