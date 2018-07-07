@@ -14,12 +14,12 @@ $| = 1;
 
 ## Usage:
 ## checkMAFFT_input_and_output.pl --MAFFTdir <path to MAFFT directory used in BAM2MAFFT.pl and CALLMAFFT.pl>
-##                                     --contigLengths <path to file with contig names/lengths>
-##                                     --preMAFFTBAM <path to output BAM from outputFile, FIND_GLOBAL_ALIGNMENTS.pl>
-##                                     --finalOutputCRAM <path to CRAM>
-##                                     --fas2bam_path <path to script 'fas2bam.pl'>
-##                                     --samtools_path <path to SAMtools executable for fas2bam.pl>
-##                                     --bamheader <path to file containing header for BAM file for fas2bam.pl>
+##                                --contigLengths <path to file with contig names/lengths>
+##                                --preMAFFTBAM <path to output BAM from outputFile, FIND_GLOBAL_ALIGNMENTS.pl>
+##                                --finalOutputCRAM <path to CRAM>
+##                                --fas2bam_path <path to script 'fas2bam.pl'>
+##                                --samtools_path <path to SAMtools executable for fas2bam.pl>
+##                                --bamheader <path to file containing header for BAM file for fas2bam.pl>
 ##
 ##
 ## Example command:
