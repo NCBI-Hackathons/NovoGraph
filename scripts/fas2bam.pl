@@ -25,7 +25,7 @@ This script reads in an MSA file with padded entries and a reference entry repre
 
 =head1 USAGE
 
-fas2bam.pl --input <path to fasta file with multiple alignment> --ref <reference entry id> --bamheader <path to file containing header for BAM file> --output <path to write output SAM or BAM file to>
+fas2bam.pl --input <path to fasta file with multiple alignment> --ref <reference entry id> --bamheader <path to file containing header for BAM file> --output <path to write output SAM or BAM file to> --samtools_path <path to samtools executable>
 
 =head1 DESCRIPTION
 
@@ -51,6 +51,7 @@ my $input_file = $Opt{'input'};
 my $ref_entry = $Opt{'ref'};
 my $ref_entry_noFirst = $ref_entry;
 my $output_file = $Opt{'output'};
+my $samtools_path = $Opt{'samtools_path'};
 
 my $rh_entry_seqs = read_fas_file($input_file);
 
@@ -83,7 +84,7 @@ if (!$output_file) { # create a name from the input file
     $output_file = ($Opt{bamheader}) ? "$filebase.bam" : "$filebase.sam";
 }
 
-my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} > $output_file"
+my $sambam_file = ($Opt{bamheader}) ? " | "$samtools_path view -uS -t $Opt{bamheader} > $output_file"
                                     : "> $output_file";
 
 my $sam_fh = FileHandle->new("$sambam_file");
@@ -110,7 +111,7 @@ sub process_commandline {
     
     # Set defaults here
     %Opt = ( );
-    GetOptions(\%Opt, qw( ref=s input=s bamheader=s output=s
+    GetOptions(\%Opt, qw( ref=s input=s bamheader=s output=s samtools_path=s
                 manual help+ version
                 verbose 
                 )) || pod2usage(0);
@@ -120,6 +121,7 @@ sub process_commandline {
 
     if (!$Opt{input}) { die "Must specify input filename with option --input.\n"; }
     if (!$Opt{ref}) { die "Must specify the name of the reference entry in the input file with option --ref.\n"; }
+    if (!$Opt{samtools_path}) { die "Must specify path to samtools executable with option --samtools_path.\n"; }
 
 }
 
@@ -310,6 +312,10 @@ characters to form a multiple alignment.
 
 The id of one of the entries of the multiple alignment which serves as the 
 reference entry (for purposes of describing variants and alignments).
+
+=item B<--samtools_path>
+
+The path to the samtools executable.
 
 =back
 
