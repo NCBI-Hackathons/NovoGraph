@@ -17,32 +17,45 @@ $| = 1;
 ##                                     --contigLengths <path to file with contig names/lengths>
 ##                                     --preMAFFTBAM <path to output BAM from outputFile, FIND_GLOBAL_ALIGNMENTS.pl>
 ##                                     --finalOutputCRAM <path to CRAM>
+##                                     --fas2bam_path <path to script 'fas2bam.pl'>
+##                                     --samtools_path <path to SAMtools executable for fas2bam.pl>
+##                                     --bamheader <path to file containing header for BAM file for fas2bam.pl>
+##
 ##
 ## Example command:
-## ./checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT_2/
-##                                  --contigLengths /intermediate_files/postGlobalAlignment_readLengths_2
-##                                  --preMAFFTBAM /intermediate_files/forMAFFT_2.bam
-##                                  --finalOutputCRAM /intermediate_files/combined_2.cram
+## ./checkMAFFT_input_and_output.pl --MAFFTdir /intermediate_files/forMAFFT/
+##                                  --contigLengths /intermediate_files/postGlobalAlignment_readLengths
+##                                  --preMAFFTBAM /intermediate_files/forMAFFT.bam
+##                                  --finalOutputCRAM /intermediate_files/combined.cram
+##                                  --fas2bam_path /intermediate_files/fas2bam.pl
+##                                  --samtools_path /usr/local/bin/samtools
+##                                  --bamheader windowbam.header.txt
 
 
 my $contigLengths;
 my $MAFFTdir;
 my $preMAFFTBAM;
 my $finalOutputCRAM;
+my $fas2bam_path;
 my $samtools_path;
+my $bamheader;
 GetOptions (
 	'MAFFTdir:s' => \$MAFFTdir, 
 	'contigLengths:s' => \$contigLengths, 
 	'preMAFFTBAM:s' => \$preMAFFTBAM,
 	'finalOutputCRAM:s' => \$finalOutputCRAM, 
+	'fas2bam_path:s' => \$fas2bam_path,
 	'samtools_path:s' => \$samtools_path,
+	'bamheader:s' => \$bamheader,
 );
 
 die unless($contigLengths);
 die unless($MAFFTdir);
 die unless($preMAFFTBAM);
 die unless($finalOutputCRAM);
+die unless($fas2bam_path);
 die unless($samtools_path);
+die unless($bamheader);
 
 ## Keep track of all errors
 my $number_total_errors = 0;
@@ -182,7 +195,7 @@ foreach my $chr (keys %$readWindowsInfo)
 		$redo_BAM = 0;
 		if($redo_BAM)
 		{
-			my $cmd_re_execute = qq(./fas2bam.pl --input $window->{mfa} --ref "ref" --output $window->{bam} --bamheader ../config/windowbam.header.txt;);
+			my $cmd_re_execute = qq(perl $fas2bam_path --input $window->{mfa} --ref "ref" --output $window->{bam} --bamheader $bamheader --samtools_path $samtools_path;);
 			print $cmd_re_execute, "\n";
 			system($cmd_re_execute) and die "Command $cmd_re_execute failed!";		
 		}
