@@ -195,7 +195,7 @@ foreach my $chr (keys %$readWindowsInfo)
 		$redo_BAM = 0;
 		if($redo_BAM)
 		{
-			my $cmd_re_execute = qq(perl $fas2bam_path --input $window->{mfa} --ref "ref" --output $window->{bam} --bamheader $bamheader --samtools_path $samtools_path;);
+			my $cmd_re_execute = qq(perl $fas2bam_path --input $window->{mfa} --ref "ref" --output $window->{bam} --bamheader $bamheader --samtools_path $samtools_path);
 			print $cmd_re_execute, "\n";
 			system($cmd_re_execute) and die "Command $cmd_re_execute failed!";		
 		}
