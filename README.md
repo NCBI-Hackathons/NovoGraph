@@ -108,7 +108,7 @@ perl BAM2MAFFT.pl --BAM forMAFFT.bam
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
 
-## The next step is to execute 'CALLMAFFT.pl'
+## The next step is to execute CALLMAFFT.pl
 ## This step assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
 
@@ -146,7 +146,7 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/
 ```
 ## First, users are required compile the *cpp code within /src to create the executable 'CRAM2VCF'. 
 ## In order to successfully compile this code, execute 'make all' within /src
-## Users then must link to this executable when running the script 'CRAM2VCF.pl'
+## Users then must link to this executable when running the script CRAM2VCF.pl
 
 ## Now we convert the CRAM into a VCF 
 perl CRAM2VCF.pl --CRAM combined.cram 
