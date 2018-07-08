@@ -22,9 +22,9 @@ $| = 1;
 ##              --qsub <only used with action 'kickOff', default set to 1>
 ##              --chunkI <only used with action 'processChunk', JobID>
 ##              --mafft_executable <path to MAFFT executable in /bin, required>
-##              --fas2bam_path <path to script 'fas2bam.pl'>
-##              --samtools_path <path to SAMtools executable for fas2bam.pl>
-##              --bamheader <path to file containing header for BAM file for fas2bam.pl>
+##              --fas2bam_path <path to script 'fas2bam.pl', required>
+##              --samtools_path <path to SAMtools executable for fas2bam.pl, required>
+##              --bamheader <path to file containing header for BAM file for fas2bam.pl, required>
 ##
 ## Example command
 ## ./CALLMAFFT.pl --action kickOff --mafftDirectory ../intermediate_files/forMAFFT --qsub 1 
