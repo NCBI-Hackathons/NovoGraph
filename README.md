@@ -111,11 +111,19 @@ perl BAM2MAFFT.pl --BAM forMAFFT.bam
 ## The next step is to execute CALLMAFFT.pl
 ## This step assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
+                  --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
+                  --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
 
 ## This script also contains commands to check submitted jobs and re-submit if necessary
 perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
+                  --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
+                  --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
+                  --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
+                  --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
 perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/forMAFFT --chunkI 0
+                  --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
+                  --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
 
 
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
