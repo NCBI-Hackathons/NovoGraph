@@ -21,16 +21,22 @@ $| = 1;
 ##              --mafftDirectory <path to subdirectory forMAFFT>
 ##              --qsub <only used with action 'kickOff', default set to 1>
 ##              --chunkI <only used with action 'processChunk', JobID>
+##              --mafft_executable <path to MAFFT executable in /bin, required>
+##              --fas2bam_path <path to script 'fas2bam.pl'>
+##              --samtools_path <path to SAMtools executable for fas2bam.pl>
+##              --bamheader <path to file containing header for BAM file for fas2bam.pl>
 ##
 ## Example command
-## ./CALLMAFFT.pl --action kickOff --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --qsub 1
-## ./CALLMAFFT.pl --action check --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
-## ./CALLMAFFT.pl --action reprocess --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT
-## ./CALLMAFFT.pl --action processChunk --mafftDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT --chunkI 0
+## ./CALLMAFFT.pl --action kickOff --mafftDirectory ../intermediate_files/forMAFFT --qsub 1 
+##                --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft --fas2bam_path /intermediate_files/fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+## ./CALLMAFFT.pl --action check --mafftDirectory ../intermediate_files/forMAFFT
+##                --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft --fas2bam_path /intermediate_files/fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+## ./CALLMAFFT.pl --action reprocess --mafftDirectory ../intermediate_files/forMAFFT
+##                --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft --fas2bam_path /intermediate_files/fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+## ./CALLMAFFT.pl --action processChunk --mafftDirectory ../intermediate_files/forMAFFT --chunkI 0
+##                --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft --fas2bam_path /intermediate_files/fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+##
 
-my $mafft_bin = find_present_alternative('/data/projects/phillippy/projects/rDNA/mafft/mafft-7.273-with-extensions/install/bin/mafft');
-my $FAS2BAM_bin = find_present_alternative('./fas2bam.pl');
-my $GRCh38_header_file = find_present_alternative('../config/windowbam.header.txt');
 
 my $mafftDirectory;
 my $action;
@@ -44,6 +50,10 @@ my $qsub = 1;
 my $path_to_script = $FindBin::Bin.'/'.$FindBin::Script;
 my $temp_qsub = 'temp_qsub';
 my $reprocess;
+my $mafft_executable;
+my $fas2bam_path;
+my $samtools_path;
+my $bamheader;
 
 GetOptions (
 	'action:s' => \$action,
@@ -53,7 +63,16 @@ GetOptions (
 	'chunkI:s' => \$chunkI, 
 	'qsub:s' => \$qsub, 
 	'reprocess:s' => \$reprocess, 
+	'mafft_executable:s' => \$mafft_executable,
+	'fas2bam_path:s' => \$fas2bam_path,
+	'samtools_path:s' => \$samtools_path,
+	'bamheader:s' => \$bamheader,
 );
+
+die unless($mafft_executable);
+die unless($fas2bam_path);
+die unless($samtools_path);
+die unless($bamheader);
 
 unless($action)
 {
@@ -308,9 +327,7 @@ sub makeBAM
 	
 	validate_as_alignment($inputFile);
 	
-	my $cmd_makeBAM = qq($FAS2BAM_bin --input $inputFile --output $outputFile --ref "ref" --bamheader $GRCh38_header_file);
-	
-	# print $cmd_makeBAM, "\n";
+	my $cmd_makeBAM = qq(perl $fas2bam_path --input $inputFile --output $outputFile --ref "ref" --bamheader $bamheader --samtools_path $samtools_path);
 	
 	my $attempt = 0;
 	my $ret;
@@ -327,10 +344,6 @@ sub makeBAM
 		else
 		{
 			validate_as_alignment($inputFile);
-			#if($attempt > 5)
-			#{
-			#	die "Five attempts at $cmd_makeBAM failed!";
-			#}
 		}
 	}
 	
@@ -423,8 +436,7 @@ sub makeMSA
 	if(scalar(keys %$input_href) >= 2)
 	{
 		writeFASTA($temp_file_in, $input_href);
-		#my $cmd_mafft = qq($mafft_bin --auto --quiet $temp_file_in > $temp_file_out);
-		my $cmd_mafft = qq($mafft_bin --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
+		my $cmd_mafft = qq($mafft_executable --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
 		print "Executing $cmd_mafft \n";
 		
 		my $ret = system($cmd_mafft);
