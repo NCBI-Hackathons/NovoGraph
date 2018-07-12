@@ -1,12 +1,19 @@
 #!/usr/bin/perl
 
-# ./dealWithTooManyCIGAROperations.pl --input ../../intermediate_files/forMAFFT.bam.sam --output ../../intermediate_files/forMAFFT.bam.sam.filtered
+## Author: Alexander Dilthey (HHU/UKD, NHGRI-NIH), Evan Biederstedt (NYGC), Nathan Dunn (LBNL), Nancy Hansen (NIH), Aarti Jajoo (Baylor), Jeff Oliver (Arizona), Andrew Olsen (CSHL)
+## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
 
 use strict;
 use warnings;
 use Getopt::Long;   
 
-# example command: 
+## Usage:
+## dealWithTooManyCIGAROperations.pl --input  <SAM produced in FIND_GLOBAL_ALIGNMENTS.pl>
+##                                   --output <output SAM filtered>
+##
+## Example command
+# ./dealWithTooManyCIGAROperations.pl --input forMAFFT.bam.sam --output forMAFFT.bam.sam.filtered
+
 my $input;
 my $output;
 
