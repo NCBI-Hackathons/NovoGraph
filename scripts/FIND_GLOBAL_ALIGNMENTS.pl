@@ -44,6 +44,7 @@ GetOptions (
 	'outputFile:s' => \$outputFile,	
 	'outputTruncatedReads:s' => \$outputTruncatedReads,
 	'outputReadLengths:s' => \$outputReadLengths,
+	'CIGARscript_path:s' => \$CIGARscript_path
 );
 
 die "Please specify --alignmentsFile" unless($alignmentsFile);
@@ -56,6 +57,8 @@ die "Please specify --outputFile" unless($outputFile);
 
 die "Please specify --outputTruncatedReads" unless($outputTruncatedReads);
 die "Please specify --outputReadLengths" unless($outputReadLengths);
+
+die "Please specify path to script dealWithTooManyCIGAROperations.pl --CIGARscript_path" unless($CIGARscript_path);
 
 print "Read $referenceFasta\n";
 my $reference_href = readFASTA($referenceFasta, 0);
@@ -640,7 +643,7 @@ print "\tAlignments with right end trimmed: ", $n_alignments_rightGapsRemoved, "
 print "\n\nDone. Produced SAM file $outputFile_sam\n\n";
 
 my $outputFile_sam_filtered = $outputFile_sam . ".filtered";
-my $cmd_filter = qq(perl dealWithTooManyCIGAROperations.pl --input ${outputFile_sam} --output ${outputFile_sam_filtered});
+my $cmd_filter = qq(perl $CIGARscript_path --input ${outputFile_sam} --output ${outputFile_sam_filtered});
 print "Filtering SAM with command: $cmd_filter\n";
 die "Filtering failed" unless(system($cmd_filter) == 0);
 
