@@ -33,6 +33,7 @@ my $lenientOrder = 1;
 my $outputTruncatedReads;
 my $outputReadLengths;
 my $endsFree_reference = 1;
+my $CIGARscript_path; 
 
 my $S_match = 1;
 my $S_mismatch = -1;
