@@ -22,8 +22,6 @@ We then focused directly on building a graph genome composed of seven human asse
 
 Given that this genome graph has been designed to incorporate larger structural variation, we encourage this result to be used for future investigation and testing within the community.
 
-
-
 ### Genome Graph Construction Pipeline
 
 #### Inputs:
@@ -37,6 +35,13 @@ Given that this genome graph has been designed to incorporate larger structural 
 * Perl dependencies: 
     * Bio::DB::HTS, https://github.com/Ensembl/Bio-DB-HTS
     * Set::IntervalTree, https://metacpan.org/release/Set-IntervalTree
+    
+<p align="center">
+  <big><strong>NovoGraph Overview</strong></big>
+<p align="center">
+  <img src="pipeline_overview.svg">
+</p>
+
     
 
 #### Preparation:
