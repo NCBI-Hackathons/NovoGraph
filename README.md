@@ -95,6 +95,7 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
                                --outputFile forMAFFT.bam 
                                --outputTruncatedReads ../intermediate_files/truncatedReads 
                                --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
+                               --CIGARscript_path dealWithTooManyCIGAROperations.pl
 
 ## Output:
 ## forMAFFT.bam
