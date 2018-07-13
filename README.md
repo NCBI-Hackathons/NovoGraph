@@ -36,13 +36,6 @@ Given that this genome graph has been designed to incorporate larger structural 
     * Bio::DB::HTS, https://github.com/Ensembl/Bio-DB-HTS
     * Set::IntervalTree, https://metacpan.org/release/Set-IntervalTree
     
-<p align="center">
-  <big><strong>NovoGraph Overview</strong></big>
-<p align="center">
-  <img src="pipeline_overview.svg">
-</p>
-
-    
 
 #### Preparation:
 ```
@@ -71,6 +64,14 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                                 --readsFasta AllContigs.fa
 ```
+
+    
+<p align="center">
+  <big><strong>NovoGraph Overview</strong></big>
+<p align="center">
+  <img src="pipeline_overview.svg">
+</p>
+
 
 #### Algorithm:
 
