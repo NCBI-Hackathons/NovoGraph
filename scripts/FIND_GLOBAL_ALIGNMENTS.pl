@@ -18,13 +18,16 @@ $| = 1;
 ##                           --outputFile <name of output BAM>
 ##                           --outputTruncatedReads <name of text outfile, e.g. 'truncatedReads'> 
 ##                           --outputReadLengths <name of text outfile, e.g. 'postGlobalAlignment_readLengths'>
+##                           --CIGARscript_path <path to script dealWithTooManyCIGAROperations.pl>
 ##
 ## Example command:
-## ./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /data/projects/phillippy/projects/hackathon/intermediate_files/AartiInput.sortedWithHeader 
-##                             --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-##                             --outputFile /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam 
-##                             --outputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads 
-##                             --outputReadLengths /data/projects/phillippy/projects/hackathon/intermediate_files/postGlobalAlignment_readLengths
+## ./FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile /intermediate_files/AartiInput.sortedWithHeader 
+##                             --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
+##                             --outputFile /intermediate_files/forMAFFT.bam 
+##                             --outputTruncatedReads intermediate_files/truncatedReads 
+##                             --outputReadLengths /intermediate_files/postGlobalAlignment_readLengths
+##                             --CIGARscript_path dealWithTooManyCIGAROperations.pl
+##
 
 my $alignmentsFile;
 my $referenceFasta;
