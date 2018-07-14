@@ -5,7 +5,7 @@
 
 use strict;
 use Data::Dumper;
-use Bio::DB::Sam;
+use Bio::DB::HTS;
 use Getopt::Long;   
 $| = 1;
 
@@ -56,7 +56,7 @@ print "Read $readsFasta\n";
 $reads_href = readFASTA($readsFasta, 0);
 print "\tdone.\n";
 
-my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
+my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
 my $iterator = $sam->features(-iterator=>1);
 
 my $warnedAboutOrder;
