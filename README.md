@@ -65,15 +65,14 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
                                 --readsFasta AllContigs.fa
 ```
 
+#### Algorithm:
     
-<p align="center">
+<p align="left">
   <big><strong>NovoGraph Overview</strong></big>
-<p align="center">
+<p align="left">
   <img src="pipeline_overview.svg">
 </p>
 
-
-#### Algorithm:
 
 ##### Step 1: Find global alignments between individual input contigs and GRCh38
 
