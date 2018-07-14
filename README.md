@@ -82,7 +82,8 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
 ## (Here we place outputs into the subdirectory '/intermediate_files'.)
 perl BAM2ALIGNMENT.pl --BAM SevenGenomes.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                      --readsFasta AllContigs.fa --outputFile .../intermediate_files/AlignmentInput.txt
+                      --readsFasta AllContigs.fa 
+                      --outputFile .../intermediate_files/AlignmentInput.txt
 
 ## Output:
 ## AlignmentInput.txt.sortedWithHeader
