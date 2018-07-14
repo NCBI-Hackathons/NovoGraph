@@ -5,7 +5,7 @@
 
 use strict;
 use Data::Dumper;
-use Bio::DB::Sam;
+use Bio::DB::HTS;
 use Getopt::Long;   
 $| = 1;
 
@@ -61,7 +61,7 @@ close(HEADER);
 
 open(OUT, '>', $outputFile) or die "Cannot open $outputFile";
 
-my $sam = Bio::DB::Sam->new(-fasta => $referenceFasta, -bam => $BAM);
+my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM);
 my $iterator = $sam->features(-iterator=>1);
 
 my $warnedAboutOrder;
