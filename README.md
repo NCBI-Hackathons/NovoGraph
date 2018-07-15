@@ -102,7 +102,7 @@ perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentI
 perl countExpectedGlobalAlignments.pl --BAM forMAFFT.bam
 ```
 
-##### Step 2: MSA computation
+##### Step 2: Multiple Sequence Alignment (MSA) computation
 ```
 ## Execute BAM2MAFFT.pl
 perl BAM2MAFFT.pl --BAM forMAFFT.bam 
