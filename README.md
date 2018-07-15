@@ -65,11 +65,7 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
                                 --readsFasta AllContigs.fa
 ```
 
-#### Algorithm:
-    
-<p align="left">
-  <big><strong>NovoGraph Overview</strong></big>
-<p align="left">
+<p align="center">
   <img src="pipeline_overview.svg">
 </p>
 
