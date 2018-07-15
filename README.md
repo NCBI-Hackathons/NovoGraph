@@ -1,6 +1,6 @@
 ## NovoGraph: Genome Graph of Long-read *De Novo* Assemblies
 
-An algorithmically novel approach to construct a whole genome graph representation of long-read-based *de novo* sequence assemblies. 
+An algorithmically novel approach to construct a whole genome graph representation of long-read-based *de novo* sequence assemblies. We then provide a proof of principle by creating a genome graph of seven ethnically-diverse human genomes.
 
 ### Motivation 
 
@@ -10,7 +10,7 @@ The incentive for using *de novo* assembled genomes is to overcome the limitatio
 
 ### Genome Graph of Seven Human Assemblies
 
-We then provide a proof of principle by building a graph genome composed of seven ethnically-diverse human assemblies. The following assemblies were included within the genome graph:
+We then focused on building a graph genome composed of seven human assemblies. The following assemblies were included within the genome graph:
 
 * AK1, Korean
 * CHM1, European
@@ -181,7 +181,7 @@ perl CRAM2VCF_createFinalVCF.pl --CRAM combined.cram
                                 --output graph.vcf
 ```
 
-### Instructions to Download and Process Input Assemblies
+### Instructions to Download and Process Input Human Assemblies
 
 The following commands were used to download the assembly FASTAs used for this project:
 
