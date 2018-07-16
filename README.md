@@ -218,6 +218,6 @@ Upon the successful download of these FASTAs, users should concatenate the indiv
 * Aarti Jajoo (Baylor)
 * Nancy Hansen (NIH)
 * Jeff Oliver (Arizona)
-* Andrew Olsen (CSHL)
+* Andrew Olson (CSHL)
 
 This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
