@@ -162,23 +162,20 @@ perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/
 ## Now we convert the CRAM into a VCF 
 perl CRAM2VCF.pl --CRAM combined.cram 
                  --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                 --output graph.vcf 
+                 --prefix graph 
                  --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
                  --CRAM2VCF_executable ../src/CRAM2VCF
 
 
-## Calculates the number of matches, mismatches, and the distribution of InDel sizes, 'graph.vcf.CRAM2VCF_INDELLengths'
-perl CRAM2VCF_checkVariantDistribution.pl --output graph.vcf
-
 
 ## Next, execute launch_CRAM2VCF_C++.pl
-perl launch_CRAM2VCF_C++.pl --output graph.vcf
+perl launch_CRAM2VCF_C++.pl --prefix graph
 
 
 ## Finally, run CRAM2VCF_createFinalVCF.pl 
 perl CRAM2VCF_createFinalVCF.pl --CRAM combined.cram 
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                                --output graph.vcf
+                                --prefix graph
 ```
 
 ### Instructions to Download and Process Input Human Assemblies

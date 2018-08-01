@@ -16,13 +16,13 @@ $| = 1;
 ## Usage:
 ## CRAM2VCF.pl --CRAM <path to CRAM> 
 ##             --referenceFasta <path to reference FASTA> 
-##             --output <path to output VCF> 
+##             --prefix <path to output VCF with .VCF at the end> 
 ##             --contigLengths <path to text file output from FIND_GLOBAL_ALIGNMENTS.pl, 'outputReadLengths'>
 ##
 ## Example command:
 ## ./CRAM2VCF.pl --CRAM /intermediate_files/combined.cram
 ##               --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-##               --output VCF/graph.vcf
+##               --prefix VCF/graph
 ##               --contigLengths /intermediate_files/postGlobalAlignment_readLengths
 
 
@@ -35,14 +35,14 @@ my $contigLengths;
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
-	'output:s' => \$output,
+	'prefix:s' => \$output,
 	'contigLengths:s' => \$contigLengths, 
 	'CRAM2VCF_executable:s' => \$bin_CRAM2VCF
 );
 	
 die "Please specify --CRAM" unless($CRAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
-die "Please specify --output" unless($output);
+die "Please specify --prefix" unless($output);
 
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
@@ -73,12 +73,12 @@ $reference_href = readFASTA($referenceFasta);
 print "\t...done.\n";
 
 my %targetPos_printAlignments;
-open(OUT, ">", $output) or die "Cannot open $output";
-print OUT qq(##fileformat=VCFv4.2
-##fileDate=20161026
-##source=CRAM2VCF.pl
-##reference=file://$referenceFasta), "\n";
-print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
+# open(OUT, ">", $output) or die "Cannot open $output";
+# print OUT qq(##fileformat=VCFv4.2
+#fileDate=20161026
+#source=CRAM2VCF.pl
+#reference=file://$referenceFasta), "\n";
+# print OUT "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 
 my @referenceSequenceIDs = @sequence_ids;
 my %alignments_per_referenceSequenceID;
@@ -110,7 +110,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	my $fn_for_CRAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
 	
 	open(D, '>', $fn_for_CRAM2VCF) or die "Cannot open $fn_for_CRAM2VCF";
-	open(D2, '>', $fn_for_CRAM2VCF_SNPs) or die "Cannot open $fn_for_CRAM2VCF_SNPs";
+	# open(D2, '>', $fn_for_CRAM2VCF_SNPs) or die "Cannot open $fn_for_CRAM2VCF_SNPs";
 	
 	print D $reference_href->{$referenceSequenceID}, "\n";
 	my $n_alignments = 0;
@@ -329,7 +329,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 	}
 }
 
-close(OUT);
+# close(OUT);
 
 print CMDSCAT ' >> ' . $output;
 

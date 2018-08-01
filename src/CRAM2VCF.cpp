@@ -30,6 +30,7 @@ std::string removeGaps(std::string in);
 
 class startingHaplotype;
 void produceVCF(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn);
+void produceVCF_overlapping(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn);
 void printHaplotypesAroundPosition(const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, int posI);
 
 int max_gap_length = 5000;
@@ -64,6 +65,7 @@ int main(int argc, char *argv[]) {
 	// arguments["referenceSequenceID"] = "chr21";
 
 	std::map<std::string, std::map<long long, std::set<std::string>>> expectedAlleles;
+	std::map<std::string, std::map<long long, std::map<std::string, std::set<std::string>>>> expectedAlleles_forVCF;
 	
 	for(unsigned int i = 0; i < ARG.size(); i++)
 	{
@@ -78,8 +80,9 @@ int main(int argc, char *argv[]) {
 	assert(arguments.count("input"));
 	assert(arguments.count("referenceSequenceID"));
 
-	std::string outputFn = arguments.at("input") + ".VCF";
-	std::string doneFn = outputFn + ".done";
+	std::string outputFn_1 = arguments.at("input") + ".separated.VCF";
+	std::string outputFn_2 = arguments.at("input") + ".overlapping.VCF";
+	std::string doneFn = arguments.at("input") + ".done";
 	std::ofstream doneStream;
 	doneStream.open(doneFn.c_str());
 	if(! doneStream.is_open())
@@ -126,7 +129,6 @@ int main(int argc, char *argv[]) {
 
      */
 	   
-
 	while(inputStream.good())
 	{
 		std::getline(inputStream, line);
@@ -148,11 +150,21 @@ int main(int argc, char *argv[]) {
 				std::string runningRefAllele;
 				std::string runningQueryAllele;
 				
+				std::string runningRefAllele_2;
+				std::string runningQueryAllele_2;
+				long long running2_begunRefPos_0based = 0;
+				
 				for(unsigned int i = 0; i < h->ref.length(); i++)
 				{
 					unsigned char c_ref = h->ref.at(i);
 					unsigned char c_query = h->query.at(i);
+					bool isMatchOrMismatch = ((c_ref != '-') && (c_ref != '*') && (c_query != '-') && (c_query != '*'));
 
+					if((i == 0) || (i == (h->ref.length() - 1)))
+					{
+						assert(isMatchOrMismatch);					
+					}					
+				
 					if((c_ref != '-') && (c_ref != '*'))
 					{
 						// empty alleles
@@ -163,8 +175,26 @@ int main(int argc, char *argv[]) {
 								expectedAlleles[arguments.at("referenceSequenceID")][runningRefC_0based].insert(runningQueryAllele);
 							}
 						}
+						
 						runningRefAllele = "";
 						runningQueryAllele = "";
+					}
+					
+					if(isMatchOrMismatch)
+					{
+						std::string runningRefAllele_2_noGaps = removeGaps(runningRefAllele_2);
+						std::string runningQueryAllele_2_noGaps = removeGaps(runningQueryAllele_2);
+						
+						if(runningRefAllele_2_noGaps != runningQueryAllele_2_noGaps)
+						{
+							assert(referenceSequence.substr(running2_begunRefPos_0based, runningRefAllele_2_noGaps.length()) == runningRefAllele_2_noGaps);
+							expectedAlleles_forVCF[arguments.at("referenceSequenceID")][running2_begunRefPos_0based][runningRefAllele_2_noGaps].insert(runningQueryAllele_2_noGaps);						
+						}
+						
+						runningRefAllele_2 = "";
+						runningQueryAllele_2 = "";
+						
+						running2_begunRefPos_0based = runningRefC_0based + 1;
 					}
 					
 					if((c_ref != '-') && (c_ref != '*'))
@@ -174,6 +204,9 @@ int main(int argc, char *argv[]) {
 					
 					runningRefAllele.push_back(c_ref);
 					runningQueryAllele.push_back(c_query);
+					
+					runningRefAllele_2.push_back(c_ref);
+					runningQueryAllele_2.push_back(c_query);					
 				}	
 			}
 			
@@ -431,7 +464,40 @@ int main(int argc, char *argv[]) {
 	SNPsstream.open(fn_files_SNPs.c_str());
 	assert(SNPsstream.is_open());
 	
-	produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn);
+	// produce overlapping VCF
+	{
+		std::ofstream outputStream_overlapping;
+		outputStream_overlapping.open(outputFn_2.c_str());
+		if(! outputStream_overlapping.is_open())
+		{
+			throw std::runtime_error("Cannot open " + outputFn_2 + " for writing!");
+		}
+							
+		for(auto refID : expectedAlleles_forVCF)
+		{
+			for(auto pos : refID.second)
+			{
+				for(auto refAllele : pos.second)
+				{
+					std::string refAllele_string = refAllele.first;
+					std::set<std::string> alternativeAlleles = refAllele.second;
+
+					outputStream_overlapping <<
+							arguments.at("referenceSequenceID") << "\t" <<
+							pos.first + 1 << "\t" <<
+							"." << "\t" <<
+							refAllele_string << "\t" <<
+							join(std::vector<std::string>(alternativeAlleles.begin(), alternativeAlleles.end()), ",") << "\t" <<
+							'.' << "\t" <<
+							"PASS" << "\t" << 
+							'.'
+					<< "\n";					
+				}
+			}
+		}
+	}
+	
+	produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_1);
 
 	for(auto SNPsPerRefID : expectedAlleles)
 	{

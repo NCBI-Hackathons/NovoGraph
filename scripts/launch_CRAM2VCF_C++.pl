@@ -7,23 +7,25 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long;   
-use List::Util qw/max all/;
+use List::Util qw/max all shuffle/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
 
 ## Usage:
-## launch_CRAM2VCF_C++.pl --output <path to VCF created by CRAM2VCF.pl>
+## launch_CRAM2VCF_C++.pl --prefix <path to output VCF without .VCF at the end>
 ##
 ## Example command:
-## ./launch_CRAM2VCF_C++.pl --output VCF/graph_v2.vcf
+## ./launch_CRAM2VCF_C++.pl --prefix VCF/graph_v2.vcf
 
 $| = 1;
 
 my $output;
 
 GetOptions (
-	'output:s' => \$output,
+	'prefix:s' => \$output,
 );
+
+die "Please specify --prefix" unless($output);
 
 my $files_done = 0;
 my @commands;
@@ -74,9 +76,15 @@ my @command_batches = ([]);
 my $runningSize = 0;
 my $runningCommands = 0;
 my $totalCommands = 0;
-for(my $i = 0; $i <= $#commands; $i++)
+my @indices = (0 .. $#commands);
+@indices = shuffle(@indices);
+die unless($#indices == $#commands);
+
+for(my $iI = 0; $iI <= $#indices; $iI++)
 {
-	if(($runningCommands >= 20) or ($runningSize >= 1e6))
+	my $i = $indices[$iI];
+	# if(($runningCommands >= 10) or ($runningSize >= 1e6))
+	if(($runningCommands >= 4))
 	{
 		push(@command_batches, []);	
 		$runningCommands = 0;
@@ -98,13 +106,42 @@ else
 
 	foreach my $command_batch (@command_batches)
 	{
-		my $combined_command = join(';', @$command_batch);
-		my $pid = fork;
-		die "fork failed" unless defined $pid;
-		if ($pid == 0) {
-			system($combined_command) and die "Could not execute command: $combined_command";
-			exit;
-		}	
+		my @pids;
+		
+		print "\nNow starting: ", scalar(@$command_batch), " commands.\n";
+		foreach my $cmd (@$command_batch)
+		{
+			my $pid = fork;
+			die "fork failed" unless defined $pid;
+			if ($pid == 0) {
+				system($cmd) and die "Could not execute command: $cmd";
+				exit;
+			}		
+			push(@pids, $pid);
+		}
+		
+		LOOP: while(1)
+		{
+			my $allDone = 1;
+			
+			foreach my $pid (@pids)
+			{
+				if(kill(0,$pid) == 1)
+				{
+					$allDone = 0;
+				}
+			}
+			if($allDone)
+			{
+				last LOOP;
+			}
+			else
+			{
+				sleep 10;
+			}
+		}
+		
+
 	}
 
 	print "\n\nProcesses launched.\n";
