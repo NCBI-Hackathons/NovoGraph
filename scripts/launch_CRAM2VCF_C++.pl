@@ -10,6 +10,10 @@ use Getopt::Long;
 use List::Util qw/max all shuffle/;
 use List::MoreUtils qw/mesh/;
 use Bio::DB::HTS;
+use Errno;
+require POSIX;    # provides WNOHANG
+
+$SIG{CHLD} = \&reap_kids;
 
 ## Usage:
 ## launch_CRAM2VCF_C++.pl --prefix <path to output VCF without .VCF at the end>
@@ -43,7 +47,7 @@ while(<CMDS>)
 	my $inputFile = $1;
 	
 	my $VCF = $inputFile . '.VCF';
-	my $doneFile = $VCF . '.done';
+	my $doneFile = $inputFile . '.done';
 	if(-e $doneFile)
 	{
 		open(DONE, '<', $doneFile) or die "Cannot open $doneFile";
@@ -51,7 +55,7 @@ while(<CMDS>)
 		chomp($done);
 		$done = (length($done) > 0) ? substr($done, 0, 1) : 0;
 		close(DONE);
-		
+			
 		if($done)
 		{
 			$files_done++;
@@ -84,7 +88,7 @@ for(my $iI = 0; $iI <= $#indices; $iI++)
 {
 	my $i = $indices[$iI];
 	# if(($runningCommands >= 10) or ($runningSize >= 1e6))
-	if(($runningCommands >= 4))
+	if(($runningCommands >= 10))
 	{
 		push(@command_batches, []);	
 		$runningCommands = 0;
@@ -94,7 +98,9 @@ for(my $iI = 0; $iI <= $#indices; $iI++)
 	$runningCommands++;
 	$totalCommands++;
 	$runningSize += (-s $inputFiles[$i]);
-}	
+}
+
+my %still_running;
 
 if($totalCommands == 0)
 {
@@ -102,47 +108,56 @@ if($totalCommands == 0)
 }
 else
 {
-	print "\nTotal command batches: ", scalar(@command_batches), "\n\n";
-
-	foreach my $command_batch (@command_batches)
+	foreach my $iI (@indices)
 	{
-		my @pids;
-		
-		print "\nNow starting: ", scalar(@$command_batch), " commands.\n";
-		foreach my $cmd (@$command_batch)
+		my $command = $commands[$iI];
+		if(scalar(keys %still_running) < 10)
 		{
 			my $pid = fork;
 			die "fork failed" unless defined $pid;
 			if ($pid == 0) {
-				system($cmd) and die "Could not execute command: $cmd";
+				system($command) and die "Could not execute command: $command";
 				exit;
 			}		
-			push(@pids, $pid);
+			$still_running{$pid} = 1;			
 		}
-		
-		LOOP: while(1)
+		else
 		{
-			my $allDone = 1;
-			
-			foreach my $pid (@pids)
-			{
-				if(kill(0,$pid) == 1)
-				{
-					$allDone = 0;
-				}
-			}
-			if($allDone)
-			{
-				last LOOP;
-			}
-			else
-			{
-				sleep 10;
-			}
+			sleep 10;
 		}
-		
-
 	}
+	
+	# print "\nTotal command batches: ", scalar(@command_batches), "\n\n";
+
+	# foreach my $command_batch (@command_batches)
+	# {		
+		# print "\nNow starting: ", scalar(@$command_batch), " commands.\n";
+		# foreach my $cmd (@$command_batch)
+		# {
+			# my $pid = fork;
+			# die "fork failed" unless defined $pid;
+			# if ($pid == 0) {
+				# system($cmd) and die "Could not execute command: $cmd";
+				# exit;
+			# }		
+			# $still_running{$pid} = 1;
+		# }
+		
+				
+		# while( scalar(keys %still_running) > 0 ) {
+			# print "Waiting... PIDs " . join(", ", keys %still_running), " still running.\n";		
+			# sleep 10;
+		# }		
+	# }
 
 	print "\n\nProcesses launched.\n";
+}
+
+sub reap_kids {
+    local $!; # good practice. avoids changing errno.
+    while (1) {
+        my $kid = waitpid( -1, POSIX->WNOHANG );
+        last unless ($kid > 0); # No more to reap.
+        delete $still_running{$kid}; # untrack kid.
+    }
 }
