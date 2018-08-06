@@ -102,7 +102,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			warn "Weird number of fields in line $. of $fn_VCF_1 -- is $#fields + 1, but want 8";
 			next;
 		}
-		print OUT $_;
+		print OUT1 $_;
 	}
 	close(VCF);
 	
@@ -115,13 +115,14 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			warn "Weird number of fields in line $. of $fn_VCF_2 -- is $#fields + 1, but want 8";
 			next;
 		}
-		print OUT $_;
+		print OUT2 $_;
 	}
 	close(VCF);
 	
 }	
 
-close(OUT);
+close(OUT1);
+close(OUT2);
 
 print "\n\nGenerated file $VCF1 and $VCF2\n(the .overlapping.VCF file is a straighforward representation of the input multiple sequence alignment in VCF format, with potentially overlapping variant alleles; the .separated.VCF file maintains a strict horizontal separation between variant alleles in the VCF. Which file you want to use depends on your downstream inference pipeline.)\n\n";
 

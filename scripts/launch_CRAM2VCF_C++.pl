@@ -74,7 +74,7 @@ while(<CMDS>)
 }
 close(CMDS);
 
-print "Files done already: $files_done -- delete $output*.done if you want to redo these!\n";
+print "Files done already: $files_done -- delete $output*.done if you want to redo these! Remaining: ", scalar(@commands), "\n";
 
 my @command_batches = ([]);
 my $runningSize = 0;
@@ -111,20 +111,18 @@ else
 	foreach my $iI (@indices)
 	{
 		my $command = $commands[$iI];
-		if(scalar(keys %still_running) < 10)
-		{
-			my $pid = fork;
-			die "fork failed" unless defined $pid;
-			if ($pid == 0) {
-				system($command) and die "Could not execute command: $command";
-				exit;
-			}		
-			$still_running{$pid} = 1;			
-		}
-		else
+		while(scalar(keys %still_running) >= 10)
 		{
 			sleep 10;
 		}
+		
+		my $pid = fork;
+		die "fork failed" unless defined $pid;
+		if ($pid == 0) {
+			system($command) and die "Could not execute command: $command";
+			exit;
+		}		
+		$still_running{$pid} = 1;			
 	}
 	
 	# print "\nTotal command batches: ", scalar(@command_batches), "\n\n";
