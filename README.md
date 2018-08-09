@@ -206,6 +206,12 @@ for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB0
 ```
 Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `AllContigs.fa`.
 
+## Data Availability
+
+The genome graph of seven ethnically diverse human genomes can be accessed at the following Open Science Framework (OSF) project, [NovoGraph](https://osf.io/3vs42/?view_only=fedd8437d96c4d688f6c40150903d857)
+
+https://osf.io/3vs42/?view_only=fedd8437d96c4d688f6c40150903d857
+
 
 ### Contributors
 
