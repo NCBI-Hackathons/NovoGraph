@@ -210,7 +210,18 @@ Upon the successful download of these FASTAs, users should concatenate the indiv
 
 The genome graph of seven ethnically diverse human genomes can be accessed at the following Open Science Framework (OSF) project, [NovoGraph](https://osf.io/3vs42/?view_only=fedd8437d96c4d688f6c40150903d857)
 
-https://osf.io/3vs42/?view_only=fedd8437d96c4d688f6c40150903d857
+* **NovoGraph-Simple-VCF** [novograph_simple_v1.vcf.gz](https://osf.io/pgq52/?view_only=fedd8437d96c4d688f6c40150903d857) (202.6 MB)
+
+    The genome graphs of seven ethnically diverse human genomes in VCF format, overlapping variant alleles 
+    
+* **NovoGraph-Universal-VCF** [novograph_universal_v1.vcf.gz](https://osf.io/t5czk/?view_only=fedd8437d96c4d688f6c40150903d857) (588.3 MB)
+
+    The genome graphs of seven ethnically diverse human genomes in VCF format, non-overlapping variant alleles 
+
+* **NovoGraph CRAM** [novograph_v1.cram](https://osf.io/jhbwx/?view_only=fedd8437d96c4d688f6c40150903d857) (212.2 MB)
+
+    The global multiple sequence of all input sequences in CRAM format 
+
 
 
 ### Contributors
