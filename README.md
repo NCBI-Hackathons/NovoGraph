@@ -127,7 +127,8 @@ perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/for
 perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/forMAFFT --chunkI 0
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
-
+                  
+## Note: For the majority of use cases, this file 'windowbam.header.txt' should remain untouched. Users should use the file 'windowbam.header.txt' as provided, unless there are assemblies with contigs longer than chr1 in hg38, 248956422 bp. In this case, please change this value to be the size of the largest contig. 
 
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
 perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/ 
