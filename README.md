@@ -238,3 +238,9 @@ The genome graph of seven ethnically diverse human genomes can be accessed at th
 * Andrew Olson (CSHL)
 
 This project was initiated at an NCBI-style hackathon held before the 2016 Biological Data Science meeting at Cold Spring Harbor Laboratory in October, 2016.
+
+### Citation
+
+Biederstedt E, Oliver JC, Hansen NF, Jajoo A, Dunn N, Olson A, Busby B, Dilthey AT  
+NovoGraph: Genome graph construction from multiple long-read de novo assemblies.  
+[F1000Research 2018, 7:1391 (doi: 10.12688/f1000research.15895.1)](https://f1000research.com/articles/7-1391/v1)
