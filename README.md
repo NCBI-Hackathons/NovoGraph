@@ -245,7 +245,3 @@ Biederstedt E, Oliver JC, Hansen NF, Jajoo A, Dunn N, Olson A, Busby B, Dilthey 
 NovoGraph: Genome graph construction from multiple long-read de novo assemblies.  
 [F1000Research 2018, 7:1391 (doi: 10.12688/f1000research.15895.2)](https://f1000research.com/articles/7-1391/v2)
 
-### Contact
-
-* Evan Biederstedt: evan.biederstedt@gmail.com
-* Alexander Dilthey: alexander.dilthey@med.uni-duesseldorf.de
