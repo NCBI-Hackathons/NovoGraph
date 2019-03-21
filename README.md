@@ -243,4 +243,9 @@ This project was initiated at an NCBI-style hackathon held before the 2016 Biolo
 
 Biederstedt E, Oliver JC, Hansen NF, Jajoo A, Dunn N, Olson A, Busby B, Dilthey AT  
 NovoGraph: Genome graph construction from multiple long-read de novo assemblies.  
-[F1000Research 2018, 7:1391 (doi: 10.12688/f1000research.15895.1)](https://f1000research.com/articles/7-1391/v1)
+[F1000Research 2018, 7:1391 (doi: 10.12688/f1000research.15895.2)](https://f1000research.com/articles/7-1391/v2)
+
+### Contact
+
+* Evan Biederstedt: evan.biederstedt@gmail.com
+* Alexander Dilthey: alexander.dilthey@med.uni-duesseldorf.de
