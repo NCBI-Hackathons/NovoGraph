@@ -65,7 +65,7 @@ while(my $alignment = $iterator->next_seq)
 {
 	my $isPrimary  = (! $alignment->get_tag_values('NOT_PRIMARY'));
 	# die if(not $isPrimary);
-	next unless($alignment->seq_id eq 'chr20');
+	# next unless($alignment->seq_id eq 'chr20');
 		
 	my $readID = $alignment->query->name;
 		
