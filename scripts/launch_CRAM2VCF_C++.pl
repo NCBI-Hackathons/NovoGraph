@@ -43,7 +43,7 @@ while(<CMDS>)
 	next unless($line);
 	$line =~ s/\&//g;
 	
-	die unless($line =~ /--input (\S+?) --referenceSequenceID/);	
+	die "Weird line - $line - in file $fn_cmds" unless($line =~ /--input (\S+?) --referenceSequenceID/);	
 	my $inputFile = $1;
 	
 	my $VCF = $inputFile . '.VCF';

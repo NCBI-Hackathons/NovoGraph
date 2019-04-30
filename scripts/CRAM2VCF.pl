@@ -91,7 +91,7 @@ my $fn_cmds = $output . '_CRAM2VCF_commands.txt';
 my $fn_cmds_cat = $fn_cmds . '.cat';
 my $fn_gaps = $output . '_CRAM2VCF_gaps.txt';
 open(CMDS, '>', $fn_cmds) or die "Cannot open $fn_cmds";
-print CMDS 'ulimit -u 10000', "\n";
+# print CMDS 'ulimit -u 10000', "\n";
 open(CMDSCAT, '>', $fn_cmds_cat) or die "Cannot open $fn_cmds_cat";
 open(GAPSTRUCTURE, '>', $fn_gaps) or die "Cannot open $fn_gaps";
 print CMDSCAT 'cat ';
@@ -308,7 +308,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			print GAPSTRUCTURE join("\t", $referenceSequenceID, $refPos, $n_gaps), "\n";
 		}
 	}	
-	my $cmd = qq($bin_CRAM2VCF --input $fn_for_CRAM2VCF --referenceSequenceID $referenceSequenceID &> VCF/output_${referenceSequenceID}.txt &);
+	my $cmd = qq($bin_CRAM2VCF --input $fn_for_CRAM2VCF --referenceSequenceID $referenceSequenceID &> forVCF/output_${referenceSequenceID}.txt &);
 	
 	my $output_file = $fn_for_CRAM2VCF . '.VCF';
 	

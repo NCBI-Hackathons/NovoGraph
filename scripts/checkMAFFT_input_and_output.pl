@@ -147,7 +147,8 @@ foreach my $chr (keys %$readWindowsInfo)
 		
 		my %lengths_BAM;
 		my %BAM_href_seq2;
-		open(SINGLEBAM, $samtools_path, " view $BAM |") or die "Cannot view $BAM $!";
+		my $pipe_open = $samtools_path . " view $BAM |";
+		open(SINGLEBAM, $pipe_open) or die "Cannot view $BAM $!";
 		while(<SINGLEBAM>)
 		{
 			my $l = $_;
@@ -208,7 +209,7 @@ foreach my $chr (keys %$readWindowsInfo)
 
 my %preMAFFT_BAM_lengths;
 my %preMAFFT_BAM_sequence;
-open(PREMAFFT, $samtools_path, " view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
+open(PREMAFFT, $samtools_path . " view $preMAFFTBAM |") or die "Cannot view $preMAFFTBAM";
 while(<PREMAFFT>)
 {
 	my $l = $_;
@@ -228,7 +229,7 @@ my %finalOutput_BAM_lengths;
 my %finalOutput_BAM_sequence;
 if($finalOutputCRAM =~ /\.cram$/)
 {
-	open(OUTPUT, $samtools_path, " view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
+	open(OUTPUT, $samtools_path . " view $finalOutputCRAM |") or die "Cannot view $finalOutputCRAM";
 	while(<OUTPUT>)
 	{
 		my $l = $_;
@@ -264,6 +265,7 @@ else
 
 my %combinedKeys = map {$_ => 1} ((keys %preMAFFT_BAM_lengths), (keys %contigs_fromFASTA));
 
+my $n_printed_errors = 0;
 foreach my $k (keys %combinedKeys)
 {
 	my $l_expected = (exists $expectedLengts{$k}) ? $expectedLengts{$k} : "NOT_PRESENT";
@@ -288,6 +290,7 @@ foreach my $k (keys %combinedKeys)
 		{
 			print "\t - ", $k, "\n";
 		}
+		$n_printed_errors++;
 	}
 }
 

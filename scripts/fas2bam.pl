@@ -84,7 +84,7 @@ if (!$output_file) { # create a name from the input file
     $output_file = ($Opt{bamheader}) ? "$filebase.bam" : "$filebase.sam";
 }
 
-my $sambam_file = ($Opt{bamheader}) ? " | "$samtools_path view -uS -t $Opt{bamheader} > $output_file"
+my $sambam_file = ($Opt{bamheader}) ? " | $samtools_path view -uS -t $Opt{bamheader} > $output_file"
                                     : "> $output_file";
 
 my $sam_fh = FileHandle->new("$sambam_file");

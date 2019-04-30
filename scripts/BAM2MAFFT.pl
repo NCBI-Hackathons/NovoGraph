@@ -30,6 +30,7 @@ my $BAM;
 my $outputDirectory;
 my $inputTruncatedReads;
 my $readsFasta;
+my $processNonChrReferenceContigs = 0;
 
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
@@ -37,6 +38,7 @@ GetOptions (
 	'outputDirectory:s' => \$outputDirectory,	
 	'readsFasta:s' => \$readsFasta,	
 	'inputTruncatedReads:s' => \$inputTruncatedReads,	
+	'processNonChrReferenceContigs:s' => \$processNonChrReferenceContigs,	
 );
 
 die "Please specify --BAM" unless($BAM);
@@ -90,7 +92,11 @@ my %saw_read_IDs;
 my @sequence_ids = $sam->seq_ids();
 foreach my $referenceSequenceID (@sequence_ids)
 {	
-	next unless($referenceSequenceID =~ /chr[XY\d]+/);
+	unless($processNonChrReferenceContigs)
+	{
+		next unless($referenceSequenceID =~ /chr[XY\d]+/);
+	}
+	
 	unless(exists $reference_href->{$referenceSequenceID})
 	{
 		warn "No reference sequence for $referenceSequenceID";

@@ -57,6 +57,10 @@ my $mafft_executable;
 my $fas2bam_path;
 my $samtools_path;
 my $bamheader;
+my $PBSPro = 0;
+my $PBSPro_select;
+my $PBSPro_A;
+my $preExec;
 
 GetOptions (
 	'action:s' => \$action,
@@ -70,6 +74,10 @@ GetOptions (
 	'fas2bam_path:s' => \$fas2bam_path,
 	'samtools_path:s' => \$samtools_path,
 	'bamheader:s' => \$bamheader,
+	'PBSPro:s' => \$PBSPro,
+	'PBSPro_select:s' => \$PBSPro_select,
+	'PBSPro_A:s' => \$PBSPro_A,
+	'preExec:s' => \$preExec,
 );
 
 die unless($mafft_executable);
@@ -368,17 +376,38 @@ sub invoke_self_array
 		open(QSUB, '>', $temp_qsub) or die "Cannot open $temp_qsub";
 		my $minJobID = 1;
 		my $maxJobID = $maxChunk_0based + 1;
-			
+		if($PBSPro)
+		{
+		print QSUB qq(#!/bin/bash
+#PBS -l $PBSPro_select
+#PBS -l walltime=23:00:00
+#PBS -A '$PBSPro_A'
+#PBS -N CALLMAFFT
+#PBS -J ${minJobID}-${maxJobID}
+#PBS -r y
+
+jobID=\$(expr \$PBS_ARRAY_INDEX - 1)
+);		
+		}
+		else
+		{
 		print QSUB qq(#!/bin/bash
 #\$ -t ${minJobID}-${maxJobID}
 #\$ -q public.q
 #\$ -tc 100
 #\$ -l mem_free=8G
 #\$ -N 'CALLMAFFT'
+
 jobID=\$(expr \$SGE_TASK_ID - 1)
-cd $current_dir
-perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize $reprocess_string
 );
+		}
+		
+		print QSUB qq(
+$preExec
+cd $current_dir
+perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string 
+		);
+
 		close(QSUB);
 		my $qsub_cmd = "qsub $temp_qsub";
 		if(system($qsub_cmd))
