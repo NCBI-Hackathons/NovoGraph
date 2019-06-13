@@ -420,7 +420,7 @@ perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk 
 		for(my $chunkI = 0; $chunkI <= $maxChunk_0based; $chunkI++)
 		{
 			print "Call myself for chunk $chunkI\n";
-			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string);
+			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string );
 			if(system($cmd))
 			{
 				die "Command $cmd failed";

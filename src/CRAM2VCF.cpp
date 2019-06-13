@@ -31,10 +31,13 @@ std::string removeGaps(std::string in);
 class startingHaplotype;
 void produceVCF(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn);
 void produceVCF_overlapping(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn);
+void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn);
 void printHaplotypesAroundPosition(const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, int posI);
 
 int max_gap_length = 5000;
 int max_running_haplotypes_before_add = 5000;
+bool doProduce_pseudoSample = false;
+bool doProduce_separatedVCF = true;
 
 	
 class startingHaplotype
@@ -73,15 +76,29 @@ int main(int argc, char *argv[]) {
 		{
 			std::string argname = ARG.at(i).substr(2);
 			std::string argvalue = ARG.at(i+1);
-			arguments[argname] = argvalue;
+			arguments[argname] = argvalue; 
 		}
 	}
 
 	assert(arguments.count("input"));
 	assert(arguments.count("referenceSequenceID"));
 
+	if(arguments.count("max_gap_length"))
+	{
+		max_gap_length = std::stoi(arguments.at("max_gap_length"));
+	}
+	if(arguments.count("doProduce_pseudoSample"))
+	{
+		doProduce_pseudoSample = std::stoi(arguments.at("doProduce_pseudoSample"));
+	}
+	if(arguments.count("doProduce_separatedVCF"))
+	{
+		doProduce_separatedVCF = std::stoi(arguments.at("doProduce_separatedVCF"));
+	}
+	
 	std::string outputFn_1 = arguments.at("input") + ".separated.VCF";
 	std::string outputFn_2 = arguments.at("input") + ".overlapping.VCF";
+	std::string outputFn_3 = arguments.at("input") + ".pseudoSample.VCF";
 	std::string doneFn = arguments.at("input") + ".done";
 	std::ofstream doneStream;
 	doneStream.open(doneFn.c_str());
@@ -497,7 +514,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
-	produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_1);
+	if(doProduce_pseudoSample)
+		produceVCF_pseudoSample(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_3);	
+	
+	if(doProduce_separatedVCF)
+		produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_1);
 
 	for(auto SNPsPerRefID : expectedAlleles)
 	{
@@ -520,6 +541,304 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+
+void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn)
+{
+	std::ofstream outputStream;
+	outputStream.open(outputFn.c_str());
+	if(! outputStream.is_open())
+	{
+		throw std::runtime_error("Cannot open " + outputFn + " for writing!");
+	}
+
+	std::vector<std::map<unsigned int, std::string>> startingHaplotypes_pos_2_alleles;
+
+	for(auto startPos : alignments_starting_at)
+	{
+		for(startingHaplotype* alignment : startPos.second)
+		{
+			startingHaplotypes_pos_2_alleles.resize(startingHaplotypes_pos_2_alleles.size()+1);
+			
+			assert(startPos.first == alignment->aligment_start_pos);
+
+			// std::cerr << "Alignment starting at " << startPos.first << "\n" << std::flush;
+			
+			long long start_pos = (int)startPos.first - 1;
+			long long ref_pos = start_pos;
+			int running_gaps = 0;
+
+			for(unsigned int i = 0; i < alignment->ref.length(); i++)
+			{
+				unsigned char c_ref = alignment->ref.at(i);
+				unsigned char c_query = alignment->query.at(i);
+				if((c_ref == '-') or (c_ref == '*'))
+				{
+					assert(i != 0);
+				}
+				else
+				{
+					ref_pos++;
+					assert(c_ref == referenceSequence.at(ref_pos));					
+				}
+				
+				startingHaplotypes_pos_2_alleles.back()[ref_pos].push_back(c_query);				
+			}	
+			
+			assert(ref_pos == alignment->alignment_last_pos);
+		}
+	}
+	
+	size_t N_startingHaplotypes = startingHaplotypes_pos_2_alleles.size();
+	
+	// we start collecting alleles whenever we find an all-reference-identical position 
+	// we also stop when we find an all-reference-identical position (and then we flush)
+	// whenever we are in this collection process, we demand that the set of 
+	// relevant haplotypes does not change
+	
+	long long posI_startedOpenAlleles = -1;
+	std::vector<std::string> runningOpenAlleles;
+	runningOpenAlleles.resize(N_startingHaplotypes);
+	
+	std::vector<bool> runningOpenAlleles_which;
+	runningOpenAlleles_which.resize(N_startingHaplotypes, false);
+	
+	bool inVariableStretch = false;
+
+	auto printDebug_open_or_lose_haplotype = [&](int posI, std::vector<bool> runningOpenAlleles_which, std::vector<bool> runningOpenAlleles_thisPos) -> void {
+		std::cerr << "Gained or lost a haplotype inside a stretch that I would have liked to print.\n";
+		std::cerr << "Current reference position: " << posI << "\n";
+		std::cerr << "Started collecting alternative haplotypes at: " << posI_startedOpenAlleles << "\n";
+		std::cerr << "Variable stretch: " << inVariableStretch << "\n";
+		std::cerr << "Alternative haplotypes:\n";
+		for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+		{
+			std::cerr << "\t" << haplotypeI << "\t" << runningOpenAlleles.at(haplotypeI) << "\n";
+		}			
+		std::cerr << "Existing / this position haplotype matrix:\n";
+		for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+		{
+			std::cerr << "\t" << haplotypeI << "\t" << runningOpenAlleles_which.at(haplotypeI) << " -> " << runningOpenAlleles_thisPos.at(haplotypeI) << "\n";
+		}	
+		std::cerr << "\n" << std::flush;
+	};
+	
+	for(int posI = 0; posI < (int)referenceSequence.length(); posI++)
+	{
+		std::string refC = referenceSequence.substr(posI, 1);
+		
+		bool allReferenceIdentical = true;	
+		std::vector<bool> runningOpenAlleles_thisPos;
+		runningOpenAlleles_thisPos.resize(startingHaplotypes_pos_2_alleles.size(), false);
+		for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+		{
+			if(startingHaplotypes_pos_2_alleles.at(haplotypeI).count(posI))
+			{
+				std::string allele = startingHaplotypes_pos_2_alleles.at(haplotypeI).at(posI);
+				if(allele != refC)
+				{
+					allReferenceIdentical = false;
+				}
+				runningOpenAlleles.at(haplotypeI).append(allele);
+				runningOpenAlleles_thisPos.at(haplotypeI) = true;
+			}
+		}
+
+		bool printedWarning = false;
+		for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+		{	
+			if(runningOpenAlleles_which.at(haplotypeI) != runningOpenAlleles_thisPos.at(haplotypeI))
+			{	
+				if(runningOpenAlleles_which.at(haplotypeI) && (!runningOpenAlleles_thisPos.at(haplotypeI)))
+				{
+					// we have lost a haplotype - no good!
+					
+					if(! printedWarning)
+							printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
+					printedWarning = true;
+					
+					posI_startedOpenAlleles = -1;	
+				}
+				else if((!runningOpenAlleles_which.at(haplotypeI)) && runningOpenAlleles_thisPos.at(haplotypeI))
+				{
+					if(! allReferenceIdentical)
+					{
+						// we have gained a haplotype
+						// this is fine as long as we're about to close in any case!
+						
+						if(! printedWarning)
+								printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
+						printedWarning = true;
+
+						posI_startedOpenAlleles = -1;
+					}
+				}
+				else
+				{
+					assert(1 == 0);
+				}
+			}
+		}		
+		
+		if(allReferenceIdentical)
+		{
+			if(posI_startedOpenAlleles != -1)
+			{
+				std::set<std::string> runningAlleles;
+				std::vector<std::string> runningAlleles_vec;
+				for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+				{
+					std::string runningAllele_noGaps = removeGaps(runningOpenAlleles.at(haplotypeI).substr(0, runningOpenAlleles.at(haplotypeI).length() - 1));
+										
+					if(runningOpenAlleles_which.at(haplotypeI))
+					{
+						assert(runningAllele_noGaps.length() > 0);
+						assert(runningOpenAlleles.at(haplotypeI).substr(runningOpenAlleles.at(haplotypeI).length() - 1, 1) == refC);	
+
+						runningAlleles.insert(runningAllele_noGaps);
+						runningAlleles_vec.push_back(runningAllele_noGaps);
+					}
+					else
+					{
+						assert(runningAllele_noGaps.length() == 0);
+					}
+				}
+				
+				size_t runningAllele_lastRefPos = posI - 1;
+				std::string runningAlleles_refSpan = referenceSequence.substr(posI_startedOpenAlleles, runningAllele_lastRefPos - posI_startedOpenAlleles + 1);
+				
+				if((runningAlleles.size() > 1) || ((runningAlleles.size() > 0) && (*(runningAlleles.begin()) != runningAlleles_refSpan)))
+				{
+					std::vector<std::string> alleles_ordered;
+					std::map<std::string, int> allele_2_i;
+					allele_2_i[runningAlleles_refSpan] = 0;
+					alleles_ordered.push_back(runningAlleles_refSpan);
+					
+					for(auto oneAllele : runningAlleles)
+					{
+						if(allele_2_i.count(oneAllele) == 0)
+						{
+							allele_2_i[oneAllele] = alleles_ordered.size();
+							alleles_ordered.push_back(oneAllele);
+						}
+					}
+					
+					int removeInitialXBases = 0;
+					{
+						bool allAllelesSameLength = true;
+						int alleleLength = -1;
+						int minAlleleLength = -1;
+						for(auto oneAllele : alleles_ordered)
+						{
+							if(alleleLength == -1)
+							{
+								alleleLength = oneAllele.length();
+								minAlleleLength = alleleLength;
+							}	
+							
+							if(alleleLength != oneAllele.length())
+								allAllelesSameLength = false;
+							
+							if(oneAllele.length() < minAlleleLength)
+							{
+								minAlleleLength = oneAllele.length();
+							}
+						}
+
+						if(minAlleleLength > 1)
+						{
+							for(int allelePos = 0; allelePos < (minAlleleLength-1); allelePos++)
+							{	
+								bool allAllelesIdenticalAtPos = true;
+								char consensusBase = 0;						
+								for(auto oneAllele : alleles_ordered)
+								{
+									assert(allelePos < oneAllele.length());
+									char thisAlleleBase = oneAllele.at(allelePos);
+									
+									if(consensusBase == 0)
+										consensusBase = thisAlleleBase;
+
+									if(thisAlleleBase != consensusBase)
+										allAllelesIdenticalAtPos = false;
+								}
+								if(allAllelesIdenticalAtPos)
+								{
+									removeInitialXBases = allelePos+1;
+								}
+								else
+								{
+									break;
+								}
+							}
+						}
+					}
+					std::vector<std::string> alleles_ordered_forPrint;
+					for(auto oneAllele : alleles_ordered)
+					{
+						assert(removeInitialXBases < oneAllele.length());
+						alleles_ordered_forPrint.push_back(oneAllele.substr(removeInitialXBases));
+					}
+					
+					std::vector<std::string> genotypes;				
+					for(auto oneAllele : runningAlleles_vec)
+					{
+						assert(allele_2_i.count(oneAllele));
+						if(oneAllele.length())
+						{
+							genotypes.push_back(std::to_string(allele_2_i.at(oneAllele)));
+						}
+						else
+						{
+							genotypes.push_back("?");
+						}
+					}
+					
+					outputStream <<
+							referenceSequenceID << "\t" <<
+							posI_startedOpenAlleles+1+removeInitialXBases << "\t" <<
+							"." << "\t" <<
+							alleles_ordered_forPrint.at(0) << "\t" <<
+							join(std::vector<std::string>(alleles_ordered_forPrint.begin()+1, alleles_ordered_forPrint.end()), ",") << "\t" <<
+							"." << "\t" <<
+							"PASS" << "\t" <<
+							"." << "\t" <<
+							"GT" << "\t" <<
+							join(genotypes, "/") << "\n";
+				}
+			}
+			
+			for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
+			{
+				//if(runningOpenAlleles.at(haplotypeI).length())
+				if(runningOpenAlleles_thisPos.at(haplotypeI))
+				{
+					assert(runningOpenAlleles.at(haplotypeI).substr(runningOpenAlleles.at(haplotypeI).length() - 1, 1) == refC);				
+					runningOpenAlleles.at(haplotypeI) = refC;
+				}
+				else
+				{
+					runningOpenAlleles.at(haplotypeI) = "";
+				}
+			}
+			
+			posI_startedOpenAlleles = posI;
+			
+			inVariableStretch = false;
+		}
+		else
+		{
+			if(posI_startedOpenAlleles != -1)
+			{
+				inVariableStretch = true;
+			}
+		}
+		
+		runningOpenAlleles_which = runningOpenAlleles_thisPos;
+	}
+}
+
+
+
 
 void produceVCF(const std::string referenceSequenceID, const std::string& referenceSequence, const std::map<unsigned int, std::vector<startingHaplotype*>>& alignments_starting_at, std::string outputFn)
 {
