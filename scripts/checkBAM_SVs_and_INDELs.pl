@@ -376,7 +376,7 @@ sub convertAlignmentToHash
 	$alignment_read = $query;
 	
 	my $alignment_length = length($ref);
-	die unless(length($query) == $alignment_length);
+	die Dumper("Lenght mismatch: " . length($query) . " v/s $alignment_length", $readID, $chromosome, $firstPos_reference) unless(length($query) == $alignment_length);
 	
 	my $runningPos_query = 0;
 	my $runningPos_reference = $firstPos_reference - 1;

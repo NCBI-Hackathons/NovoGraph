@@ -101,7 +101,7 @@ unless(-e $inputContigs)
 unless(-d $outputDirectory)
 {
 	print "mkdir $outputDirectory\n";
-	print "mkdir ${outputDirectory}/intermedia_files\n";
+	print "mkdir ${outputDirectory}/intermediate_files\n";
 	
 }
 
