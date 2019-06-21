@@ -61,6 +61,7 @@ my $PBSPro = 0;
 my $PBSPro_select;
 my $PBSPro_A;
 my $preExec;
+my $useGinsi;
 
 GetOptions (
 	'action:s' => \$action,
@@ -77,6 +78,7 @@ GetOptions (
 	'PBSPro:s' => \$PBSPro,
 	'PBSPro_select:s' => \$PBSPro_select,
 	'PBSPro_A:s' => \$PBSPro_A,
+	'useGinsi:s' => \$useGinsi,
 	'preExec:s' => \$preExec,
 );
 
@@ -370,6 +372,7 @@ sub invoke_self_array
 	my $reprocess = shift;
 	
 	my $reprocess_string = ($reprocess) ? " --reprocess 1 " : '';
+	my $ginsi = (defined $useGinsi) ? " --useGinsi $useGinsi " : '';	
 	my $mafftDirectory_abs = File::Spec->rel2abs($mafftDirectory);
 	if($qsub)
 	{	
@@ -405,7 +408,7 @@ jobID=\$(expr \$SGE_TASK_ID - 1)
 		print QSUB qq(
 $preExec
 cd $current_dir
-perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string 
+perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi
 		);
 
 		close(QSUB);
@@ -420,7 +423,7 @@ perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk 
 		for(my $chunkI = 0; $chunkI <= $maxChunk_0based; $chunkI++)
 		{
 			print "Call myself for chunk $chunkI\n";
-			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string );
+			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi);
 			if(system($cmd))
 			{
 				die "Command $cmd failed";
@@ -468,12 +471,21 @@ sub makeMSA
 	if(scalar(keys %$input_href) >= 2)
 	{
 		writeFASTA($temp_file_in, $input_href);
-		my $cmd_mafft = qq($mafft_executable --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
-		print "Executing $cmd_mafft \n";
+		my $cmd_mafft = qq(${mafft_executable} --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
+		my $cmd_mafft_ginsi = qq(${mafft_executable}-ginsi --quiet $temp_file_in > $temp_file_out);
+		my $cmd_mafft_use = $useGinsi ? $cmd_mafft_ginsi : $cmd_mafft;
 		
-		my $ret = system($cmd_mafft);
+		print "Executing $cmd_mafft_use \n";
+		
+		my $ret = system($cmd_mafft_use);
 
 		# print "Return code $ret\n";
+		
+		unless($ret == 0)
+		{
+			warn "Original mafft command failed, retry with fast settings";
+			$ret = system($cmd_mafft);
+		}
 		
 		unless(($ret == 0) and (-e $temp_file_out))
 		{

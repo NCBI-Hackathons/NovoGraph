@@ -105,6 +105,8 @@ unless(-d $outputDirectory)
 	
 }
 
+my $ginsiMAFFT = ($limitToPGF) ? ' --useGinsi 1 ' : '';
+
 print qq(
 bwa mem -t 4 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
 $samtools_path sort -o  ${outputDirectory}/${prefix}_allContigs_sorted.bam  ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
@@ -119,7 +121,8 @@ perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/inte
 perl scripts/countExpectedGlobalAlignments.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam
 
 perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1;\
-perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --qsub 1 --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub $qsub
+perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub $qsub $ginsiMAFFT
+perl scripts/CALLMAFFT.pl --action reprocess --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub 0
 
 perl scripts/globalize_windowbams.pl --fastadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --msadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/ --contigs  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --output  ${outputDirectory}/${prefix}_combined.sam
 
