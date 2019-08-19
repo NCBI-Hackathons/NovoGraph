@@ -157,6 +157,5 @@ sub reverseComplement
 	my $kMer = shift;
 	$kMer =~ tr/ACGTacgt/TGCAtgca/;
 	return scalar(reverse($kMer));
-	return $kMer;
 }
 

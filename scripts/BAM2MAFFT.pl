@@ -402,8 +402,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 				next;
 			}
 			
-			my $trueSequence = $reads_href->{$sequenceID};
-			my $trueSequence_revCmp = reverseComplement($trueSequence);
+			my $trueSequence = uc($reads_href->{$sequenceID});
+			my $trueSequence_revCmp = uc(reverseComplement($trueSequence));
 			
 			my $supposedSequence = $runningSequencesForReconstruction{$sequenceID};
 			if(($supposedSequence eq $trueSequence) or ($supposedSequence eq $trueSequence_revCmp))

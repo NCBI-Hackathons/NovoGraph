@@ -389,15 +389,15 @@ my $processReadLines = sub {
 			$bt_contig .= reverse($chain_for_consumption->{alignment_read} . $betweenChains_read);
 			$bt_reference .= reverse($chain_for_consumption->{alignment_reference} . $betweenChains_reference);
 			
-			die Dumper($chain_for_consumption->{firstPos_read}, $last_emitted_read_position) unless($chain_for_consumption->{firstPos_read} <= $last_emitted_read_position);
+			die Dumper("Error I", $chain_for_consumption->{firstPos_read}, $last_emitted_read_position) unless($chain_for_consumption->{firstPos_read} <= $last_emitted_read_position);
 			$last_emitted_read_position = $chain_for_consumption->{firstPos_read};
 			
 			if($last_emitted_reference_position != -1)
 			{
-				die Dumper($chain_for_consumption->{firstPos_reference}, $last_emitted_reference_position)  unless($chain_for_consumption->{firstPos_reference} <= $last_emitted_reference_position);
+				die Dumper("Error 2", $chain_for_consumption->{firstPos_reference}, $last_emitted_reference_position)  unless($chain_for_consumption->{firstPos_reference} <= $last_emitted_reference_position);
 			}
 			$last_emitted_reference_position = $chain_for_consumption->{firstPos_reference};
-			die Dumper($last_emitted_read_position)  unless($last_emitted_reference_position >= 0);
+			die Dumper("Error 3", $last_emitted_read_position)  unless($last_emitted_reference_position >= 0);
 			
 			$next_bt_position = $chain_for_consumption->{chainOutputScoreOrigin};
 			
@@ -425,7 +425,7 @@ my $processReadLines = sub {
 	
 	my $bt_contig_noGaps = $bt_contig;
 	$bt_contig_noGaps =~ s/\-//g;
-	die Dumper($useReadSequence, $bt_contig_noGaps, length($bt_contig_noGaps), length($useReadSequence)) unless($bt_contig_noGaps eq $useReadSequence);
+	die Dumper("Error 4", $useReadSequence, $bt_contig_noGaps, length($bt_contig_noGaps), length($useReadSequence)) unless($bt_contig_noGaps eq $useReadSequence);
 	
 	my $bt_reference_noGaps = $bt_reference;
 	$bt_reference_noGaps =~ s/\-//g;
@@ -749,7 +749,7 @@ sub enrichChains
 			{
 				my $chainSequence_reference_noGaps = $chain->{alignment_reference};
 				$chainSequence_reference_noGaps =~ s/-//g;
-				die Dumper(length($supposedReferenceSequence), length($chainSequence_reference_noGaps), $supposedReferenceSequence, $chainSequence_reference_noGaps) unless($supposedReferenceSequence eq $chainSequence_reference_noGaps);		
+				die Dumper("Error 5", length($supposedReferenceSequence), length($chainSequence_reference_noGaps), $supposedReferenceSequence, $chainSequence_reference_noGaps) unless($supposedReferenceSequence eq $chainSequence_reference_noGaps);		
 			}
 		}
 		push(@chainsOut, $chain);
@@ -846,7 +846,8 @@ sub enrichChains
 				my $supposedReadSequence = substr($useReadSequence, $chain->{firstPos_read}, $lastPos_read - $chain->{firstPos_read} + 1);
 				my $chainSequence_read_noGaps = $alignment_read;
 				$chainSequence_read_noGaps =~ s/-//g;
-				die Dumper($character_reference, $character_read, $alignmentPos, $chain->{firstPos_read}, $chain->{lastPos_read}, $lastPos_read, length($supposedReadSequence), length($chainSequence_read_noGaps)) unless($supposedReadSequence eq $chainSequence_read_noGaps);				
+				
+				die Dumper("Error 6", $character_reference, $character_read, $alignmentPos, $chain->{firstPos_read}, $chain->{lastPos_read}, $lastPos_read, length($supposedReadSequence), length($chainSequence_read_noGaps)) unless($supposedReadSequence eq $chainSequence_read_noGaps);				
 
 				push(@chainsOut, {
 					readID => $chain->{readID},

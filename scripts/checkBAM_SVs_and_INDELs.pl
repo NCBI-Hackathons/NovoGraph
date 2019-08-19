@@ -376,8 +376,8 @@ sub convertAlignmentToHash
 		substr($query, length($query) - $remove_softclipping_back) = '';
 	}
 	
-	$alignment_reference = $ref;
-	$alignment_read = $query;
+	$alignment_reference = uc($ref);
+	$alignment_read = uc($query);
 	
 	my $alignment_length = length($ref);
 	die Dumper("Lenght mismatch: " . length($query) . " v/s $alignment_length", $readID, $chromosome, $firstPos_reference) unless(length($query) == $alignment_length);

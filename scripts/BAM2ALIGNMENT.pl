@@ -104,8 +104,8 @@ while(my $alignment = $iterator->next_seq)
 		else
 		{
 			die unless($reads_href->{$readID});
-			$read_href->{completeReadSequence_plus} = $reads_href->{$readID};
-			$read_href->{completeReadSequence_minus} = reverseComplement($reads_href->{$readID});
+			$read_href->{completeReadSequence_plus} = uc($reads_href->{$readID});
+			$read_href->{completeReadSequence_minus} = reverseComplement(uc($reads_href->{$readID}));
 			$printed_complete_sequence{$readID}++;
 		}
 		
@@ -303,12 +303,12 @@ sub convertAlignmentToHash
 	{
 		$read_sequence = reverseComplement($read_sequence);
 	}
-	my $supposed_read_sequence = substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1);
+	my $supposed_read_sequence = uc(substr($read_sequence, $firstPos_read, $lastPos_read - $firstPos_read + 1));
 	
-	my $alignment_reference_noGaps = $alignment_reference;
+	my $alignment_reference_noGaps = uc($alignment_reference);
 	$alignment_reference_noGaps =~ s/\-//g;
 	
-	my $alignment_read_noGaps = $alignment_read;
+	my $alignment_read_noGaps = uc($alignment_read);
 	$alignment_read_noGaps =~ s/\-//g;
 	
 	if(index($supposed_reference_sequence, "N") == -1)
@@ -347,6 +347,23 @@ sub convertAlignmentToHash
 			return undef;
 		}
 	}
+	
+		unless($alignment_read_noGaps eq $supposed_read_sequence)
+		{
+			print "Sequence mismatch for read $readID\n";
+
+			print "\t", "Contains no Ns: ", ((index($supposed_reference_sequence, "N") == -1) ? 1 : 0), "\n";
+			print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
+			print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";
+			print "\t", "lastPos_read: ", $lastPos_read, "\n";
+			print "\t", "firstPos_read: ", $firstPos_read, "\n";
+			print "\t", "alignment_read_noGaps : ", substr($alignment_read_noGaps, 0, 30), " ..", substr($alignment_read_noGaps, length($alignment_read_noGaps) - 30, 30), "\n";
+			print "\t", "supposed_read_sequence: ", substr($supposed_read_sequence, 0, 30), " ..", substr($supposed_read_sequence, length($supposed_read_sequence) - 30, 30), "\n\n";
+			print "\t", "alignment_ref : ", substr($ref, 0, 30), " ..", substr($ref, length($ref) - 30, 30), "\n";
+			print "\t", "alignment_query: ", substr($query, 0, 30), " ..", substr($query, length($query) - 30, 30),, "\n";
+			print "\t", "strand: ", $strand, "\n";
+			print "\n";
+		}	
 	
 	die "Mismatch query" unless($alignment_read_noGaps eq $supposed_read_sequence);
 	
