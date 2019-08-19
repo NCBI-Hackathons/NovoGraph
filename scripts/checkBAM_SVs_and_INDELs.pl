@@ -56,6 +56,10 @@ print "Read $readsFasta\n";
 $reads_href = readFASTA($readsFasta, 0);
 print "\tdone.\n";
 
+foreach my $readID (keys %$reads_href)
+{
+	$reads_href->{$readID} = uc($reads_href->{$readID});
+}
 my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM, -expand_flags => 1);
 my $iterator = $sam->features(-iterator=>1);
 
@@ -277,7 +281,7 @@ close(O);
 
 print "\n\nProduced output file $outputFile_2\n";
 
-
+my $warnings = 0;
 sub convertAlignmentToHash
 {
 	my $inputAlignment = shift;
@@ -459,6 +463,8 @@ sub convertAlignmentToHash
 			print "\t", "ALG: ", $supposed_reference_sequence, "\n";
 			print "\t", "strand: ", $strand, "\n";			
 			print "\n";
+			$warnings++;
+			die if($warnings > 10);
 			return undef;
 		}
 
@@ -476,7 +482,8 @@ sub convertAlignmentToHash
 			print "\t", "alignment_query: ", $query, "\n";
 			print "\t", "strand: ", $strand, "\n";
 			print "\n";
-			
+			$warnings;;
+			die if($warnings > 10);
 			return undef;
 		}
 	}

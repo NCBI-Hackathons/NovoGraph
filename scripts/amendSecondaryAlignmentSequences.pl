@@ -155,7 +155,8 @@ sub isPrimary
 sub reverseComplement
 {
 	my $kMer = shift;
-	$kMer =~ tr/ACGT/TGCA/;
-	return reverse($kMer);
+	$kMer =~ tr/ACGTacgt/TGCAtgca/;
+	return scalar(reverse($kMer));
 	return $kMer;
 }
+
