@@ -58,7 +58,8 @@ print OUT1 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 print OUT2 qq(##fileformat=VCFv4.2
 ##fileDate=20161026
 ##source=CRAM2VCF.pl
-##reference=file://$referenceFasta), "\n";
+##reference=file://$referenceFasta
+##INFO=<ID=FROM,Number=A,Type=Integer,Description="Origin">), "\n";
 print OUT2 "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", "\n";
 #foreach my $referenceSequenceID (@sequence_ids)
 my @referenceSequenceIDs = @sequence_ids;

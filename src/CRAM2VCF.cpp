@@ -22,6 +22,8 @@ using namespace std;
 
 std::vector<std::string> split(std::string input, std::string delimiter);
 std::string join(std::vector<std::string> parts, std::string delim);
+std::string join2(std::vector<unsigned int> parts, std::string delim);
+
 void eraseNL(std::string& s);
 int StrtoI(std::string s);
 std::string ItoStr(int i);
@@ -46,6 +48,7 @@ public:
 	std::string ref;
 	std::string query;
 	std::string query_name;
+	unsigned int query_name_id;
 	long long aligment_start_pos;
 	long long alignment_last_pos;
 	
@@ -68,7 +71,7 @@ int main(int argc, char *argv[]) {
 	// arguments["referenceSequenceID"] = "chr21";
 
 	std::map<std::string, std::map<long long, std::set<std::string>>> expectedAlleles;
-	std::map<std::string, std::map<long long, std::map<std::string, std::set<std::string>>>> expectedAlleles_forVCF;
+	std::map<std::string, std::map<long long, std::map<std::string, std::map<std::string, std::set<unsigned int>>>>> expectedAlleles_forVCF;
 	
 	for(unsigned int i = 0; i < ARG.size(); i++)
 	{
@@ -99,6 +102,7 @@ int main(int argc, char *argv[]) {
 	std::string outputFn_1 = arguments.at("input") + ".separated.VCF";
 	std::string outputFn_2 = arguments.at("input") + ".overlapping.VCF";
 	std::string outputFn_3 = arguments.at("input") + ".pseudoSample.VCF";
+	std::string outputFn_4 = arguments.at("input") + ".queryIDs";
 	std::string doneFn = arguments.at("input") + ".done";
 	std::ofstream doneStream;
 	doneStream.open(doneFn.c_str());
@@ -145,7 +149,21 @@ int main(int argc, char *argv[]) {
        This parameter can be played around with!
 
      */
-	   
+	 
+	std::map<std::string, unsigned int> query_name_2_id;
+	auto getQueryID = [&](std::string query_name) -> unsigned int {
+		if(query_name_2_id.count(query_name))
+		{
+			return query_name_2_id.at(query_name);
+		}
+		else
+		{
+			unsigned int existingMembers = query_name_2_id.size();
+			query_name_2_id[query_name] = existingMembers;
+			return existingMembers;
+		}
+	};		
+	
 	while(inputStream.good())
 	{
 		std::getline(inputStream, line);
@@ -158,6 +176,7 @@ int main(int argc, char *argv[]) {
 			h->ref = line_fields.at(0);
 			h->query = line_fields.at(1);
 			h->query_name = line_fields.at(2);
+			h->query_name_id = getQueryID(h->query_name);
 			h->aligment_start_pos = StrtoUI(line_fields.at(3));
 			h->alignment_last_pos = StrtoUI(line_fields.at(4))+1;
 			
@@ -205,7 +224,11 @@ int main(int argc, char *argv[]) {
 						if(runningRefAllele_2_noGaps != runningQueryAllele_2_noGaps)
 						{
 							assert(referenceSequence.substr(running2_begunRefPos_0based, runningRefAllele_2_noGaps.length()) == runningRefAllele_2_noGaps);
-							expectedAlleles_forVCF[arguments.at("referenceSequenceID")][running2_begunRefPos_0based][runningRefAllele_2_noGaps].insert(runningQueryAllele_2_noGaps);						
+							expectedAlleles_forVCF[arguments.at("referenceSequenceID")][running2_begunRefPos_0based][runningRefAllele_2_noGaps][runningQueryAllele_2_noGaps].insert(h->query_name_id);						
+						}
+						else
+						{
+							expectedAlleles_forVCF[arguments.at("referenceSequenceID")][running2_begunRefPos_0based][runningRefAllele_2_noGaps][runningQueryAllele_2_noGaps].insert(h->query_name_id);													
 						}
 						
 						runningRefAllele_2 = "";
@@ -308,6 +331,7 @@ int main(int argc, char *argv[]) {
 							h_part->ref = running_ref;
 							h_part->query = running_query;
 							h_part->query_name = h->query_name + "_part" + std::to_string(haplotype_parts.size());
+							h_part->query_name_id = getQueryID(h->query_name);							
 							h_part->aligment_start_pos = firstMatchPos_reference;
 							h_part->alignment_last_pos = lastMatchPos_reference;
 							haplotype_parts.push_back(h_part);
@@ -389,7 +413,8 @@ int main(int argc, char *argv[]) {
 				startingHaplotype* h_part = new startingHaplotype();
 				h_part->ref = running_ref;
 				h_part->query = running_query;
-				h_part->query_name = h_part->query_name + "_part" + std::to_string(haplotype_parts.size());
+				h_part->query_name = h->query_name + "_part" + std::to_string(haplotype_parts.size());
+				h_part->query_name_id = getQueryID(h->query_name);															
 				h_part->aligment_start_pos = firstMatchPos_reference;
 				h_part->alignment_last_pos = lastMatchPos_reference;
 				reconstituted_ref.append(running_ref);
@@ -476,11 +501,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "\t" << "n_alignments_split" << ": " << n_alignments_split << " (into " << n_alignments_sub << " subalignments.)\n";
 	std::cout << std::flush;
 
-	std::string fn_files_SNPs = arguments.at("input")+".VCF.expectedSNPs";
-	std::ofstream SNPsstream;
-	SNPsstream.open(fn_files_SNPs.c_str());
-	assert(SNPsstream.is_open());
-	
 	// produce overlapping VCF
 	{
 		std::ofstream outputStream_overlapping;
@@ -497,18 +517,42 @@ int main(int argc, char *argv[]) {
 				for(auto refAllele : pos.second)
 				{
 					std::string refAllele_string = refAllele.first;
-					std::set<std::string> alternativeAlleles = refAllele.second;
-
-					outputStream_overlapping <<
-							arguments.at("referenceSequenceID") << "\t" <<
-							pos.first + 1 << "\t" <<
-							"." << "\t" <<
-							refAllele_string << "\t" <<
-							join(std::vector<std::string>(alternativeAlleles.begin(), alternativeAlleles.end()), ",") << "\t" <<
-							'.' << "\t" <<
-							"PASS" << "\t" << 
-							'.'
-					<< "\n";					
+					
+					std::vector<std::string> alternativeAlleles;
+					std::vector<std::string> alternativeAlleles_whereFrom;
+					
+					bool nonRefAllele = false;
+					std::string refAlleleFrom = "-1";
+					for(auto refAllelesIn : refAllele.second)
+					{
+						if(refAllelesIn.first != refAllele.first)
+						{
+							alternativeAlleles.push_back(refAllelesIn.first);
+							alternativeAlleles_whereFrom.push_back(join2(std::vector<unsigned int>(refAllelesIn.second.begin(), refAllelesIn.second.end()), "/"));
+							nonRefAllele = true;
+						}
+						else
+						{
+							refAlleleFrom = join2(std::vector<unsigned int>(refAllelesIn.second.begin(), refAllelesIn.second.end()), "/");
+						}
+					}
+					
+					std::vector<std::string> alleles_whereFrom = {refAlleleFrom};
+					alleles_whereFrom.insert(alleles_whereFrom.end(), alternativeAlleles_whereFrom.begin(), alternativeAlleles_whereFrom.end());
+					
+					if(nonRefAllele)
+					{
+						outputStream_overlapping <<
+								arguments.at("referenceSequenceID") << "\t" <<
+								pos.first + 1 << "\t" <<
+								"." << "\t" <<
+								refAllele_string << "\t" <<
+								join(alternativeAlleles, ",") << "\t" <<
+								'.' << "\t" <<
+								"PASS" << "\t" << 
+								"CONTIG=" << join(alleles_whereFrom, ",")
+						<< "\n";	
+					}					
 				}
 			}
 		}
@@ -519,6 +563,12 @@ int main(int argc, char *argv[]) {
 	
 	if(doProduce_separatedVCF)
 		produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_1);
+
+
+	std::string fn_files_SNPs = arguments.at("input")+".VCF.expectedSNPs";
+	std::ofstream SNPsstream;
+	SNPsstream.open(fn_files_SNPs.c_str());
+	assert(SNPsstream.is_open());
 
 	for(auto SNPsPerRefID : expectedAlleles)
 	{
@@ -531,6 +581,16 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	
+	std::ofstream queryIDStream;
+	queryIDStream.open(outputFn_4.c_str());
+	assert(queryIDStream.is_open());
+	
+	for(auto queryIDInfo : query_name_2_id)
+	{
+		queryIDStream << queryIDInfo.first << "\t" << queryIDInfo.second << "\n";
+	}
+	
 	doneStream.open(doneFn.c_str());
 	if(! doneStream.is_open())
 	{
@@ -552,12 +612,14 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 	}
 
 	std::vector<std::map<unsigned int, std::string>> startingHaplotypes_pos_2_alleles;
+	std::vector<unsigned int> startingHaplotype_pos_2_haplotypeID;
 
 	for(auto startPos : alignments_starting_at)
 	{
 		for(startingHaplotype* alignment : startPos.second)
 		{
 			startingHaplotypes_pos_2_alleles.resize(startingHaplotypes_pos_2_alleles.size()+1);
+			startingHaplotype_pos_2_haplotypeID.push_back(alignment->query_name_id);
 			
 			assert(startPos.first == alignment->aligment_start_pos);
 
@@ -589,6 +651,7 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 	}
 	
 	size_t N_startingHaplotypes = startingHaplotypes_pos_2_alleles.size();
+	assert(startingHaplotype_pos_2_haplotypeID.size() == N_startingHaplotypes);
 	
 	// we start collecting alleles whenever we find an all-reference-identical position 
 	// we also stop when we find an all-reference-identical position (and then we flush)
@@ -685,10 +748,12 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 			{
 				std::set<std::string> runningAlleles;
 				std::vector<std::string> runningAlleles_vec;
+				std::vector<unsigned int> runningAlleles_vec_from;
 				for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
 				{
 					std::string runningAllele_noGaps = removeGaps(runningOpenAlleles.at(haplotypeI).substr(0, runningOpenAlleles.at(haplotypeI).length() - 1));
-										
+					unsigned int runningAllele_noGaps_whereFrom = startingHaplotype_pos_2_haplotypeID.at(haplotypeI);	
+					
 					if(runningOpenAlleles_which.at(haplotypeI))
 					{
 						assert(runningAllele_noGaps.length() > 0);
@@ -696,6 +761,7 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 
 						runningAlleles.insert(runningAllele_noGaps);
 						runningAlleles_vec.push_back(runningAllele_noGaps);
+						runningAlleles_vec_from.push_back(runningAllele_noGaps_whereFrom);
 					}
 					else
 					{
@@ -780,16 +846,23 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 					}
 					
 					std::vector<std::string> genotypes;				
-					for(auto oneAllele : runningAlleles_vec)
+					std::vector<std::string> genotypes_origin;	
+					assert(runningAlleles_vec.size() == runningAlleles_vec_from.size());
+					for(unsigned int alleleI = 0; alleleI < runningAlleles_vec.size(); alleleI++)
 					{
+						std::string oneAllele = runningAlleles_vec.at(alleleI);
+						unsigned int oneAllele_from = runningAlleles_vec_from.at(alleleI);
+
 						assert(allele_2_i.count(oneAllele));
 						if(oneAllele.length())
 						{
 							genotypes.push_back(std::to_string(allele_2_i.at(oneAllele)));
+							genotypes_origin.push_back(std::to_string(oneAllele_from));
 						}
 						else
 						{
 							genotypes.push_back("?");
+							genotypes_origin.push_back("?");
 						}
 					}
 					
@@ -802,8 +875,8 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 							"." << "\t" <<
 							"PASS" << "\t" <<
 							"." << "\t" <<
-							"GT" << "\t" <<
-							join(genotypes, "/") << "\n";
+							"GT:CONTIG" << "\t" <<
+							join(genotypes, "/") << ":" << join(genotypes_origin, ",") << "\n";
 				}
 			}
 			
@@ -1816,6 +1889,22 @@ string ItoStr(int i)
 	std::stringstream sstm;
 	sstm << i;
 	return sstm.str();
+}
+
+string join2(vector<unsigned int> parts, string delim)
+{
+	if(parts.size() == 0)
+		return "";
+
+	string ret = std::to_string(parts.at(0));
+
+	for(unsigned int i = 1; i < parts.size(); i++)
+	{
+		ret.append(delim);
+		ret.append(std::to_string(parts.at(i)));
+	}
+
+	return ret;
 }
 
 string join(vector<string> parts, string delim)
