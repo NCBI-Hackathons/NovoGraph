@@ -401,7 +401,6 @@ sub readFASTA
 sub reverseComplement
 {
 	my $kMer = shift;
-	$kMer =~ tr/ACGT/TGCA/;
-	return reverse($kMer);
-	return $kMer;
+	$kMer =~ tr/ACGTacgt/TGCAtgca/;
+	return scalar(reverse($kMer));
 }
