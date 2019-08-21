@@ -9,7 +9,6 @@ use Data::Dumper;
 use Getopt::Long;   
 use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
-use Bio::DB::HTS;
 
 $| = 1;
 
@@ -25,19 +24,21 @@ $| = 1;
 ##               --prefix VCF/graph
 ##               --contigLengths /intermediate_files/postGlobalAlignment_readLengths
 
-
 my $CRAM;
 my $referenceFasta;
 my $output;
 my $bin_CRAM2VCF;
+my $bin_sam2alignment;
 my $contigLengths;
-
+my $samtools_path;
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
 	'prefix:s' => \$output,
 	'contigLengths:s' => \$contigLengths, 
-	'CRAM2VCF_executable:s' => \$bin_CRAM2VCF
+	'CRAM2VCF_executable:s' => \$bin_CRAM2VCF,
+	'sam2alignment_executable:s' => \$bin_sam2alignment,
+	'samtools_path:s' => \$samtools_path,
 );
 	
 die "Please specify --CRAM" unless($CRAM);
@@ -47,6 +48,18 @@ die "Please specify --prefix" unless($output);
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 die "--CRAM2VCF_executable $bin_CRAM2VCF not present; Please run 'make' in the directory /src." unless(-e $bin_CRAM2VCF);
+die "--sam2alignment_executable $bin_sam2alignment not present; Please run 'make' in the directory /src." unless(-e $bin_sam2alignment);
+
+unless($samtools_path)
+{
+	$samtools_path = `which samtools`;
+	$samtools_path =~ s/[\n\r]//g;
+	unless($samtools_path and -x $samtools_path)
+	{
+		die "Can't determine path to samtools - please specify --samtools_path";
+	}
+}	
+die unless(-x $samtools_path);
 
 my %expectedLengths;
 if($contigLengths)
@@ -62,9 +75,31 @@ if($contigLengths)
 	close(L);
 }
 
-my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);
+my $fn_CRAM_index = $CRAM . '.extract.index';
+my $cmd_extract_index = qq($samtools_path view -H $CRAM > $fn_CRAM_index);
+system($cmd_extract_index) and die "Cannot execute command: $cmd_extract_index"; 
 
-my @sequence_ids = $sam->seq_ids();
+my $fn_CRAM_SAM = $CRAM . '.extract.SAM';
+my $cmd_extract_SAM = qq($samtools_path view $CRAM > $fn_CRAM_SAM);
+system($cmd_extract_SAM) and die "Cannot execute command: $cmd_extract_SAM";
+
+my $fn_CRAM_alignments = $CRAM . '.extract.alignments';
+my $cmd_doConvert = qq($bin_sam2alignment $fn_CRAM_SAM $referenceFasta > $fn_CRAM_alignments);
+system($cmd_doConvert) and die "Cannot execute command: $cmd_doConvert";
+
+print $fn_CRAM_index, "\n", $fn_CRAM_SAM, "\n", $fn_CRAM_alignments, "\n";
+
+my @sequence_ids;
+open(SAMHEADER, '<', $fn_CRAM_index) or die "Cannot open $fn_CRAM_index";
+while(<SAMHEADER>)
+{
+	chomp;
+	if($_ =~ /\@SQ\s+SN:(\S+)\s+LN:/)
+	{
+		push(@sequence_ids, $1);
+	}
+}
+close(SAMHEADER);
 
 my $reference_href;
 
@@ -83,9 +118,10 @@ my %targetPos_printAlignments;
 my @referenceSequenceIDs = @sequence_ids;
 my %alignments_per_referenceSequenceID;
 
+my $dir_collectOutput = $output . '_VCF_output';
 my $total_alignments = 0;
-mkdir('forVCF');
-die unless(-e 'forVCF');
+mkdir($dir_collectOutput);
+die unless(-e $dir_collectOutput);
 
 my $fn_cmds = $output . '_CRAM2VCF_commands.txt';
 my $fn_cmds_cat = $fn_cmds . '.cat';
@@ -95,50 +131,190 @@ open(CMDS, '>', $fn_cmds) or die "Cannot open $fn_cmds";
 open(CMDSCAT, '>', $fn_cmds_cat) or die "Cannot open $fn_cmds_cat";
 open(GAPSTRUCTURE, '>', $fn_gaps) or die "Cannot open $fn_gaps";
 print CMDSCAT 'cat ';
-foreach my $referenceSequenceID (@referenceSequenceIDs)
-{
+
+my %processed_ref_contig;
+my %processed_readID;
+open(ALIGNMENTS, '<', $fn_CRAM_alignments) or die "Cannot open $fn_CRAM_alignments";
+
+my $l_ref_sequence;
+my @gap_structure;
+my $fn_for_CRAM2VCF;
+my $fn_for_CRAM2VCF_SNPs;
+my $n_alignments = 0;
+my %alignments_starting_at;
+my $runningRefID;
+
+my $preProcess = sub {	
+	my $referenceSequenceID = shift;
+	die unless($referenceSequenceID eq $runningRefID);
 	print "Processing $referenceSequenceID .. \n";
 	die "Sequence ID $referenceSequenceID not defined in $referenceFasta" unless(exists $reference_href->{$referenceSequenceID});
 
-	my $l_ref_sequence = length($reference_href->{$referenceSequenceID});
-	my @gap_structure;
+	$l_ref_sequence = length($reference_href->{$referenceSequenceID});
+	@gap_structure = ();
 	$#gap_structure = ($l_ref_sequence - 1);
 
 	die unless(scalar(@gap_structure) == $l_ref_sequence);
 	
-	my $fn_for_CRAM2VCF = $output . '.part_'. $referenceSequenceID;
-	my $fn_for_CRAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
+	$fn_for_CRAM2VCF = $output . '.part_'. $referenceSequenceID;
+	$fn_for_CRAM2VCF_SNPs = $output . '.part_'. $referenceSequenceID . '.SNPs';
 	
 	open(D, '>', $fn_for_CRAM2VCF) or die "Cannot open $fn_for_CRAM2VCF";
 	# open(D2, '>', $fn_for_CRAM2VCF_SNPs) or die "Cannot open $fn_for_CRAM2VCF_SNPs";
 	
 	print D $reference_href->{$referenceSequenceID}, "\n";
-	my $n_alignments = 0;
-	my %alignments_starting_at;
+	$n_alignments = 0;
+	%alignments_starting_at = ();		
+};
+
+my $postProcess_collectedAlignments = sub {
+	if($runningRefID)
+	{
+		# reference gaps *before* the i-th reference character
+		my $examine_gaps_n_alignment = 0;
+		foreach my $alignment_start_pos (keys %alignments_starting_at)
+		{
+			foreach my $alignment (@{$alignments_starting_at{$alignment_start_pos}})
+			{
+				my $ref = $alignment->[0];
+				
+				my $start_pos = $alignment_start_pos - 1;
+				my $ref_pos = $start_pos;
+				my $running_gaps = 0;
+				for(my $i = 0; $i < length($ref); $i++)
+				{
+					my $c_ref = substr($ref, $i, 1);
+					
+					if(($c_ref eq '-') or ($c_ref eq '*'))
+					{
+						$running_gaps++;
+					}
+					else
+					{
+						if(($ref_pos >= 5309528) and ($ref_pos <= 5309532))
+						{
+							# print "Gaps $ref_pos ". $alignment->[2] . ": " . $running_gaps . "\n";
+						}	
+						if($ref_pos != $start_pos)
+						{
+							if(not defined $gap_structure[$ref_pos])
+							{
+								$gap_structure[$ref_pos] = $running_gaps;
+							}
+							else
+							{
+								die "Gap structure mismatch at position $ref_pos - this is alignment $examine_gaps_n_alignment, have existing value $gap_structure[$ref_pos], want to set $running_gaps" unless($gap_structure[$ref_pos] == $running_gaps);
+							}
+						}
+						$ref_pos++;
+						$running_gaps = 0;
+						$examine_gaps_n_alignment++;
+					}
+				}	
+			}
+		}
+			
+		$total_alignments += $n_alignments;
+		print "Have loaded $n_alignments alignments -- $fn_for_CRAM2VCF.\n";
+
+		for(my $refPos = 0; $refPos <= $#gap_structure; $refPos++)
+		{
+			my $n_gaps = $gap_structure[$refPos];
+			if($n_gaps)
+			{
+				print GAPSTRUCTURE join("\t", $runningRefID, $refPos, $n_gaps), "\n";
+			}
+		}						
+
+		my $cmd = qq($bin_CRAM2VCF --input $fn_for_CRAM2VCF --referenceSequenceID $runningRefID &> ${dir_collectOutput}/output_${runningRefID}.txt &);
+		
+		my $output_file = $fn_for_CRAM2VCF . '.VCF';
+		
+		print CMDS $cmd, "\n";
+		
+		print CMDSCAT $output_file . ' ';
+
+		print "Now we could be executing: $cmd (manual)\n";	
+
+		if(exists $targetPos_printAlignments{$runningRefID})
+		{
+			foreach my $targetPosData (@{$targetPos_printAlignments{$runningRefID}})
+			{
+				my $targetPos = $targetPosData->[0];
+				my $outputFn = 'temp/' . $runningRefID . '_around_' . $targetPos;
+				outputMSAInto($targetPos, \%alignments_starting_at, $outputFn);
+			}
+		}
+	}
+};
+while(<ALIGNMENTS>)
+{
+	my $header = $_; chomp($header);
+	my $aligned_reference = <ALIGNMENTS>; chomp($aligned_reference);
+	my $aligned_read = <ALIGNMENTS>; chomp($aligned_read);
+	my $aligned_qualities = <ALIGNMENTS>; chomp($aligned_qualities);
+	die unless($aligned_reference and $aligned_read and $aligned_qualities);
+	die unless(length($aligned_reference) == length($aligned_read));
+	print length($aligned_reference), "\n";
 	
-	print "\t\tSet sequence ID to $referenceSequenceID\n";
-	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);	
-	while(my $alignment = $alignment_iterator->next_seq)
+	my @header_line_fields = split(/ /, $header);
+	my $readID = $header_line_fields[0];
+	my $refPositions = $header_line_fields[1];
+	die unless($refPositions =~ /^(\w+):(\d+)-(\d+)$/);
+	my $referenceSequenceID = $1;
+	my $alignmentStart_1based = $2;
+	my $alignmentStop_1based = $3;
+	die unless($alignmentStart_1based <= $alignmentStop_1based); # otherwise RC
+	
+	# print $readID, " -> ", $referenceSequenceID, " ", $alignmentStart_1based, "\n";
+	die unless(exists $reference_href->{$referenceSequenceID});	
+	
+	if((not defined $runningRefID) or ($referenceSequenceID ne $runningRefID))
+	{
+		$postProcess_collectedAlignments->();
+		if(defined $runningRefID)
+		{
+			$processed_ref_contig{$runningRefID}++;
+		}
+		if($processed_ref_contig{$referenceSequenceID})
+		{
+			die "Duplicate reference $referenceSequenceID - is this input CRAM sorted?";
+		}
+		$runningRefID = $referenceSequenceID;
+		
+		$preProcess->($referenceSequenceID);
+	}
+	
+	if($processed_readID{$readID})
+	{
+		die "Duplicate read $readID - is this input CRAM sorted?";
+	}
+	$processed_readID{$readID}++;	
+	
 	{
 		$n_alignments++;		
- 
-		my $alignment_start_pos = $alignment->start - 1;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
+
+		my $alignment_start_pos = $alignmentStart_1based - 1;
+		my ($ref,$matches,$query) = (uc($aligned_reference), undef, uc($aligned_read));
 		unless(length($ref) == length($query))
 		{
-			warn Dumper("Alignment length mismatch", length($ref), length($query), $alignment->query->name);
+			die Dumper("Alignment length mismatch", length($ref), length($query), $readID);
 			next;
 		}	
+		
+		(my $ref_noGaps = uc($ref)) =~ s/-//g;
+		my $supposed_ref_noGaps = uc(substr($reference_href->{$referenceSequenceID}, $alignmentStart_1based - 1, $alignmentStop_1based - $alignmentStart_1based + 1));
+		die unless($ref_noGaps eq $supposed_ref_noGaps);
 		
 		if($contigLengths)
 		{
 			my $query_noGaps = $query;
 			$query_noGaps =~ s/[\-_\*]//g;
-			my $expectedLength = $expectedLengths{$alignment->query->name};
-			die "No length for " . $alignment->query->name unless(defined $expectedLength);
+			my $expectedLength = $expectedLengths{$readID};
+			die "No length for " . $readID unless(defined $expectedLength);
 			unless($expectedLength == length($query_noGaps))
 			{
-				die Dumper("Sequence length mismatch", $query_noGaps, length($query_noGaps), $expectedLength, length($alignment->query->dna), $alignment->query->name);
+				die Dumper("Sequence length mismatch", $query_noGaps, length($query_noGaps), $expectedLength, $readID);
 			}
 		}
 			
@@ -240,96 +416,37 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 			
 		}
 		
-		my $alignment_last_pos = $ref_pos - 1;
-		my $alignment_info_aref = [$ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos];
+		my $alignment_last_pos = $ref_pos;
+		my $alignment_info_aref = [$ref, $query, $readID, $alignment_start_pos, $alignment_last_pos];
 		push(@{$alignments_starting_at{$alignment_start_pos}}, $alignment_info_aref);
 		
-		print D join("\t", $ref, $query, $alignment->query->name, $alignment_start_pos, $alignment_last_pos), "\n";
+		print D join("\t", $ref, $query, $readID, $alignment_start_pos, $alignment_last_pos), "\n";
 		
+		(my $ref_afterUpdate_noGaps = $ref) =~ s/-//g;
+		my $supposed_ref_afterUpdate_noGaps = substr($reference_href->{$referenceSequenceID}, $alignment_start_pos, $alignment_last_pos - $alignment_start_pos + 1);
+		die Dumper("Alignment reference sequence mismatch", length($ref_afterUpdate_noGaps), length($supposed_ref_afterUpdate_noGaps)) unless(uc($ref_afterUpdate_noGaps) eq uc($supposed_ref_afterUpdate_noGaps));
+
 		$alignments_per_referenceSequenceID{$referenceSequenceID}[0]++;
 		(my $query_nonGap = $query) =~ s/[\-_\*]//g;
-		$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);
-	}
-	
-	# reference gaps *before* the i-th reference character
-	my $examine_gaps_n_alignment = 0;
-	foreach my $alignment_start_pos (keys %alignments_starting_at)
-	{
-		foreach my $alignment (@{$alignments_starting_at{$alignment_start_pos}})
-		{
-			my $ref = $alignment->[0];
-			
-			my $start_pos = $alignment_start_pos - 1;
-			my $ref_pos = $start_pos;
-			my $running_gaps = 0;
-			for(my $i = 0; $i < length($ref); $i++)
-			{
-				my $c_ref = substr($ref, $i, 1);
-				
-				if(($c_ref eq '-') or ($c_ref eq '*'))
-				{
-					$running_gaps++;
-				}
-				else
-				{
-					if(($ref_pos >= 5309528) and ($ref_pos <= 5309532))
-					{
-						# print "Gaps $ref_pos ". $alignment->[2] . ": " . $running_gaps . "\n";
-					}	
-					if($ref_pos != $start_pos)
-					{
-						if(not defined $gap_structure[$ref_pos])
-						{
-							$gap_structure[$ref_pos] = $running_gaps;
-						}
-						else
-						{
-							die "Gap structure mismatch at position $ref_pos - this is alignment $examine_gaps_n_alignment, have existing value $gap_structure[$ref_pos], want to set $running_gaps" unless($gap_structure[$ref_pos] == $running_gaps);
-						}
-					}
-					$ref_pos++;
-					$running_gaps = 0;
-					$examine_gaps_n_alignment++;
-				}
-			}	
-		}
-	}
-			
-	close(D);
-	
-	$total_alignments += $n_alignments;
-	print "Have loaded $n_alignments alignments -- $fn_for_CRAM2VCF.\n";
-
-	for(my $refPos = 0; $refPos <= $#gap_structure; $refPos++)
-	{
-		my $n_gaps = $gap_structure[$refPos];
-		if($n_gaps)
-		{
-			print GAPSTRUCTURE join("\t", $referenceSequenceID, $refPos, $n_gaps), "\n";
-		}
-	}	
-	my $cmd = qq($bin_CRAM2VCF --input $fn_for_CRAM2VCF --referenceSequenceID $referenceSequenceID &> forVCF/output_${referenceSequenceID}.txt &);
-	
-	my $output_file = $fn_for_CRAM2VCF . '.VCF';
-	
-	print CMDS $cmd, "\n";
-	
-	print CMDSCAT $output_file . ' ';
-
-	print "Now we could be executing: $cmd (manual)\n";	
-
-	if(exists $targetPos_printAlignments{$referenceSequenceID})
-	{
-		foreach my $targetPosData (@{$targetPos_printAlignments{$referenceSequenceID}})
-		{
-			my $targetPos = $targetPosData->[0];
-			my $outputFn = 'temp/' . $referenceSequenceID . '_around_' . $targetPos;
-			outputMSAInto($targetPos, \%alignments_starting_at, $outputFn);
-		}
+		$alignments_per_referenceSequenceID{$referenceSequenceID}[1] += length($query_nonGap);	
 	}
 }
+close(ALIGNMENTS);
+$postProcess_collectedAlignments->();
+$processed_ref_contig{$runningRefID}++;
 
-# close(OUT);
+my %_referenceSequenceIDs_uniq = map {$_ => 1} @referenceSequenceIDs;
+die unless(scalar(keys %_referenceSequenceIDs_uniq) == scalar(@referenceSequenceIDs));
+foreach my $referenceSequenceID (@referenceSequenceIDs)
+{
+	unless($processed_ref_contig{$referenceSequenceID})
+	{
+		$runningRefID = $referenceSequenceID;
+		$preProcess->($referenceSequenceID);	
+		$postProcess_collectedAlignments->();
+		$processed_ref_contig{$referenceSequenceID}++;
+	}
+}
 
 print CMDSCAT ' >> ' . $output;
 

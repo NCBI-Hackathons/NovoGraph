@@ -37,6 +37,7 @@ my $outputTruncatedReads;
 my $outputReadLengths;
 my $endsFree_reference = 1;
 my $CIGARscript_path; 
+my $samtools_path;
 
 my $S_match = 1;
 my $S_mismatch = -1;
@@ -48,7 +49,8 @@ GetOptions (
 	'outputFile:s' => \$outputFile,	
 	'outputTruncatedReads:s' => \$outputTruncatedReads,
 	'outputReadLengths:s' => \$outputReadLengths,
-	'CIGARscript_path:s' => \$CIGARscript_path
+	'CIGARscript_path:s' => \$CIGARscript_path,
+	'samtools_path:s' => \$samtools_path,	
 );
 
 die "Please specify --alignmentsFile" unless($alignmentsFile);
@@ -63,6 +65,18 @@ die "Please specify --outputTruncatedReads" unless($outputTruncatedReads);
 die "Please specify --outputReadLengths" unless($outputReadLengths);
 
 die "Please specify path to script dealWithTooManyCIGAROperations.pl --CIGARscript_path" unless($CIGARscript_path);
+
+unless($samtools_path)
+{
+	$samtools_path = `which samtools`;
+	$samtools_path =~ s/[\n\r]//g;
+	unless($samtools_path and -x $samtools_path)
+	{
+		die "Can't determine path to samtools - please specify --samtools_path";
+	}
+}	
+die unless(-x $samtools_path);
+
 
 print "Read $referenceFasta\n";
 my $reference_href = readFASTA($referenceFasta, 0);
@@ -562,7 +576,7 @@ my $processReadLines = sub {
 		}
 		
 		my $CIGAR = join('', map {die unless(scalar(@{$_}) == 2); $_->[0] . $_->[1]} @CIGAR);
-		
+		die if($CIGAR =~ /H/i);
 		
 		my @fields_for_output = (
 			$readID,
@@ -652,12 +666,12 @@ print "Filtering SAM with command: $cmd_filter\n";
 die "Filtering failed" unless(system($cmd_filter) == 0);
 
 my $bam_unsorted = $outputFile_sam_filtered . '.bam';
-my $cmd_bam_conversion = qq(samtools view -S -b -o${bam_unsorted} $outputFile_sam_filtered);
+my $cmd_bam_conversion = qq($samtools_path view -S -b -o${bam_unsorted} $outputFile_sam_filtered);
 
 print "Converting to BAM with command:\n\t$cmd_bam_conversion\n\n";
 die "BAM conversion failed" unless(system($cmd_bam_conversion) == 0);
 
-my $cmd_bam_sort = qq(samtools sort -o${outputFile} $bam_unsorted; samtools index $outputFile);
+my $cmd_bam_sort = qq($samtools_path sort -o${outputFile} $bam_unsorted; $samtools_path index $outputFile);
 print "Sorting and indexing BAM with command:\n\t$cmd_bam_sort\n\n";
 die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
 
@@ -718,7 +732,8 @@ sub enrichChains
 	my $completeReadSequence_minus = shift;
 	my $reference_href = shift;
 	my $chromosome = shift;
-	
+	die if($completeReadSequence_plus eq $completeReadSequence_minus);
+	die unless(length($completeReadSequence_plus) == length($completeReadSequence_minus));
 	die unless(defined $completeReadSequence_minus);
 	
 	my @chainsIn = @$chainsIn_aref;
@@ -841,13 +856,14 @@ sub enrichChains
 					my $chainSequence_reference_noGaps = $alignment_reference;
 					$chainSequence_reference_noGaps =~ s/-//g;
 					die Dumper("Sequence mismatch", $supposedReferenceSequence, $chainSequence_reference_noGaps, $chain, $chromosome) unless($supposedReferenceSequence eq $chainSequence_reference_noGaps);
+					print "Checked reference sequence.\n";
 				}
 				
 				my $supposedReadSequence = substr($useReadSequence, $chain->{firstPos_read}, $lastPos_read - $chain->{firstPos_read} + 1);
 				my $chainSequence_read_noGaps = $alignment_read;
 				$chainSequence_read_noGaps =~ s/-//g;
 				
-				die Dumper("Error 6", $character_reference, $character_read, $alignmentPos, $chain->{firstPos_read}, $chain->{lastPos_read}, $lastPos_read, length($supposedReadSequence), length($chainSequence_read_noGaps)) unless($supposedReadSequence eq $chainSequence_read_noGaps);				
+				die Dumper("Error 6", ['Strand', $chain->{strand}, (($completeReadSequence_minus eq $useReadSequence) ? '-' : '+')], $chain->{chromosome}, $character_reference, $character_read, $alignmentPos, $chain->{firstPos_read}, $chain->{lastPos_read}, $lastPos_read, length($supposedReadSequence), length($chainSequence_read_noGaps), ['Alignments', substr($alignment_reference, 0, 20), substr($alignment_read, 0, 20)], [substr($supposedReadSequence, 0, 20), substr($chainSequence_read_noGaps, 0, 20)], [substr($supposedReadSequence, length($supposedReadSequence) - 20, 20), substr($chainSequence_read_noGaps, length($chainSequence_read_noGaps) - 20, 20)]) unless($supposedReadSequence eq $chainSequence_read_noGaps);				
 
 				push(@chainsOut, {
 					readID => $chain->{readID},

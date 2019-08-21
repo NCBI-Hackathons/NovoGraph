@@ -107,17 +107,22 @@ unless(-d $outputDirectory)
 
 my $ginsiMAFFT = ($limitToPGF) ? ' --useGinsi 1 ' : '';
 
+my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38.headerfile.txt';
+
+# $samtools_path sort -o  ${outputDirectory}/${prefix}_allContigs_sorted.bam  ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
+# $samtools_path index  ${outputDirectory}/${prefix}_allContigs_sorted.bam;\
+# $samtools_path view -c -f 0x4  ${outputDirectory}/${prefix}_allContigs_sorted.bam
+
+
 print qq(
 bwa mem -t 4 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
-$samtools_path sort -o  ${outputDirectory}/${prefix}_allContigs_sorted.bam  ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
-$samtools_path index  ${outputDirectory}/${prefix}_allContigs_sorted.bam;\
-$samtools_path view -c -f 0x4  ${outputDirectory}/${prefix}_allContigs_sorted.bam
+$samtools_path view -c -f 0x4 ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # Make sure the last samtools view command returned 0!
 
-perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allContigs_sorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs;\
-perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_sorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt;\
-perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.bam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CIGARscript_path scripts/dealWithTooManyCIGAROperations.pl;\
+perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path ;\
+perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path ;\
+perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.bam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CIGARscript_path scripts/dealWithTooManyCIGAROperations.pl --samtools_path $samtools_path;
 perl scripts/countExpectedGlobalAlignments.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam
 
 perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1;\
@@ -126,13 +131,15 @@ perl scripts/CALLMAFFT.pl --action reprocess --mafftDirectory  ${outputDirectory
 
 perl scripts/globalize_windowbams.pl --fastadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --msadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/ --contigs  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --output  ${outputDirectory}/${prefix}_combined.sam
 
-$samtools_path view -h -t pgf.GrCh38.headerfile.txt  ${outputDirectory}/${prefix}_combined.sam >  ${outputDirectory}/${prefix}_combined.sam_with_header.sam;\
+$samtools_path view -h -t ${samtools_view_header}  ${outputDirectory}/${prefix}_combined.sam >  ${outputDirectory}/${prefix}_combined.sam_with_header.sam;\
 $samtools_path sort  ${outputDirectory}/${prefix}_combined.sam_with_header.sam -o  ${outputDirectory}/${prefix}_combined.sam_with_header_sorted.sam;\
 cat  ${outputDirectory}/${prefix}_combined.sam_with_header_sorted.sam | $samtools_path view -C -T $referenceGenome - >  ${outputDirectory}/${prefix}_combined.cram;\
 $samtools_path index  ${outputDirectory}/${prefix}_combined.cram;\
 perl scripts/checkMAFFT_input_and_output.pl --MAFFTdir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --preMAFFTBAM  ${outputDirectory}/${prefix}_forMAFFT.bam  --finalOutputCRAM  ${outputDirectory}/${prefix}_combined.cram --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt
 
-perl scripts/CRAM2VCF.pl --CRAM  ${outputDirectory}/${prefix}_combined.cram  --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CRAM2VCF_executable src/CRAM2VCF
+perl scripts/CRAM2VCF.pl --CRAM  ${outputDirectory}/${prefix}_combined.cram  --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CRAM2VCF_executable src/CRAM2VCF --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path 
+
+
 );
 
 if($limitToPGF)
@@ -147,8 +154,15 @@ else
 print qq(
 # Start VCF generation process for all reference contigs:
 perl scripts/launch_CRAM2VCF_C++.pl --prefix ${outputDirectory}/${prefix}_finalVCF
+
+perl scripts/CRAM2VCF_createFinalVCF.pl --CRAM ${outputDirectory}/${prefix}_combined.cram --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF
+
 );	
 }
+
+								
+
+
 
 
 

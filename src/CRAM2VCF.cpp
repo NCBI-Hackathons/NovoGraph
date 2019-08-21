@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 			h->query_name = line_fields.at(2);
 			h->query_name_id = getQueryID(h->query_name);
 			h->aligment_start_pos = StrtoUI(line_fields.at(3));
-			h->alignment_last_pos = StrtoUI(line_fields.at(4))+1;
+			h->alignment_last_pos = StrtoUI(line_fields.at(4));
 			
 			// determine alleles expected to be found
 			{

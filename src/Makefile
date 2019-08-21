@@ -48,7 +48,7 @@ OBJS =
 #
 # list executable file names
 #
-EXECS = CRAM2VCF
+EXECS = CRAM2VCF sam2alignment
 
 OUT_DIR = .
 
@@ -69,7 +69,7 @@ $(DIR_OBJ)/%.o: %.cpp %.h
 # odds and ends
 #
 clean:
-	/bin/rm CRAM2VCF CRAM2VCF.o
+	/bin/rm CRAM2VCF CRAM2VCF.o sam2alignment sam2alignment.o
 
 ${OUT_DIR}:
 	${MKDIR_P} ${OUT_DIR}
