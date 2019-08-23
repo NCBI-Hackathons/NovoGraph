@@ -11,6 +11,7 @@ use POSIX qw(ceil);
 use File::Copy "cp";
 use FindBin;
 use File::Spec;
+use List::Util qw/shuffle/;
 use Cwd;
 my $current_dir = getcwd;
 
@@ -257,6 +258,7 @@ elsif($action eq 'kickOff')
 	print "Identified ", scalar(@sub_directories), " directories.\n";
 	print join("\n", map {' - '.$_} @sub_directories), "\n";
 	
+	my @command_lines_for_print;
 	my $n_files = 0;
 	foreach my $sub_directory (@sub_directories)
 	{
@@ -272,14 +274,18 @@ elsif($action eq 'kickOff')
 		{
 			my $fasta_file_full_path = $subDir_fullPath . '/' . $fasta_file;
 			$fasta_file_full_path = File::Spec->rel2abs($fasta_file_full_path);
-			die unless(-e $fasta_file_full_path);
-			print FILES_TO_PROCESS $fasta_file_full_path, "\n";
+			die "File $fasta_file_full_path not existing" unless(-e $fasta_file_full_path);
+			push(@command_lines_for_print, $fasta_file_full_path);
 			$n_files++;
 			# last if($n_files > 100);
 		}
 	}
 	
 	my $n_chunks = ceil($n_files / $chunkSize);
+	
+	@command_lines_for_print = shuffle(@command_lines_for_print);
+	print FILES_TO_PROCESS join("\n", @command_lines_for_print), "\n";
+	
 	close(FILES_TO_PROCESS);
 	
 	invoke_self_array($n_chunks-1);

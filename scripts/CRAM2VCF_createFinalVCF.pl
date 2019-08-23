@@ -9,7 +9,6 @@ use Data::Dumper;
 use Getopt::Long;   
 use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
-use Bio::DB::HTS;
 
 ## Usage: 
 ## CRAM2VCF_createFinalVCF.pl --CRAM <path to CRAM> 
@@ -41,9 +40,20 @@ die "Please specify --prefix" unless($output);
 die "--CRAM $CRAM not existing" unless(-e $CRAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
-my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $CRAM);
+my $fn_CRAM_index = $CRAM . '.extract.index';
+die "Expected file $fn_CRAM_index not found" unless(-e $fn_CRAM_index);
 
-my @sequence_ids = $sam->seq_ids();
+my @sequence_ids;
+open(SAMHEADER, '<', $fn_CRAM_index) or die "Cannot open $fn_CRAM_index";
+while(<SAMHEADER>)
+{
+	chomp;
+	if($_ =~ /\@SQ\s+SN:(\S+)\s+LN:/)
+	{
+		push(@sequence_ids, $1);
+	}
+}
+close(SAMHEADER);
 
 my $VCF1 = $output . '.separated.VCF';
 my $VCF2 = $output . '.overlapping.VCF';
@@ -125,7 +135,7 @@ foreach my $referenceSequenceID (@referenceSequenceIDs)
 close(OUT1);
 close(OUT2);
 
-print "\n\nGenerated file $VCF1 and $VCF2\n(the .overlapping.VCF file is a straighforward representation of the input multiple sequence alignment in VCF format, with potentially overlapping variant alleles; the .separated.VCF file maintains a strict horizontal separation between variant alleles in the VCF. Which file you want to use depends on your downstream inference pipeline.)\n\n";
+print "\n\nGenerated file $VCF1 and $VCF2\n\n(The .overlapping.VCF file is a straighforward representation of the input multiple sequence alignment in VCF format, with potentially overlapping variant alleles; the .separated.VCF file maintains a strict horizontal separation between variant alleles in the VCF. Which file you want to use depends on your downstream inference pipeline.)\n\n";
 
 sub get_done
 {

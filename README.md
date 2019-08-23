@@ -24,20 +24,39 @@ Given that this genome graph has been designed to incorporate larger structural 
 
 ### Genome Graph Construction Pipeline
 
+#### Recent changes
+(August 2019)
+* NovoGraph now supports minimap2 for the initial mapping step and the PBSPro scheduler. The Bio::DB::HTS Perl module is not a dependency anymore.
+* The primary input is now an unsorted BAM.
+
 #### Inputs:
 * reference file, [GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa](https://osf.io/py6kw/) (GRCh38 without ALTs)
-* contigs file, AllContigs.fa
+* contigs file, allContigs.fa
 
 #### Requirements:
-* SAMtools version >= 1.4
+* SAMtools version >= 1.6
 * BWA version >= 0.7.15
 * MAFFT version >= 7
 * Perl dependencies: 
-    * Bio::DB::HTS, https://github.com/Ensembl/Bio-DB-HTS
     * Set::IntervalTree, https://metacpan.org/release/Set-IntervalTree
     
+#### Quick start:
+
+```
+perl suggestCommands.pl --inputContigs allContigs.fa --referenceGenome GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa --outputDirectory myGraph > commands_for_myGraph.txt
+```
+
+This will produce a file `commands_for_myGraph.txt`, which will contain the commands for a complete NovoGraph run.
+
+
+Some important notes:
+* The commands produced by `suggestCommands.pl` are not meant for fully automated execution - instead, execute the commands manually (at least when you run NovoGraph for the first time), and read the integrated comments. The comments will also tell you how to use minimap2 or a PBSPro scheduling system.
+* The utilized reference genome (here: `GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa`) should always be a primary reference, i.e. it should not contain any ALT contigs. You can, however, include the ALT contigs in your input file (here: `allContigs.fa`).
 
 #### Preparation:
+*Note*: The following commands assume you are in the `scripts` directory of NovoGraph, and most intermediate output also goes there. In most circumstances, it is preferable to use a dedicated output directory. When using `suggestCommands.pl`, this is specified as a parameter.
+
+
 ```
 ## Index the reference FASTA
 bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
@@ -45,24 +64,19 @@ bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
 ## Align the contigs FASTA against the reference, outputting a single BAM
 bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
 
-## Sort the resulting BAM
-samtools sort -o SevenGenomes.bam allContigs_unsorted.bam
-
-## Index the resulting BAM
-samtools index SevenGenomes.bam
-
 ## Check that there are no unmapped reads in the input BAM, as this might lead to unknown behaviour
-samtools view -c -f 0x4 SevenGenomes.bam
+samtools view -c -f 0x4 allContigs_unsorted.bam
 
 ## If there is no output with the above command, continue. 
 ## Otherwise, if you do find unmapped reads in the input BAM,
 ## please remove these as follows and use 'SevenGenomes.filtered.bam' for the remainder of the pipeline
-samtools view -F 0x4 -bo SevenGenomes.filtered.bam SevenGenomes.bam
+samtools view -F 0x4 -bo allContigs_unsorted.filtered.bam allContigs_unsorted.bam
 
 ## Finally, check that these inputs are in the correct format for the MAFFT
-perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
+perl checkBAM_SVs_and_INDELs.pl --BAM allContigs_unsorted.bam
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                                --readsFasta AllContigs.fa
+                                --readsFasta allContigs.fa
+								--sam2alignment_executable ../src/sam2alignment
 ```
 
 <p align="center">
@@ -75,11 +89,12 @@ perl checkBAM_SVs_and_INDELs.pl --BAM SevenGenomes.bam
 ```
 ## Execute BAM2ALIGNMENT.pl
 ## This first step will output a text file '*.sortedWithHeader' which is to be input into the next script, FIND_GLOBAL_ALIGNMENTS.pl
-## (Here we place outputs into the subdirectory '/intermediate_files'.)
-perl BAM2ALIGNMENT.pl --BAM SevenGenomes.bam
+## (Here we place outputs into the subdirectory '../intermediate_files'.)
+perl BAM2ALIGNMENT.pl --BAM allContigs_unsorted.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                      --readsFasta AllContigs.fa 
-                      --outputFile .../intermediate_files/AlignmentInput.txt
+                      --readsFasta allContigs.fa 
+                      --outputFile ../intermediate_files/AlignmentInput.txt
+					  --sam2alignment_executable ../src/sam2alignment
 
 ## Output:
 ## AlignmentInput.txt.sortedWithHeader
@@ -107,12 +122,16 @@ perl countExpectedGlobalAlignments.pl --BAM forMAFFT.bam
 ## Execute BAM2MAFFT.pl
 perl BAM2MAFFT.pl --BAM forMAFFT.bam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                  --readsFasta AllContigs.fa 
+                  --readsFasta allContigs.fa 
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
 
 ## The next step is to execute CALLMAFFT.pl
 ## This step assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
+## If you use PBSPro, you can also add arguments like the following (modified for your local environment):
+##    --PBSPro 1 --PBSPro_select 'select=1:ncpus=16:mem=48GB' --PBSPro_A IMMGEN --preExec 'module load Perl; module load SamTools; module load Mafft/7.407' --chunkSize 500
+## The --chunkSize parameter can be used to control the number of multiple sequence alignments combined into a single cluster job
+## (i.e. larger --chunkSize values lead to fewer submitted jobs)
 perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMAFFT --qsub 1
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
@@ -129,8 +148,8 @@ perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
                   
 ## Note: For the majority of use cases, this file 'windowbam.header.txt' should remain untouched. 
-Users should use the file 'windowbam.header.txt' as provided, unless there are assemblies with contigs 
-longer than chr1 in hg38, 248956422 bp. In this case, please change this value to be the size of the largest contig. 
+## Users should use the file 'windowbam.header.txt' as provided, unless there are assemblies with contigs 
+## longer than chr1 in hg38, 248956422 bp. In this case, please change this value to be the size of the largest contig. 
 
 ## Next, we concatenate windows into a global MSA, outputting a single SAM file
 perl globalize_windowbams.pl --fastadir .../intermediate_files/forMAFFT/ 
@@ -168,6 +187,7 @@ perl CRAM2VCF.pl --CRAM combined.cram
                  --prefix graph 
                  --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
                  --CRAM2VCF_executable ../src/CRAM2VCF
+				 --sam2alignment_executable ../src/sam2alignment
 
 
 
@@ -207,7 +227,7 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/MtSi
 ## NA19240, Yoruba:
 for file in `echo LKPB01.1.fsa_nt.gz LKPB01.2.fsa_nt.gz LKPB01.3.fsa_nt.gz LKPB01.4.fsa_nt.gz LKPB01.5.fsa_nt.gz LKPB01.6.fsa_nt.gz`; do wget ftp://ftp.ncbi.nlm.nih.gov/sra/wgs_aux/LK/PB/LKPB01/$file; done
 ```
-Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `AllContigs.fa`.
+Upon the successful download of these FASTAs, users should concatenate the individual assemblies into a single FASTA, `allContigs.fa`.
 
 ### Data Availability
 

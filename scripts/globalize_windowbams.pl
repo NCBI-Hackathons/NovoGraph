@@ -42,6 +42,20 @@ process_commandline();
 my $fastadir = $Opt{'fastadir'};
 my $msadir = $Opt{'msadir'};
 my $output_file = $Opt{'output'};
+my $samtools_path = $Opt{'samtools_path'};
+
+
+unless($samtools_path)
+{
+	$samtools_path = `which samtools`;
+	$samtools_path =~ s/[\n\r]//g;
+	unless($samtools_path and -x $samtools_path)
+	{
+		die "Can't determine path to samtools - please specify --samtools_path";
+	}
+}	
+die unless(-x $samtools_path);
+
 
 
 my $contigs_file = $Opt{contigs};
@@ -49,7 +63,7 @@ my $contigs_file = $Opt{contigs};
 my $rh_windowinfo = read_windowbams_info($fastadir, $msadir); # hashed by ref entry, then sorted lists of hashes to bam paths ("bam") and offset positions ("offset")
 my $rh_contiglength = read_contigs_file($contigs_file); # contig lengths hashed by contig name
 
-my $sambam_file = ($Opt{bamheader}) ? " | samtools view -uS -t $Opt{bamheader} > $output_file"
+my $sambam_file = ($Opt{bamheader}) ? " | $samtools_path view -uS -t $Opt{bamheader} > $output_file"
                                     : "> $output_file";
 
 my $sam_fh = FileHandle->new("$sambam_file");
@@ -200,7 +214,7 @@ sub read_windowbam_add_offset {
         return {%aligns};
     }
 
-    my $samtools_view_cmd = "samtools view $bamfile | "; 
+    my $samtools_view_cmd = "$samtools_path view $bamfile | "; 
     my $fh = FileHandle->new($samtools_view_cmd); # assume BAM format for now
 
     while (<$fh>) {

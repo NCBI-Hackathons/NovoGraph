@@ -9,7 +9,6 @@ use Data::Dumper;
 use Getopt::Long;   
 use List::Util qw/max all/;
 use List::MoreUtils qw/mesh/;
-use Bio::DB::HTS;
 
 $| = 1;
 

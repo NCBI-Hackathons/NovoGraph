@@ -115,28 +115,56 @@ my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38
 
 
 print qq(
-bwa mem -t 4 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam;\
+
+# Map the initial contigs with bwa - note that there is no sorting step!
+bwa mem -t 4 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+
+# You could also use minimap2 instead of bwa, like this:
+# minimap2 -t 4 -a -x asm5 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+
+# Check that the following command returns 0 - otherwise remove entries of unmapped entries from BAM:
 $samtools_path view -c -f 0x4 ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
-# Make sure the last samtools view command returned 0!
+# Check that all input data look OK:
+perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
 
-perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path ;\
-perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path ;\
-perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.bam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CIGARscript_path scripts/dealWithTooManyCIGAROperations.pl --samtools_path $samtools_path;
+# Convert BAM into a simple text format readable by the next step:
+perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
+
+# Find globally best alignment for each input contig:
+perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.bam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CIGARscript_path scripts/dealWithTooManyCIGAROperations.pl --samtools_path $samtools_path
+
+# Produce some summary statistics:
 perl scripts/countExpectedGlobalAlignments.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam
 
-perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1;\
+# Prepare the multiple sequence alignment step:
+perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1
+
+# Kick off multiple sequence alignment generation. This commands assumes that you are using an SGE cluster environment.
+# If you have no cluster available, you can specify --qsub 0 to directly execute all required MSA commands, but be prepared for this to take a rather long time.
+# If you are using PBSPro instead of SGE, you can add the following arguments (modified for your local environment):
+#        --PBSPro 1 --PBSPro_select 'select=1:ncpus=16:mem=48GB' --PBSPro_A IMMGEN --preExec 'module load Perl; module load SamTools; module load Mafft/7.407' --chunkSize 500
+# The --chunkSize parameter determines how many alignment jobs are assigned to each submitted job on your cluster, i.e. as you increase --chunkSize, the total number
+# of submitted jobs is reduced.
 perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub $qsub $ginsiMAFFT
+
+# It often happens that individual alignment jobs fail for idiosyncratic reasons. Therefore, when all jobs have finished, try the following command - if all cluster jobs were
+# executed successfully, the command will tell you; otherwise, it will try to create the missing alignments. Also supports --qsub 1 and PBSPro parameters like the preceding command.
 perl scripts/CALLMAFFT.pl --action reprocess --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub 0
 
-perl scripts/globalize_windowbams.pl --fastadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --msadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/ --contigs  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --output  ${outputDirectory}/${prefix}_combined.sam
+# Combine the multiple sequence alignments (MSAs) created during the previous step:
+perl scripts/globalize_windowbams.pl --fastadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --msadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/ --contigs  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --output  ${outputDirectory}/${prefix}_combined.sam --samtools_path $samtools_path
 
+# Convert the combined genome-wide MSAs into CRAM format:
 $samtools_path view -h -t ${samtools_view_header}  ${outputDirectory}/${prefix}_combined.sam >  ${outputDirectory}/${prefix}_combined.sam_with_header.sam;\
 $samtools_path sort  ${outputDirectory}/${prefix}_combined.sam_with_header.sam -o  ${outputDirectory}/${prefix}_combined.sam_with_header_sorted.sam;\
 cat  ${outputDirectory}/${prefix}_combined.sam_with_header_sorted.sam | $samtools_path view -C -T $referenceGenome - >  ${outputDirectory}/${prefix}_combined.cram;\
-$samtools_path index  ${outputDirectory}/${prefix}_combined.cram;\
+$samtools_path index  ${outputDirectory}/${prefix}_combined.cram
+
+# Check that the data still look OK:
 perl scripts/checkMAFFT_input_and_output.pl --MAFFTdir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --preMAFFTBAM  ${outputDirectory}/${prefix}_forMAFFT.bam  --finalOutputCRAM  ${outputDirectory}/${prefix}_combined.cram --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt
 
+# Prepare graph/VCF creation:
 perl scripts/CRAM2VCF.pl --CRAM  ${outputDirectory}/${prefix}_combined.cram  --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CRAM2VCF_executable src/CRAM2VCF --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path 
 
 
@@ -152,9 +180,10 @@ src/CRAM2VCF --input ${outputDirectory}/${prefix}_finalVCF.part_pgf --referenceS
 else
 {
 print qq(
-# Start VCF generation process for all reference contigs:
+# Launch graph/VCF generation process: (10 threads by default, executed in parallel on your local machine)
 perl scripts/launch_CRAM2VCF_C++.pl --prefix ${outputDirectory}/${prefix}_finalVCF
 
+# Create one combined graph/VCF:
 perl scripts/CRAM2VCF_createFinalVCF.pl --CRAM ${outputDirectory}/${prefix}_combined.cram --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF
 
 );	

@@ -9,7 +9,6 @@ use Data::Dumper;
 use Getopt::Long;   
 use List::Util qw/max all shuffle/;
 use List::MoreUtils qw/mesh/;
-use Bio::DB::HTS;
 use Errno;
 require POSIX;    # provides WNOHANG
 
