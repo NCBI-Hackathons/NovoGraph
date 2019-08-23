@@ -105,7 +105,7 @@ unless(-d $outputDirectory)
 	
 }
 
-my $ginsiMAFFT = ($limitToPGF) ? ' --useGinsi 1 ' : '';
+my $ginsiMAFFT = ($limitToPGF) ? '--useGinsi 1 ' : ' ';
 
 my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38.headerfile.txt';
 

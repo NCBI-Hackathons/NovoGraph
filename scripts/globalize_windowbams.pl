@@ -138,7 +138,7 @@ sub process_commandline {
     
     # Set defaults here
     %Opt = ( output => 'uber.bam' );
-    GetOptions(\%Opt, qw( fastadir=s msadir=s contigs=s bamheader=s output=s
+    GetOptions(\%Opt, qw( fastadir=s msadir=s contigs=s bamheader=s output=s samtools_path=s
                 manual help+ version
                 verbose 
                 )) || pod2usage(0);
