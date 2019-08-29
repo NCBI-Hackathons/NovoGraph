@@ -61,6 +61,9 @@ my $bamheader;
 my $PBSPro = 0;
 my $PBSPro_select;
 my $PBSPro_A;
+my $torque = 0;
+my $torque_select;
+my $torque_A;
 my $preExec;
 my $useGinsi;
 
@@ -79,6 +82,9 @@ GetOptions (
 	'PBSPro:s' => \$PBSPro,
 	'PBSPro_select:s' => \$PBSPro_select,
 	'PBSPro_A:s' => \$PBSPro_A,
+	'torque:s' => \$torque,
+	'torque_select:s' => \$torque_select,
+	'torque_A:s' => \$torque_A,
 	'useGinsi:s' => \$useGinsi,
 	'preExec:s' => \$preExec,
 );
@@ -397,6 +403,19 @@ sub invoke_self_array
 
 jobID=\$(expr \$PBS_ARRAY_INDEX - 1)
 );		
+		}
+		elsif($torque)
+		{
+		print QSUB qq(#!/bin/bash
+#PBS -l $torque_select
+#PBS -l walltime=23:00:00
+#PBS -A '$torque_A'
+#PBS -N CALLMAFFT
+#PBS -t ${minJobID}-${maxJobID}
+#PBS -r y
+
+jobID=\$(expr \$PBS_ARRAYID - 1)
+);
 		}
 		else
 		{
