@@ -140,6 +140,9 @@ perl CALLMAFFT.pl --action kickOff --mafftDirectory .../intermediate_files/forMA
 perl CALLMAFFT.pl --action check --mafftDirectory .../intermediate_files/forMAFFT
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+
+## If the output of the check specifies that it would redo certain alignments run the "reprocess" command
+## The files that have to be reprocessed will be specified in the text file files_to_reprocess in the specified mafftDirectory
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
