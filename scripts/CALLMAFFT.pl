@@ -63,6 +63,9 @@ my $PBSPro_select;
 my $PBSPro_A;
 my $preExec;
 my $useGinsi;
+my $usePreClustering;
+my $preCluster_k = 21;
+my $preCluster_jaccard_threshold = 0.2; # 0.95**21/(2 - 0.95**21)
 
 GetOptions (
 	'action:s' => \$action,
@@ -81,12 +84,30 @@ GetOptions (
 	'PBSPro_A:s' => \$PBSPro_A,
 	'useGinsi:s' => \$useGinsi,
 	'preExec:s' => \$preExec,
+	'usePreClustering:s' => \$usePreClustering,
+	'preCluster_k:s' => \$preCluster_k,
+	'preCluster_jaccard_threshold:s' => \$preCluster_jaccard_threshold,
 );
+
+# die jaccardSimilary('ACGTAAAT', 'ACGTAAAAAAT', 4);
+# my %sequences = (
+ # A => 'ACGT',
+ # B => 'ACGTAATCGAGA',
+ # C => 'ACGTATTCGAGA',
+ # D => 'ACTACGAGCGCAGCGACCGAGCGACACTA',
+ # E => 'ACTACGTGCGCAGCGACCGAGCGACACTA',
+# );
+# my $t_n = '_t';
+# writeFASTA($t_n, \%sequences);
+# createMSA_preCluster($t_n, 'out.txt', 4, 0.3);
+
 
 die unless($mafft_executable);
 die unless($fas2bam_path);
 die unless($samtools_path);
 die unless($bamheader);
+die unless($preCluster_k =~ /^\d+$/);
+die unless(($preCluster_jaccard_threshold >= 0) and ($preCluster_jaccard_threshold <= 1));
 
 unless($action)
 {
@@ -379,6 +400,8 @@ sub invoke_self_array
 	
 	my $reprocess_string = ($reprocess) ? " --reprocess 1 " : '';
 	my $ginsi = (defined $useGinsi) ? " --useGinsi $useGinsi " : '';	
+	my $preClustering_string = (defined $usePreClustering) ? " --usePreClustering $usePreClustering " : '';	
+	
 	my $mafftDirectory_abs = File::Spec->rel2abs($mafftDirectory);
 	if($qsub)
 	{	
@@ -414,7 +437,7 @@ jobID=\$(expr \$SGE_TASK_ID - 1)
 		print QSUB qq(
 $preExec
 cd $current_dir
-perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi
+perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI \$jobID --chunkSize $chunkSize --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi $preClustering_string
 		);
 
 		close(QSUB);
@@ -429,7 +452,7 @@ perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk 
 		for(my $chunkI = 0; $chunkI <= $maxChunk_0based; $chunkI++)
 		{
 			print "Call myself for chunk $chunkI\n";
-			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi);
+			my $cmd = qq(perl $path_to_script --mafftDirectory $mafftDirectory_abs --action processChunk --chunkI $chunkI --chunkSize $chunkSize $reprocess_string --mafft_executable $mafft_executable --fas2bam_path $fas2bam_path --samtools_path $samtools_path --bamheader $bamheader $reprocess_string $ginsi $preClustering_string);
 			if(system($cmd))
 			{
 				die "Command $cmd failed";
@@ -477,27 +500,36 @@ sub makeMSA
 	if(scalar(keys %$input_href) >= 2)
 	{
 		writeFASTA($temp_file_in, $input_href);
-		my $cmd_mafft = qq(${mafft_executable} --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
-		my $cmd_mafft_ginsi = qq(${mafft_executable}-ginsi --quiet $temp_file_in > $temp_file_out);
-		my $cmd_mafft_use = $useGinsi ? $cmd_mafft_ginsi : $cmd_mafft;
 		
-		print "Executing $cmd_mafft_use \n";
-		
-		my $ret = system($cmd_mafft_use);
+		if($usePreClustering)
+		{
+			die unless(defined $preCluster_k);
+			die unless(defined $preCluster_jaccard_threshold);
+			createMSA_preCluster($temp_file_in, $temp_file_out, $preCluster_k, $preCluster_jaccard_threshold);
+		}
+		else
+		{
+			my $cmd_mafft = qq(${mafft_executable} --retree 1 --maxiterate 0 --quiet $temp_file_in > $temp_file_out);
+			my $cmd_mafft_ginsi = qq(${mafft_executable}-ginsi --quiet $temp_file_in > $temp_file_out);
+			my $cmd_mafft_use = $useGinsi ? $cmd_mafft_ginsi : $cmd_mafft;
+			
+			print "Executing $cmd_mafft_use \n";
+			
+			my $ret = system($cmd_mafft_use);
 
-		# print "Return code $ret\n";
-		
-		unless($ret == 0)
-		{
-			warn "Original mafft command failed, retry with fast settings";
-			$ret = system($cmd_mafft);
+			# print "Return code $ret\n";
+			
+			unless($ret == 0)
+			{
+				warn "Original mafft command failed, retry with fast settings";
+				$ret = system($cmd_mafft);
+			}
+			
+			unless(($ret == 0) and (-e $temp_file_out))
+			{
+				die "File $temp_file_out not there, but after $cmd_mafft it should be";
+			}
 		}
-		
-		unless(($ret == 0) and (-e $temp_file_out))
-		{
-			die "File $temp_file_out not there, but after $cmd_mafft it should be";
-		}
-		
 		validate_as_alignment($temp_file_out);
 	}
 	else
@@ -534,6 +566,174 @@ sub makeMSA
 	
 	
 }
+
+sub createMSA_preCluster
+{
+	my $temp_file_in = shift;
+	my $temp_file_out = shift;
+	my $k = shift;
+	my $jaccardT = shift;
+	die unless(defined $mafft_executable);
+	
+	die unless(defined $temp_file_in);
+	die unless(defined $temp_file_out);
+	die unless(defined $k);
+	die unless(defined $jaccardT);
+
+	my $sequences_href = readFASTA($temp_file_in);
+	
+	my @sequences_keys_tooShort = grep {length($sequences_href->{$_}) <= $k} sort keys %$sequences_href;
+	my @sequences_keys_longEnough = grep {length($sequences_href->{$_}) > $k} sort keys %$sequences_href;
+
+	my %sequence_to_cluster = map {$_ => 0} @sequences_keys_tooShort;
+	my %cluster_to_sequence = (0 => {map {$_ => 1} @sequences_keys_tooShort});
+		
+	my $verbose = 0;
+	
+	for(my $i1 = 0; $i1 <= $#sequences_keys_longEnough; $i1++)
+	{
+		
+		my $k1 = $sequences_keys_longEnough[$i1];	
+		my $s1 = $sequences_href->{$k1};
+		
+		my $existingCluster;
+		die if(defined $sequence_to_cluster{$k1});
+		
+		print "Analyzing $k1...\n" if($verbose);	
+		
+		for(my $i2 = 0; $i2 <= $#sequences_keys_longEnough; $i2++)
+		{
+			my $k2 = $sequences_keys_longEnough[$i2];
+			
+			my $s2 = $sequences_href->{$k2};
+			my $jS = jaccardSimilary($s1, $s2, $k);
+			
+			print "\tComparing $k1 and $k2, lengths " . length($s1) . " and " . length($s2) . "\n" if($verbose);
+			if(defined $sequence_to_cluster{$k2})
+			{
+				print "\t\t$k2 has cluster and Jaccard $jS\n" if($verbose);
+			
+				if($jS >= $jaccardT)
+				{
+					print "\t\t\t$k1 and $k2 similar\n" if($verbose);
+					$existingCluster = $sequence_to_cluster{$k2};
+					last;
+				}
+				else
+				{
+					print "\t\t\t$k1 and $k2 not similar\n" if($verbose);
+				}
+			}
+			else
+			{
+				print "\t\t$k2 has no cluster, ignore.\n" if($verbose);
+			}
+		}
+		
+		if(defined $existingCluster)
+		{
+			$sequence_to_cluster{$k1} = $existingCluster;		
+			$cluster_to_sequence{$existingCluster}{$k1} = 1;	
+			print "\tAdding $k1 to cluster $existingCluster\n" if($verbose);		
+		}
+		else
+		{
+			print "\tNo suitable existing clusters for $k1 found, create new cluster\n" if($verbose);
+			my $newClusterID = scalar(keys %sequence_to_cluster) + 1;
+			$sequence_to_cluster{$k1} = $newClusterID;
+			$cluster_to_sequence{$newClusterID}{$k1} = 1;			
+		}
+	}
+	
+	die unless(scalar(keys %sequence_to_cluster) == scalar(keys %$sequences_href));
+	
+	foreach my $sequenceID (keys %sequence_to_cluster)
+	{
+		my $clusterID = $sequence_to_cluster{$sequenceID};
+		die unless($cluster_to_sequence{$clusterID}{$sequenceID});
+	}
+	
+	print "Identified ", scalar(keys %cluster_to_sequence), " clusters \n" if($verbose);
+	
+	my @concat_files;
+	foreach my $clusterID (sort keys %cluster_to_sequence)
+	{
+		my $fn_rawSeq = $temp_file_out . '.c.' . $clusterID;
+		my $fn_msaSeq = $temp_file_out . '.c.' . $clusterID . '.mfa';
+		my %cluster_href;
+		foreach my $clusterSeqID (keys %{$cluster_to_sequence{$clusterID}})
+		{
+			die unless(defined $sequences_href->{$clusterSeqID});
+			$cluster_href{$clusterSeqID} = $sequences_href->{$clusterSeqID};
+			unless($sequences_href->{$clusterSeqID} =~ /^[ACGTN]+$/i)
+			{
+				warn "Sequence $clusterSeqID in file $temp_file_in is not [ACGTN]+ - mafft may fail because of this.";
+			}
+		}
+		writeFASTA($fn_rawSeq, \%cluster_href);
+		
+		if(scalar(keys %cluster_href) == 1)
+		{
+			cp($fn_rawSeq, $fn_msaSeq) or die "Copy from $fn_rawSeq to $fn_msaSeq failed";
+		}
+		else
+		{
+			my $cmd_mafft = qq(${mafft_executable} --retree 1 --maxiterate 0 --quiet $fn_rawSeq > $fn_msaSeq);
+			my $mafft_retcode = system($cmd_mafft);
+			if($mafft_retcode != 0)
+			{
+				die "Command $cmd_mafft failed with return code $mafft_retcode";
+			}
+		}
+		
+		validate_as_alignment($fn_msaSeq);	
+
+		push(@concat_files, $fn_msaSeq);
+	}
+	
+	my %joint_sequence_IDs;
+	foreach my $f (@concat_files)
+	{
+		my $sequences_href = readFASTA($f);	
+		foreach my $seqID (keys %$sequences_href)
+		{
+			$joint_sequence_IDs{$seqID}++;
+		}
+	}
+	
+	my %combined_sequences;
+	foreach my $f (@concat_files)
+	{
+		my $sequences_href = readFASTA($f);	
+		my $seqL = length((values %$sequences_href)[0]);
+		foreach my $seqID (keys %joint_sequence_IDs)
+		{
+			if(exists $sequences_href->{$seqID})
+			{
+				my $seq_to_add = uc($sequences_href->{$seqID});
+				die unless(length($seq_to_add) == $seqL);
+				$combined_sequences{$seqID} .= $seq_to_add;
+			}
+			else
+			{
+				my $seq_to_add = ('-' x $seqL);
+				die unless(length($seq_to_add) == $seqL);
+				$combined_sequences{$seqID} .= $seq_to_add;				
+			}
+		}
+	}
+	
+	writeFASTA($temp_file_out, \%combined_sequences);
+	
+	validate_as_alignment($temp_file_out);	
+	
+	print "Produced $temp_file_out\n" if($verbose);
+	
+	#die Dumper(\%sequence_to_cluster, \%cluster_to_sequence);
+	
+	#die Dumper(\@sequences_keys_tooShort, \@sequences_keys_longEnough);	
+}
+
 
 sub validate_as_alignment
 {
@@ -607,7 +807,7 @@ sub writeFASTA
 	# print "Writing $file\n";
 	my $href = shift;
 	open(F, '>', $file) or die "Cannot open $file";
-	foreach my $key (keys %$href)
+	foreach my $key (sort keys %$href)
 	{
 		my $seq = $href->{$key};
 		print F '>', $key, "\n";
@@ -629,4 +829,54 @@ sub writeFASTA
 		}
 	}
 	close(F);	
+}
+
+sub jaccardSimilary
+{
+	my $s1 = shift;
+	my $s2 = shift;
+	my $k = shift;
+	
+	die unless(defined $s1);
+	die unless(defined $s2);
+	die unless(defined $k);
+	
+	my @kmers_s1 = kmers(uc($s1), $k);
+	my @kmers_s2 = kmers(uc($s2), $k);
+	
+	if((scalar(@kmers_s1) == 0) and (scalar(@kmers_s2) == 0))
+	{
+		return 0;
+	}
+	else
+	{
+		my %_k1 = map {$_ => 1} @kmers_s1;
+		my %_k2 = map {$_ => 1} @kmers_s2;
+		my %k_union = map {$_ => 1} (@kmers_s1, @kmers_s2);
+		my %k_intersection = map {$_ => 1} grep {$_k2{$_}} @kmers_s1;
+		die if(scalar(keys %k_union) == 0);
+		return scalar(keys %k_intersection)/scalar(keys %k_union);
+	}
+}	
+
+sub kmers
+{
+	my $s = shift;
+	my $k = shift;
+	
+	if(length($s) < $k)
+	{
+		return ();
+	}
+	my @forReturn;
+	my $expectedMers = length($s) - $k + 1;
+	for(my $i = 0; $i < $expectedMers; $i++)
+	{	
+		my $kMer = substr($s, $i, $k);
+		die unless(length($kMer) == $k);
+		push(@forReturn, $kMer);
+	}
+	
+	die unless(scalar(@forReturn) == $expectedMers);
+	return @forReturn;
 }
