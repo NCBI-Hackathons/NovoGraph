@@ -144,6 +144,8 @@ perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --ref
 # If you have no cluster available, you can specify --qsub 0 to directly execute all required MSA commands, but be prepared for this to take a rather long time.
 # If you are using PBSPro instead of SGE, you can add the following arguments (modified for your local environment):
 #        --PBSPro 1 --PBSPro_select 'select=1:ncpus=16:mem=48GB' --PBSPro_A IMMGEN --preExec 'module load Perl; module load SamTools; module load Mafft/7.407' --chunkSize 500
+# If you are using the open source scheduler TORQUE, you can add the following arguments (modified for your local environment):
+#        --torque 1 --torque_select 'select=1:ncpus=16:mem=48GB' --torque_A IMMGEN --preExec 'module load Perl; module load SamTools; module load Mafft/7.407' --chunkSize 500
 # The --chunkSize parameter determines how many alignment jobs are assigned to each submitted job on your cluster, i.e. as you increase --chunkSize, the total number
 # of submitted jobs is reduced.
 perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub $qsub $ginsiMAFFT
