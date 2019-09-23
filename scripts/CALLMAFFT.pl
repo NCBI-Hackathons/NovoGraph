@@ -581,6 +581,7 @@ sub createMSA_preCluster
 	die unless(defined $jaccardT);
 
 	my $sequences_href = readFASTA($temp_file_in);
+	die unless(scalar(keys %$sequences_href));
 	
 	my @sequences_keys_tooShort = grep {length($sequences_href->{$_}) <= $k} sort keys %$sequences_href;
 	my @sequences_keys_longEnough = grep {length($sequences_href->{$_}) > $k} sort keys %$sequences_href;
@@ -592,7 +593,6 @@ sub createMSA_preCluster
 	
 	for(my $i1 = 0; $i1 <= $#sequences_keys_longEnough; $i1++)
 	{
-		
 		my $k1 = $sequences_keys_longEnough[$i1];	
 		my $s1 = $sequences_href->{$k1};
 		
@@ -658,6 +658,8 @@ sub createMSA_preCluster
 	my @concat_files;
 	foreach my $clusterID (sort keys %cluster_to_sequence)
 	{
+		next unless(scalar(keys %{$cluster_to_sequence{$clusterID}}));
+		
 		my $fn_rawSeq = $temp_file_out . '.c.' . $clusterID;
 		my $fn_msaSeq = $temp_file_out . '.c.' . $clusterID . '.mfa';
 		my %cluster_href;
@@ -670,6 +672,7 @@ sub createMSA_preCluster
 				warn "Sequence $clusterSeqID in file $temp_file_in is not [ACGTN]+ - mafft may fail because of this.";
 			}
 		}
+		die unless(scalar(keys %cluster_href));		
 		writeFASTA($fn_rawSeq, \%cluster_href);
 		
 		if(scalar(keys %cluster_href) == 1)
