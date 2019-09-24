@@ -639,7 +639,7 @@ sub createMSA_preCluster
 	my %sequence_to_cluster = map {$_ => 0} @sequences_keys_tooShort;
 	my %cluster_to_sequence = (0 => {map {$_ => 1} @sequences_keys_tooShort});
 		
-	my $verbose = 1;
+	my $verbose = 0;
 	
 	for(my $i1 = 0; $i1 <= $#sequences_keys_longEnough; $i1++)
 	{
