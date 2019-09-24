@@ -567,6 +567,37 @@ sub makeMSA
 	
 }
 
+sub lastOption_linearMSA
+{
+	my $temp_file_in = shift;
+	my $temp_file_out = shift;
+	
+	my $sequences_href = readFASTA($temp_file_in);
+	die unless(scalar(keys %$sequences_href));
+
+	my %combined_sequences;
+	foreach my $seqID (sort keys %$sequences_href)
+	{
+		my $seqL = length($sequences_href->{$seqID});
+		foreach my $seqID2 (keys %$sequences_href)
+		{
+			if($seqID2 eq $seqID)
+			{
+				my $seq_to_add = uc($sequences_href->{$seqID2});
+				$combined_sequences{$seqID} .= $seq_to_add;
+			}
+			else
+			{
+				my $seq_to_add = ('-' x $seqL);
+				die unless(length($seq_to_add) == $seqL);
+				$combined_sequences{$seqID} .= $seq_to_add;				
+			}
+		}
+	}
+	
+	writeFASTA($temp_file_out, \%combined_sequences);
+}
+
 sub createMSA_preCluster
 {
 	my $temp_file_in = shift;
@@ -589,7 +620,7 @@ sub createMSA_preCluster
 	my %sequence_to_cluster = map {$_ => 0} @sequences_keys_tooShort;
 	my %cluster_to_sequence = (0 => {map {$_ => 1} @sequences_keys_tooShort});
 		
-	my $verbose = 0;
+	my $verbose = 1;
 	
 	for(my $i1 = 0; $i1 <= $#sequences_keys_longEnough; $i1++)
 	{
@@ -685,7 +716,8 @@ sub createMSA_preCluster
 			my $mafft_retcode = system($cmd_mafft);
 			if($mafft_retcode != 0)
 			{
-				die "Command $cmd_mafft failed with return code $mafft_retcode";
+				die "Command $cmd_mafft failed with return code $mafft_retcode - will linearly concatenate the input sequences";
+				lastOption_linearMSA($fn_rawSeq, $fn_msaSeq);
 			}
 		}
 		
