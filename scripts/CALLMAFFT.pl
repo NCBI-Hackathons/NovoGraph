@@ -595,23 +595,33 @@ sub lastOption_linearMSA
 	die unless(scalar(keys %$sequences_href));
 
 	my %combined_sequences;
+	my $joint_length = 0;
 	foreach my $seqID (sort keys %$sequences_href)
 	{
 		my $seqL = length($sequences_href->{$seqID});
-		foreach my $seqID2 (keys %$sequences_href)
+		$joint_length += $seqL;
+		foreach my $seqID2 (sort keys %$sequences_href)
 		{
 			if($seqID2 eq $seqID)
 			{
 				my $seq_to_add = uc($sequences_href->{$seqID2});
-				$combined_sequences{$seqID} .= $seq_to_add;
+				die unless(length($seq_to_add) == $seqL);
+				$combined_sequences{$seqID2} .= $seq_to_add;
 			}
 			else
 			{
 				my $seq_to_add = ('-' x $seqL);
 				die unless(length($seq_to_add) == $seqL);
-				$combined_sequences{$seqID} .= $seq_to_add;				
+				$combined_sequences{$seqID2} .= $seq_to_add;				
 			}
 		}
+	}
+	
+	# print "Joint sequence length $temp_file_out : $joint_length \n";
+	
+	foreach my $k (keys %combined_sequences)
+	{
+		die unless(length($combined_sequences{$k}) == $joint_length);
 	}
 	
 	writeFASTA($temp_file_out, \%combined_sequences);
@@ -735,13 +745,15 @@ sub createMSA_preCluster
 			my $mafft_retcode = system($cmd_mafft);
 			if($mafft_retcode != 0)
 			{
-				die "Command $cmd_mafft failed with return code $mafft_retcode - will linearly concatenate the input sequences";
+				warn "Command $cmd_mafft failed with return code $mafft_retcode - will linearly concatenate the input sequences";
 				lastOption_linearMSA($fn_rawSeq, $fn_msaSeq);
 			}
+			else
+			{
+			}
 		}
+		validate_as_alignment($fn_msaSeq);		
 		
-		validate_as_alignment($fn_msaSeq);	
-
 		push(@concat_files, $fn_msaSeq);
 	}
 	

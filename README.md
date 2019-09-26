@@ -147,6 +147,14 @@ perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
                   
+## If there are still individual alignment jobs that don't complete successfully, try adding --usePreClustering 1.
+## When --usePreClustering is active, the algorithm will try increasingly aggressive multiple sequence alignment strategies. 
+perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
+                  --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
+                  --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
+				  --usePreClustering 1
+				  
+## 
 ## Note: For the majority of use cases, this file 'windowbam.header.txt' should remain untouched. 
 ## Users should use the file 'windowbam.header.txt' as provided, unless there are assemblies with contigs 
 ## longer than chr1 in hg38, 248956422 bp. In this case, please change this value to be the size of the largest contig. 

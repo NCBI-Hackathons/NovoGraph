@@ -154,6 +154,13 @@ perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/
 # executed successfully, the command will tell you; otherwise, it will try to create the missing alignments. Also supports --qsub 1 and PBSPro parameters like the preceding command.
 perl scripts/CALLMAFFT.pl --action reprocess --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub 0
 
+# Now check that all alignments were computed successfully:
+perl scripts/CALLMAFFT.pl --action check --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt
+
+# If there are still chunks without valid valignments, try adding --usePreClustering 1.
+# ... when --usePreClustering 1 is active, the algorithm will try increasigly aggressive multiple sequence alignment strategies.
+perl scripts/CALLMAFFT.pl --action reprocess --usePreClustering 1 --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub 0
+
 # Combine the multiple sequence alignments (MSAs) created during the previous step:
 perl scripts/globalize_windowbams.pl --fastadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --msadir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/ --contigs  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --output  ${outputDirectory}/${prefix}_combined.sam --samtools_path $samtools_path
 
