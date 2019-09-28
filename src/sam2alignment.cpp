@@ -57,8 +57,11 @@ public:
 		QUAL = line_fields.at(10);
 		if(QUAL != "*")
 		{ 
-			std::cerr << "Quality string length error: " << QUAL.length()  << " v/s " << SEQ.length() << "\n" << std::flush;
-			assert(QUAL.length() == SEQ.length());
+			if(QUAL.length() != SEQ.length())
+			{
+				std::cerr << "Quality string length error: " << QUAL.length()  << " v/s " << SEQ.length() << "\n" << std::flush;
+				assert(QUAL.length() == SEQ.length());
+			}
 		}
 		if(line_fields.size() >= 12)
 		{
