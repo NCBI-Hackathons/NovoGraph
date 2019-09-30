@@ -742,10 +742,14 @@ sub createMSA_preCluster
 		else
 		{
 			my $cmd_mafft = qq(${mafft_executable} --retree 1 --maxiterate 0 --quiet $fn_rawSeq > $fn_msaSeq);
-			my $mafft_retcode = system($cmd_mafft);
-			if($mafft_retcode != 0)
+			my $mafft_retcode;
+			if($usePreClustering ne 'ultra')
 			{
-				warn "Command $cmd_mafft failed with return code $mafft_retcode - will linearly concatenate the input sequences";
+				$mafft_retcode = system($cmd_mafft);
+			}
+			if(($usePreClustering eq 'ultra') or ($mafft_retcode != 0))
+			{
+				warn "Command $cmd_mafft failed with return code $mafft_retcode or --usePreClustering set to 'ultra' - will linearly concatenate the input sequences";
 				lastOption_linearMSA($fn_rawSeq, $fn_msaSeq);
 			}
 			else
