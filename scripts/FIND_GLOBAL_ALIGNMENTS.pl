@@ -36,7 +36,7 @@ my $lenientOrder = 1;
 my $outputTruncatedReads;
 my $outputReadLengths;
 my $endsFree_reference = 1;
-my $CIGARscript_path; 
+# my $CIGARscript_path; 
 my $samtools_path;
 
 my $S_match = 1;
@@ -49,7 +49,7 @@ GetOptions (
 	'outputFile:s' => \$outputFile,	
 	'outputTruncatedReads:s' => \$outputTruncatedReads,
 	'outputReadLengths:s' => \$outputReadLengths,
-	'CIGARscript_path:s' => \$CIGARscript_path,
+#	'CIGARscript_path:s' => \$CIGARscript_path,
 	'samtools_path:s' => \$samtools_path,	
 );
 
@@ -64,7 +64,7 @@ die "Please specify --outputFile" unless($outputFile);
 die "Please specify --outputTruncatedReads" unless($outputTruncatedReads);
 die "Please specify --outputReadLengths" unless($outputReadLengths);
 
-die "Please specify path to script dealWithTooManyCIGAROperations.pl --CIGARscript_path" unless($CIGARscript_path);
+# die "Please specify path to script dealWithTooManyCIGAROperations.pl --CIGARscript_path" unless($CIGARscript_path);
 
 unless($samtools_path)
 {
@@ -82,9 +82,10 @@ print "Read $referenceFasta\n";
 my $reference_href = readFASTA($referenceFasta, 0);
 print "\tdone.\n";
 
-my $outputFile_sam = $outputFile . '.sam.unfiltered';
+# my $outputFile_sam_unsorted = $outputFile . '.sam.unfiltered';
+my $outputFile_sam_unsorted = $outputFile . '.unsorted';
 
-open(SAMOUTPUT, '>', $outputFile_sam) or die "Cannot open $outputFile_sam";
+open(SAMOUTPUT, '>', $outputFile_sam_unsorted) or die "Cannot open $outputFile_sam_unsorted";
 print SAMOUTPUT "\@HD\tVN:1.5", "\n";
 foreach my $refChromosome (keys %$reference_href)
 {
@@ -650,7 +651,7 @@ if(@lines_current_read)
 	# print "Call end\n";
 	$processReadLines->();
 }
-
+ 
 close(SAMOUTPUT);
 
 print "\nDone.\n\nStatistics:\n";
@@ -660,24 +661,27 @@ print "\tAlignments with both ends trimmed: ", $n_alignments_leftAndRightGapsRem
 print "\tAlignments with left end trimmed: ", $n_alignments_leftGapsRemoved, "\n";
 print "\tAlignments with right end trimmed: ", $n_alignments_rightGapsRemoved, "\n";
 
-print "\n\nDone. Produced SAM file $outputFile_sam\n\n";
+print "\n\nDone. Produced (unsorted) SAM file $outputFile_sam_unsorted - this file will be deleted.\n\n";
 
-my $outputFile_sam_filtered = $outputFile_sam . ".filtered";
-my $cmd_filter = qq(perl $CIGARscript_path --input ${outputFile_sam} --output ${outputFile_sam_filtered});
-print "Filtering SAM with command: $cmd_filter\n";
-die "Filtering failed" unless(system($cmd_filter) == 0);
+# my $outputFile_sam_unsorted_filtered = $outputFile_sam_unsorted . ".filtered";
+# my $cmd_filter = qq(perl $CIGARscript_path --input ${outputFile_sam} --output ${outputFile_sam_filtered});
+# print "Filtering SAM with command: $cmd_filter\n";
+# die "Filtering failed" unless(system($cmd_filter) == 0);
 
-my $bam_unsorted = $outputFile_sam_filtered . '.bam';
-my $cmd_bam_conversion = qq($samtools_path view -S -b -o${bam_unsorted} $outputFile_sam_filtered);
+# my $bam_unsorted = $outputFile_sam_unsorted_filtered . '.bam';
+# my $cmd_bam_conversion = qq($samtools_path view -S -b -o${bam_unsorted} $outputFile_sam_unsorted_filtered);
 
-print "Converting to BAM with command:\n\t$cmd_bam_conversion\n\n";
-die "BAM conversion failed" unless(system($cmd_bam_conversion) == 0);
+# print "Converting to BAM with command:\n\t$cmd_bam_conversion\n\n";
+# die "BAM conversion failed" unless(system($cmd_bam_conversion) == 0);
 
-my $cmd_bam_sort = qq($samtools_path sort -o${outputFile} $bam_unsorted; $samtools_path index $outputFile);
-print "Sorting and indexing BAM with command:\n\t$cmd_bam_sort\n\n";
-die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
+my $cmd_sam_sort = qq($samtools_path sort -o${outputFile} $outputFile_sam_unsorted);
+die "SAM sorting failed" unless(system($cmd_sam_sort) == 0);
 
-print "Produced BAM file $outputFile\n\n";
+# print "Sorting and indexing BAM with command:\n\t$cmd_bam_sort\n\n";
+# die "BAM sorting/indexing failed" unless(system($cmd_bam_sort) == 0);
+
+print "Produced (sorted) SAM file $outputFile\n\n";
+unlink($outputFile_sam_unsorted);
 
 sub which_max
 {

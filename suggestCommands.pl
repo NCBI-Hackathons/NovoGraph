@@ -113,14 +113,20 @@ my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38
 # $samtools_path index  ${outputDirectory}/${prefix}_allContigs_sorted.bam;\
 # $samtools_path view -c -f 0x4  ${outputDirectory}/${prefix}_allContigs_sorted.bam
 
+ 
+## Removed:
+# # Produce some summary statistics:
+# # (this will only work if you have the Bio::DB::HTS module installed)
+# perl scripts/countExpectedGlobalAlignments.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.cram
+
 
 print qq(
 
 # Map the initial contigs with bwa - note that there is no sorting step!
-bwa mem -t 4 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+bwa mem -t 4 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # You could also use minimap2 instead of bwa, like this:
-# minimap2 -t 4 -a -x asm5 $referenceGenome  $inputContigs | samtools view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+# minimap2 -t 4 -a -x asm20 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # Check that the following command returns 0 - otherwise remove entries of unmapped entries from BAM:
 $samtools_path view -c -f 0x4 ${outputDirectory}/${prefix}_allContigs_unsorted.bam
@@ -132,13 +138,10 @@ perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allC
 perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
 
 # Find globally best alignment for each input contig:
-perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.bam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CIGARscript_path scripts/dealWithTooManyCIGAROperations.pl --samtools_path $samtools_path
-
-# Produce some summary statistics:
-perl scripts/countExpectedGlobalAlignments.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam
+perl scripts/FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt.sortedWithHeader  --referenceFasta $referenceGenome --outputFile  ${outputDirectory}/${prefix}_forMAFFT.sam --outputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads --outputReadLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --samtools_path $samtools_path
 
 # Prepare the multiple sequence alignment step:
-perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1
+perl scripts/BAM2MAFFT.pl --SAM  ${outputDirectory}/${prefix}_forMAFFT.sam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --inputTruncatedReads  ${outputDirectory}/${prefix}_truncatedReads  --processNonChrReferenceContigs 1 --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
 
 # Kick off multiple sequence alignment generation. This commands assumes that you are using an SGE cluster environment.
 # If you have no cluster available, you can specify --qsub 0 to directly execute all required MSA commands, but be prepared for this to take a rather long time.
@@ -149,7 +152,7 @@ perl scripts/BAM2MAFFT.pl --BAM  ${outputDirectory}/${prefix}_forMAFFT.bam --ref
 # The --chunkSize parameter determines how many alignment jobs are assigned to each submitted job on your cluster, i.e. as you increase --chunkSize, the total number
 # of submitted jobs is reduced.
 perl scripts/CALLMAFFT.pl --action kickOff --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub $qsub $ginsiMAFFT
-
+ 
 # It often happens that individual alignment jobs fail for idiosyncratic reasons. Therefore, when all jobs have finished, try the following command - if all cluster jobs were
 # executed successfully, the command will tell you; otherwise, it will try to create the missing alignments. Also supports --qsub 1 and PBSPro parameters like the preceding command.
 perl scripts/CALLMAFFT.pl --action reprocess --mafftDirectory  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT --mafft_executable $mafft_executable --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt --qsub 0
@@ -171,7 +174,7 @@ cat  ${outputDirectory}/${prefix}_combined.sam_with_header_sorted.sam | $samtool
 $samtools_path index  ${outputDirectory}/${prefix}_combined.cram
 
 # Check that the data still look OK:
-perl scripts/checkMAFFT_input_and_output.pl --MAFFTdir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --preMAFFTBAM  ${outputDirectory}/${prefix}_forMAFFT.bam  --finalOutputCRAM  ${outputDirectory}/${prefix}_combined.cram --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt
+perl scripts/checkMAFFT_input_and_output.pl --MAFFTdir  ${outputDirectory}/intermediate_files/${prefix}_forMAFFT/  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --preMAFFTBAM  ${outputDirectory}/${prefix}_forMAFFT.sam  --finalOutputCRAM  ${outputDirectory}/${prefix}_combined.cram --fas2bam_path scripts/fas2bam.pl --samtools_path $samtools_path --bamheader windowbam.header.txt
 
 # Prepare graph/VCF creation:
 perl scripts/CRAM2VCF.pl --CRAM  ${outputDirectory}/${prefix}_combined.cram  --referenceFasta $referenceGenome --prefix ${outputDirectory}/${prefix}_finalVCF  --contigLengths  ${outputDirectory}/intermediate_files/${prefix}_postGlobalAlignment_readLengths --CRAM2VCF_executable src/CRAM2VCF --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path 

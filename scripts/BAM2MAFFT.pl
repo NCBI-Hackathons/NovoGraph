@@ -4,7 +4,7 @@
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
 
 use strict;
-use Bio::DB::HTS;
+# use Bio::DB::HTS;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
@@ -12,46 +12,62 @@ use File::Path;
 
 $| = 1;
 
-## BAM2MAFFT.pl --BAM <path to BAM, output of FIND_GLOBAL_ALIGNMENTS.pl>
+## BAM2MAFFT.pl --SAM <path to SAM, output of FIND_GLOBAL_ALIGNMENTS.pl>
 ##                  --referenceFasta <path to reference FASTA>
 ##                  --readsFasta <path to contigs FASTA>
 ##                  --outputDirectory <path to output directory for MAFFT, e.g. '/forMAFFT'>
 ##                  --inputTruncatedReads <path to output of FIND_GLOBAL_ALIGNMENTS.pl, 'outputTruncatedReads'>
 ##
 ## Example command
-## ./BAM2MAFFT.pl --BAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.bam 
+## ./BAM2MAFFT.pl --SAM /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT.sam 
 ##                --referenceFasta /data/projects/phillippy/projects/hackathon/shared/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
 ##                --readsFasta /data/projects/phillippy/projects/hackathon/shared/contigs/AllContigs.fa 
 ##                --outputDirectory /data/projects/phillippy/projects/hackathon/intermediate_files/forMAFFT 
 ##                --inputTruncatedReads /data/projects/phillippy/projects/hackathon/intermediate_files/truncatedReads
-
+ 
 my $referenceFasta;
-my $BAM;
+my $SAM;
 my $outputDirectory;
 my $inputTruncatedReads;
 my $readsFasta;
 my $processNonChrReferenceContigs = 0;
-
+my $bin_sam2alignment;
+my $samtools_path;
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
-	'BAM:s' => \$BAM, 
+	'SAM:s' => \$SAM, 
 	'outputDirectory:s' => \$outputDirectory,	
 	'readsFasta:s' => \$readsFasta,	
 	'inputTruncatedReads:s' => \$inputTruncatedReads,	
 	'processNonChrReferenceContigs:s' => \$processNonChrReferenceContigs,	
+	'sam2alignment_executable:s' => \$bin_sam2alignment,	
+	'samtools_path:s' => \$samtools_path,		
 );
 
-die "Please specify --BAM" unless($BAM);
+die "Please specify --SAM" unless($SAM);
 die "Please specify --referenceFasta" unless($referenceFasta);
 die "Please specify --inputTruncatedReads" unless($inputTruncatedReads);
 die "Please specify --outputDirectory" unless($outputDirectory);
 die "Please specify --readsFasta" unless($readsFasta);
 die "--readsFasta $readsFasta not existing" unless(-e $readsFasta);
 
-die "--BAM $BAM not existing" unless(-e $BAM);
+die "--SAM $SAM not existing" unless(-e $SAM);
 die "--referenceFasta $referenceFasta not existing" unless(-e $referenceFasta);
 
 die "--inputTruncatedReads $inputTruncatedReads not existing" unless(-e $inputTruncatedReads);
+die "--sam2alignment_executable $bin_sam2alignment not present; Please run 'make' in the directory /src and specify the path of the executable via --sam2alignment_executable" unless(-e $bin_sam2alignment);
+
+unless($samtools_path)
+{
+	$samtools_path = `which samtools`;
+	$samtools_path =~ s/[\n\r]//g;
+	unless($samtools_path and -x $samtools_path)
+	{
+		die "Can't determine path to samtools - please specify --samtools_path";
+	}
+}	
+die unless(-x $samtools_path);
+
 
 die "Security check - $outputDirectory will be deleted" unless($outputDirectory =~ /mafft/i);
 rmtree($outputDirectory);
@@ -60,10 +76,13 @@ unless((-e $outputDirectory) and (-d $outputDirectory))
 	mkdir($outputDirectory) or die "Cannot mkdir $outputDirectory directory";
 }
 
-my $reads_href = readFASTA($readsFasta, 0);
+indexFastaIfNecessary($readsFasta);
+
+my $fn_SAM_alignments = $SAM . '.alignments';
+my $cmd_doConvert = qq($bin_sam2alignment $SAM $referenceFasta > $fn_SAM_alignments);
+system($cmd_doConvert) and die "Cannot execute command: $cmd_doConvert";
 
 my $reference_href = readFASTA($referenceFasta);
-my $sam = Bio::DB::HTS->new(-fasta => $referenceFasta, -bam => $BAM);
 
 my %truncatedReads;
 open(TRUNCATED, '<', $inputTruncatedReads) or die "Cannot open $inputTruncatedReads";
@@ -87,11 +106,27 @@ my $alignments_gaps_info_fn = $outputDirectory . '/_alignments_inWindow_onlyGaps
 open(ALIGNMENTSONLYGAPS, '>', $alignments_gaps_info_fn) or die "Cannot open $alignments_gaps_info_fn";
 print ALIGNMENTSONLYGAPS join("\t", "alignedSequenceID", "referenceContigID", "chrDir", "windowI"), "\n";
 
+
+
+my %processedReferenceIDs;
 my %saw_ref_IDs;
-my %saw_read_IDs;
-my @sequence_ids = $sam->seq_ids();
-foreach my $referenceSequenceID (@sequence_ids)
-{	
+my @runningAlignments;
+my $runningReferenceID;
+my $process_collected_read_data = sub {
+	if(scalar(@runningAlignments) == 0)
+	{
+		return;
+	}
+	
+	die unless(defined $runningReferenceID);
+	if($processedReferenceIDs{$runningReferenceID})
+	{
+		die "Reference ID $runningReferenceID has already been processed - is the input sorted?";
+	}
+	$processedReferenceIDs{$runningReferenceID}++;
+	
+	my $referenceSequenceID = $runningReferenceID;
+	
 	unless($processNonChrReferenceContigs)
 	{
 		next unless($referenceSequenceID =~ /chr[XY\d]+/);
@@ -99,7 +134,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 	
 	unless(exists $reference_href->{$referenceSequenceID})
 	{
-		warn "No reference sequence for $referenceSequenceID";
+		die "No reference sequence for $referenceSequenceID";
 		next;
 	}
 	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
@@ -110,36 +145,29 @@ foreach my $referenceSequenceID (@sequence_ids)
 	mkdir( $outputDirectory . '/' . $chrDir) or die "Cannot mkdir $chrDir";
 	
 	print "Processing $referenceSequenceID", ", length ", length($reference_href->{$referenceSequenceID}), "\n";
-	die "Length discrepancy between supplied FASTA reference and BAM index: " . $sam->length($referenceSequenceID) . " vs " . length($reference_href->{$referenceSequenceID}) unless($sam->length($referenceSequenceID) == length($reference_href->{$referenceSequenceID}));
-	next unless(defined $reference_href->{$referenceSequenceID});
 	
 	my %sequences_per_window;
 	my @window_positions;
 	my @contig_coverage = ((0) x length($reference_href->{$referenceSequenceID}));
 	my @contig_coverage_nonGap = ((0) x scalar(@contig_coverage));
 	
-	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);
 	my $n_alignment = 0;
-	while(my $alignment = $alignment_iterator->next_seq)
+	foreach my $alignment (@runningAlignments)
 	{
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";
-		
-		my $cigar  = $alignment->cigar_str;
-		while($cigar =~ /^(\d+)([MIDHS])/)
+		my $readID = $alignment->{readID};
+	
+		my $read_sequence = getSequenceFromIndexedFasta($readsFasta, $readID);
+		unless(($alignment->{firstPos_read} == 0) and ($alignment->{lastPos_read} == ($alignment->{readLength}-1)))
 		{
-			my $number = $1;
-			my $action = $2;
-			$cigar =~ s/^(\d+)([MIDHS])//;		
-			if(($action eq 'H') or ($action eq 'S'))
-			{
-				die "BAM $BAM contains H or S in CIGAR string - illegal, we want global, non-clipped alignments.";
-			}
+			die Dumper("Illegal - we want global, non-clipped alignments");
 		}
 
-	
-		my $alignment_start_pos = $alignment->start;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
+
+		my $alignment_start_pos = $alignment->{firstPos_reference};
+		my $ref = $alignment->{alignment_reference};
+		my $query = $alignment->{alignment_read};
         
 		die unless(length($ref) == length($query));
 		my $rel_idx = -1;	
@@ -162,6 +190,7 @@ foreach my $referenceSequenceID (@sequence_ids)
 			}
 		}
 	}
+	
 	print "\n";
 	
 	my $scanTarget = 100;
@@ -274,23 +303,19 @@ foreach my $referenceSequenceID (@sequence_ids)
 		$sequences_per_window{$window_idx_key}{ref} = $referenceSequence;
 	}
 	
-	my $alignment_iterator = $sam->features(-seq_id => $referenceSequenceID, -iterator => 1);
-	my $n_alignment = 0;
-	while(my $alignment = $alignment_iterator->next_seq)
+	
+	
+	$n_alignment = 0;
+	foreach my $alignment (@runningAlignments)
 	{
 		$n_alignment++;		
 		print "\r\t\tProcessing ", $n_alignment, "...   ";
-
-		my $readID = $alignment->query->name;
-		if(exists $saw_read_IDs{$readID})
-		{
-			die "Observed more than one alignment for read ID $readID - this should not happen!";
-			next;
-		}
-		$saw_read_IDs{$readID}++;
-		
-		my $alignment_start_pos = $alignment->start;
-		my ($ref,$matches,$query) = $alignment->padded_alignment;
+		my $readID = $alignment->{readID};
+			
+		my $alignment_start_pos = $alignment->{firstPos_reference};
+		my $ref = $alignment->{alignment_reference};
+		my $query = $alignment->{alignment_read};
+        
 		die unless(length($ref) == length($query));
 		my $rel_idx = -1;	
 		my $firstPosition_reference;
@@ -342,7 +367,8 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		die unless((defined $firstPosition_reference) and (defined $lastPosition_reference));
 		print ALIGNMENTS join("\t", $readID, $referenceSequenceID, $chrDir, $firstPosition_reference, $lastPosition_reference), "\n";
-	}	
+	}
+	
 	print "\n";
 
 	my %saw_sequence_already;
@@ -395,14 +421,16 @@ foreach my $referenceSequenceID (@sequence_ids)
 		
 		foreach my $sequenceID (grep {$sequenceID_not_seen{$_}} keys %sequenceID_not_seen)
 		{
-			unless(exists $reads_href->{$sequenceID})
-			{
-				warn "No truth sequence for $sequenceID";
-				delete($runningSequencesForReconstruction{$sequenceID});				
-				next;
-			}
+			my $read_sequence = getSequenceFromIndexedFasta($readsFasta, $sequenceID);
+		
+			# unless(exists $reads_href->{$sequenceID})
+			# {
+				# die "No truth sequence for $sequenceID";
+				# delete($runningSequencesForReconstruction{$sequenceID});				
+				# next;
+			# }
 			
-			my $trueSequence = uc($reads_href->{$sequenceID});
+			my $trueSequence = uc($read_sequence);
 			my $trueSequence_revCmp = uc(reverseComplement($trueSequence));
 			
 			my $supposedSequence = $runningSequencesForReconstruction{$sequenceID};
@@ -422,7 +450,58 @@ foreach my $referenceSequenceID (@sequence_ids)
 			delete($runningSequencesForReconstruction{$sequenceID});
 		}
 	}
+	
+	@runningAlignments = ();
+};
+
+my %processedReadIDs;
+open(ALIGNMENTS, '<', $fn_SAM_alignments) or die "Cannot open $fn_SAM_alignments";
+while(<ALIGNMENTS>)
+{
+	my $header = $_; chomp($header);
+	my $aligned_reference = <ALIGNMENTS>; chomp($aligned_reference);
+	my $aligned_read = <ALIGNMENTS>; chomp($aligned_read);
+	my $aligned_qualities = <ALIGNMENTS>; chomp($aligned_qualities);
+	die unless($aligned_reference and $aligned_read and $aligned_qualities);
+	die unless(length($aligned_reference) == length($aligned_read));
+	print length($aligned_reference), "\n";
+	
+	my @header_line_fields = split(/ /, $header);
+	my $readID = $header_line_fields[0];
+	my $refPositions = $header_line_fields[1];
+	die unless($refPositions =~ /^(\w+):(\d+)-(\d+)$/);
+	my $referenceSequenceID = $1;
+	my $alignmentStart_1based = $2;
+	my $alignmentStop_1based = $3;
+	die unless($alignmentStart_1based <= $alignmentStop_1based); # otherwise RC
+	
+	my $readPositions = $header_line_fields[2];
+	die unless($readPositions =~ /^read:(\d+)-(\d+)$/);
+	my $alignmentStartInRead_1based = $1;
+	my $alignmentStopInRead_1based = $2;
+	
+	my $readLength = $header_line_fields[8];
+	die unless($readLength =~ /readLength=(\d+)/);
+	$readLength = $1;
+	
+	if($processedReadIDs{$readID})
+	{
+		die "Read ID $readID appears more than once - abort!";
+	}
+	$processedReadIDs{$readID}++;
+	
+	if((defined $runningReferenceID) and ($runningReferenceID ne $referenceSequenceID))
+	{
+		$process_collected_read_data->();
+	}
+	$runningReferenceID = $referenceSequenceID;
+	
+	my $read_href = convertAlignmentToHash($readID, [$referenceSequenceID, $alignmentStart_1based, $alignmentStop_1based], [$alignmentStartInRead_1based, $alignmentStopInRead_1based], [$aligned_reference, $aligned_read], $readLength);	
+	push(@runningAlignments, $read_href);
 }
+close(ALIGNMENTS);
+$process_collected_read_data->();
+
 
 close(WINDOWS);
 close(ALIGNMENTSONLYGAPS);
@@ -461,3 +540,230 @@ sub reverseComplement
 	return scalar(reverse($kMer));
 }
 
+my $warnings = 0;
+sub convertAlignmentToHash
+{
+	my $readID = shift;
+	my $referenceCoordinates_aref = shift;
+	my $readCoordinates_aref = shift;
+	my $alignment = shift;
+	my $readLength = shift;
+	
+	die unless(length($alignment->[0]) eq length($alignment->[1]));
+	die unless(defined $readLength);
+	
+	# $readID, [$referenceSequenceID, $alignmentStartInRead_1based, $alignmentStop_1based], [$alignmentStartInRead_1based, $alignmentStopInRead_1based], [$aligned_reference, $aligned_read]
+	
+	# positions
+	
+	my $chromosome = $referenceCoordinates_aref->[0];
+	my $firstPos_reference_0based = $referenceCoordinates_aref->[1] - 1;
+	die unless($firstPos_reference_0based >= 0);
+	
+	my $lastPos_reference_0based = $referenceCoordinates_aref->[2] - 1;
+	
+	die unless($firstPos_reference_0based <= $lastPos_reference_0based);
+
+	my $firstPos_read_0based = $readCoordinates_aref->[0] - 1;
+	my $lastPos_read_0based = $readCoordinates_aref->[1] - 1;
+	
+	my $isReverseComplement = 0;
+	if($firstPos_read_0based > $lastPos_read_0based)
+	{
+		$isReverseComplement = 1;
+		my $third = $firstPos_read_0based;
+		$firstPos_read_0based = $lastPos_read_0based;
+		$lastPos_read_0based = $third;
+	}
+	die Dumper("Read positions", $referenceCoordinates_aref, $readCoordinates_aref) unless($firstPos_read_0based <= $lastPos_read_0based);
+
+	my $strand = ($isReverseComplement) ? -1 : 1;
+	die unless(($strand == 1) or ($strand == -1));
+	$strand = ($strand == 1) ? '+' : '-';
+	
+	# alignments
+	
+	my $alignment_reference = uc($alignment->[0]);
+	my $alignment_read = uc($alignment->[1]);
+	
+	# check that all alignment sequences are OK
+	
+	die "Missing reference sequence for $chromosome" unless(exists $reference_href->{$chromosome});
+	my $supposed_reference_sequence = uc(substr($reference_href->{$chromosome}, $firstPos_reference_0based, $lastPos_reference_0based - $firstPos_reference_0based + 1));
+	
+	my $alignment_reference_noGaps = $alignment_reference;
+	$alignment_reference_noGaps =~ s/\-//g;
+		
+	unless($alignment_reference_noGaps eq $supposed_reference_sequence)
+	{
+		print "Reference mismatch for read $readID\n";
+		#print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
+		# print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";			
+		#print "\t", $alignment_reference, "\n";
+		#print "\t", $alignment_read, "\n";
+		print "\t", "firstPos_reference_0based: ", $firstPos_reference_0based, "\n";
+		print "\t", "REF: ", substr($alignment_reference_noGaps, 0, 20), " .. ", substr($alignment_reference_noGaps, length($alignment_reference_noGaps)-10, 10), " ", length($alignment_reference_noGaps),  "\n";
+		print "\t", "REF2: ", substr($reference_href->{$chromosome}, $firstPos_reference_0based, 20),  " ", length($supposed_reference_sequence), "\n";
+		#print "\t", "ALG: ", $supposed_reference_sequence, "\n";
+		print "\t", "strand: ", $strand, "\n";			
+		print "\n";
+		$warnings++;
+		die if($warnings > 0);
+		return undef;
+	}
+
+
+	my $raw_read_sequence = uc(getSequenceFromIndexedFasta($readsFasta, $readID));
+
+	if(not $truncatedReads{$readID})
+	{
+		my $supposed_read_sequence = substr($raw_read_sequence, $firstPos_read_0based, $lastPos_read_0based - $firstPos_read_0based + 1);
+		
+		if($strand eq '-')
+		{
+			$supposed_read_sequence = reverseComplement($supposed_read_sequence);
+		}
+		
+		my $alignment_read_noGaps = $alignment_read;
+		$alignment_read_noGaps =~ s/\-//g;	
+		
+		unless($alignment_read_noGaps eq $supposed_read_sequence)
+		{
+			print "Sequence mismatch for read $readID\n";
+
+			# print "\t", "CIGAR: ", $inputAlignment->cigar_str, "\n";
+			# print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";
+			print "\t", "firstPos_read_0based: ", $firstPos_read_0based, "\n";
+			print "\t", "lastPos_read_0based: ", $lastPos_read_0based, "\n";
+			print "\t", "alignment_read_noGaps : ", length($alignment_read_noGaps), "\n";
+			print "\t", "supposed_read_sequence: ", length($supposed_read_sequence), "\n\n";
+			#print "\t", "alignment_ref : ", $alignment_reference, "\n";
+			#print "\t", "alignment_read: ", $alignment_read, "\n";
+			print "\t", "alignment_read_noGaps: ", substr($alignment_read_noGaps, 0, 10), "\n";
+			print "\t", "supposed_read_sequence: ", substr($supposed_read_sequence, 0, 10), "\n";
+			print "\n";
+			$warnings++;
+			die if($warnings > 0);
+			return undef;
+		}
+
+		die "Mismatch query\n$alignment_read_noGaps\n$supposed_read_sequence" unless($alignment_read_noGaps eq $supposed_read_sequence);
+	}
+	
+	my $n_matches = 0;
+	my $n_mismatches = 0;
+	my $n_insertions = 0;
+	my $n_deletions = 0;
+	my $n_gaps;
+
+	my $alignment_length = length($alignment_reference);
+	die Dumper("Lenght mismatch: " . length($alignment_read) . " v/s $alignment_length", $readID, $chromosome, $firstPos_reference_0based) unless(length($alignment_read) == $alignment_length);
+	
+	my $runningPos_query = 0;
+	my $runningPos_reference = $firstPos_reference_0based - 1;
+	my $runningPos_read = $firstPos_read_0based - 1;
+	for(my $alignmentPosI = 0; $alignmentPosI < $alignment_length; $alignmentPosI++)
+	{
+		my $c_ref = substr($alignment_reference, $alignmentPosI, 1);
+		my $c_query = substr($alignment_read, $alignmentPosI, 1);
+		die if(($c_ref eq '-') and ($c_query eq '-'));
+		if($c_ref eq '-')
+		{
+			$n_insertions++;			
+			$runningPos_read++;
+		}
+		elsif($c_query eq '-')
+		{
+			$n_deletions++;
+			$runningPos_reference++;
+			
+		}
+		else
+		{
+			$runningPos_reference++;
+			$runningPos_read++;
+			if($c_ref eq $c_query)
+			{
+				$n_matches++;
+			}
+			else
+			{
+				$n_mismatches++;
+			}
+		}
+	}
+	
+	die unless(defined $runningPos_read);
+	die unless($runningPos_read == $lastPos_read_0based);
+	die unless($runningPos_reference == $lastPos_reference_0based);
+	
+	$n_gaps = $n_insertions + $n_deletions;
+
+	return {
+		readID => $readID,
+		chromosome => $chromosome,
+		firstPos_reference => $firstPos_reference_0based,
+		lastPos_reference => $lastPos_reference_0based,
+		firstPos_read => $firstPos_read_0based,
+		lastPos_read => $lastPos_read_0based,
+		strand => $strand,
+		n_matches => $n_matches,
+		n_mismatches => $n_mismatches,
+		n_gaps => $n_gaps,
+		alignment_reference => $alignment_reference,
+		alignment_read => $alignment_read,
+		readLength => $readLength,
+	};
+}
+
+sub indexFastaIfNecessary
+{
+	my $fasta = shift;
+	die unless(defined $fasta);
+	unless((-e $fasta . '.fai') and ((stat($fasta . '.fai'))[9] > (stat($fasta))[9]))
+	{
+		my $index_cmd = qq($samtools_path faidx $fasta);
+		system($index_cmd) and die "Could not execute command: $index_cmd";
+	}
+}
+
+sub getSequenceFromIndexedFasta
+{
+	my $fasta = shift;
+	my $seqID = shift;
+	die unless(defined $fasta);
+	die unless(defined $seqID);
+
+	die "FASTA $fasta not indexed" unless(-e $fasta . '.fai');
+	my $extract_cmd = qq($samtools_path faidx $fasta "$seqID");
+
+	open(SAMTOOLS, "$extract_cmd |") or die "Can't open samtools command $extract_cmd";
+
+	my %R;
+	my $currentSequence;
+	while(<SAMTOOLS>)
+	{
+		my $line = $_;
+		chomp($line);
+		$line =~ s/[\n\r]//g;
+		if(substr($line, 0, 1) eq '>')
+		{
+			$currentSequence = substr($line, 1);
+		}
+		else
+		{
+			$R{$currentSequence} .= $line;
+		}
+	}	
+	
+	close(SAMTOOLS);	
+	
+	unless(exists $R{$seqID})
+	{
+		die "Sequence $seqID could not be found in FASTA output";
+	}
+	
+	return $R{$seqID};
+}
+ 
+ 

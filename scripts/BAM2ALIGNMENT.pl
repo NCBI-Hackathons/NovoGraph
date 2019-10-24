@@ -95,7 +95,7 @@ while(<ALIGNMENTS>)
 	my $aligned_qualities = <ALIGNMENTS>; chomp($aligned_qualities);
 	die unless($aligned_reference and $aligned_read and $aligned_qualities);
 	die unless(length($aligned_reference) == length($aligned_read));
-	print length($aligned_reference), "\n";
+	# print length($aligned_reference), "\n";
 	
 	my @header_line_fields = split(/ /, $header);
 	my $readID = $header_line_fields[0];
@@ -192,7 +192,7 @@ sub convertAlignmentToHash
 	# $readID, [$referenceSequenceID, $alignmentStartInRead_1based, $alignmentStop_1based], [$alignmentStartInRead_1based, $alignmentStopInRead_1based], [$aligned_reference, $aligned_read]
 	
 	# positions
-	
+	 
 	my $chromosome = $referenceCoordinates_aref->[0];
 	my $firstPos_reference_0based = $referenceCoordinates_aref->[1] - 1;
 	die unless($firstPos_reference_0based >= 0);
@@ -269,8 +269,8 @@ sub convertAlignmentToHash
 		# print "\t", "Softclip remove: ", join("\t", $remove_softclipping_front, $remove_softclipping_back), "\n";
 		print "\t", "firstPos_read_0based: ", $firstPos_read_0based, "\n";
 		print "\t", "lastPos_read_0based: ", $lastPos_read_0based, "\n";
-		print "\t", "alignment_read_noGaps : ", length($alignment_read_noGaps), "\n";
-		print "\t", "supposed_read_sequence: ", length($supposed_read_sequence), "\n\n";
+		print "\t", "alignment_read_noGaps : ", length($alignment_read_noGaps), " ", substr($alignment_read_noGaps, 0, 10), "\n";
+		print "\t", "supposed_read_sequence: ", length($supposed_read_sequence), " ", substr($supposed_read_sequence, 0, 10), "\n\n";
 		#print "\t", "alignment_ref : ", $alignment_reference, "\n";
 		#print "\t", "alignment_read: ", $alignment_read, "\n";
 		print "\t", "strand: ", $strand, "\n";

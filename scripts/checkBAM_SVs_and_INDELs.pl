@@ -58,7 +58,7 @@ die unless(-x $samtools_path);
 
 my $outputFile2 = 'fromBAM_lengthStatistics.txt.individualAlignments';
 
-my $reference_href;
+my $reference_href; 
 my $reads_href;
 
 print "Read $referenceFasta\n";
@@ -532,7 +532,7 @@ sub indexFastaIfNecessary
 {
 	my $fasta = shift;
 	die unless(defined $fasta);
-	unless(-e $fasta . '.fai')
+	unless((-e $fasta . '.fai') and ((stat($fasta . '.fai'))[9] > (stat($fasta))[9]))
 	{
 		my $index_cmd = qq($samtools_path faidx $fasta);
 		system($index_cmd) and die "Could not execute command: $index_cmd";
