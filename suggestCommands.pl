@@ -122,17 +122,17 @@ my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38
 
 print qq(
 
-# Map the initial contigs with bwa - note that there is no sorting step!
-bwa mem -t 4 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+# Map your input contigs with minimap2:
+minimap2 -t 4 -a -x asm20 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
-# You could also use minimap2 instead of bwa, like this:
-# minimap2 -t 4 -a -x asm20 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+# You could also use bwa:
+# bwa mem -t 4 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # Check that the following command returns 0 - otherwise remove entries of unmapped entries from BAM:
 $samtools_path view -c -f 0x4 ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # Check that all input data look OK:
-perl scripts/checkBAM_SVs_and_INDELs.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
+perl scripts/checkBAM_SVs_and_INDELs.pl --BAM ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path
 
 # Convert BAM into a simple text format readable by the next step:
 perl scripts/BAM2ALIGNMENT.pl --BAM  ${outputDirectory}/${prefix}_allContigs_unsorted.bam --referenceFasta $referenceGenome --readsFasta $inputContigs --outputFile  ${outputDirectory}/intermediate_files/${prefix}_AlignmentInput.txt --sam2alignment_executable src/sam2alignment --samtools_path $samtools_path

@@ -19,7 +19,7 @@ $| = 1;
 ##                    --referenceFasta /home/data/reference/GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
 ##                    --readsFasta /home/data/contigs/AllContigs.fa 
 ##                    --outputFile /intermediate_files/AlignmentInput.txt
-
+ 
 
 my $referenceFasta;
 my $BAM;
