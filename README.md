@@ -58,11 +58,8 @@ Some important notes:
 
 
 ```
-## Index the reference FASTA
-bwa index GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa
-
 ## Align the contigs FASTA against the reference, outputting a single BAM
-bwa mem GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
+minimap2 -a -x asm20 GRCh38_full_plus_hs38d1_analysis_set_minus_alts allContigs.fa  | samtools view -Sb - > allContigs_unsorted.bam
 
 ## Check that there are no unmapped reads in the input BAM, as this might lead to unknown behaviour
 samtools view -c -f 0x4 allContigs_unsorted.bam
@@ -104,27 +101,25 @@ perl BAM2ALIGNMENT.pl --BAM allContigs_unsorted.bam
 ## The combined output for all contigs from all input assemblies is represented in a single SAM/CRAM file.
 perl FIND_GLOBAL_ALIGNMENTS.pl --alignmentsFile ../intermediate_files/AlignmentInput.sortedWithHeader 
                                --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
-                               --outputFile forMAFFT.bam 
+                               --outputFile forMAFFT.sam 
                                --outputTruncatedReads ../intermediate_files/truncatedReads 
                                --outputReadLengths ../intermediate_files/postGlobalAlignment_readLengths
-                               --CIGARscript_path dealWithTooManyCIGAROperations.pl
 
 ## Output:
-## forMAFFT.bam
+## forMAFFT.sam
 
-
-## Provides diagnostics to validate that the resulting BAM is correct
-perl countExpectedGlobalAlignments.pl --BAM forMAFFT.bam
 ```
 
 ##### Step 2: Multiple Sequence Alignment (MSA) computation
 ```
 ## Execute BAM2MAFFT.pl
-perl BAM2MAFFT.pl --BAM forMAFFT.bam 
+perl BAM2MAFFT.pl --SAM forMAFFT.sam 
                   --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                   --readsFasta allContigs.fa 
                   --outputDirectory .../intermediate_files/forMAFFT 
                   --inputTruncatedReads .../intermediate_files/truncatedReads 
+                  --sam2alignment_executable src/sam2alignment
+                  --samtools_path /usr/local/bin/samtools
 
 ## The next step is to execute CALLMAFFT.pl
 ## This step assumes you are using the Sun Grid Engine (SGE) job scheduler to submit jobs
@@ -176,7 +171,7 @@ samtools index combined.cram
 ## Validate that the CRAM is correct
 perl checkMAFFT_input_and_output.pl --MAFFTdir .../intermediate_files/forMAFFT/ 
                                     --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
-                                    --preMAFFTBAM forMAFFT.bam 
+                                    --preMAFFTBAM forMAFFT.sam
                                     --finalOutputCRAM combined.cram
                                     --fas2bam_path fas2bam.pl
                                     --samtools_path /usr/local/bin/samtools
@@ -197,7 +192,7 @@ perl CRAM2VCF.pl --CRAM combined.cram
                  --CRAM2VCF_executable ../src/CRAM2VCF
 				 --sam2alignment_executable ../src/sam2alignment
 
-
+ 
 
 ## Next, execute launch_CRAM2VCF_C++.pl
 perl launch_CRAM2VCF_C++.pl --prefix graph
