@@ -143,7 +143,8 @@ public:
 
 };
 map<string, string> readFASTA(std::string file, bool fullIdentifier = false);
-void processAlignments_oneRead(const std::string& readID, const std::vector<alignment>& alignments, const std::map<std::string, std::string>& referenceSequences);
+map<string, std::pair<std::string, std::string>> readFASTQ(std::string file, bool fullIdentifier = false);
+void processAlignments_oneRead(const std::string& readID, const std::vector<alignment>& alignments, const std::map<std::string, std::string>& referenceSequences, const map<string, std::pair<std::string, std::string>>& readSequences);
 void testFlags();
 
 int main(int argc, char *argv[]) {
@@ -159,10 +160,16 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	if(ARG.size() == 0)
+	std::string FASTQ;
+	if(ARG.size() < 2)
 	{
 		std::cerr << "Please provide two arguments: a BAM and a reference in FASTA format." << "\n" << std::flush;
 		throw std::runtime_error("Missing arguments");
+	}
+	
+	if(ARG.size() >= 3)
+	{
+		FASTQ = ARG.at(2);
 	}
 
 	testFlags();
@@ -171,7 +178,13 @@ int main(int argc, char *argv[]) {
 	std::string refFile = ARG.at(1);
 
 	std::map<std::string, std::string> referenceSequences = readFASTA(refFile);
-
+	
+	map<string, std::pair<std::string, std::string>> readSequences;
+	if(FASTQ.length())
+	{
+		readSequences = readFASTQ(FASTQ);
+	}
+	
 	std::set<std::string> processed_readIDs;
 
 	std::map<std::string, std::vector<alignment>> readID_2_alignments;
@@ -179,7 +192,7 @@ int main(int argc, char *argv[]) {
 	{
 		for(auto readData : readID_2_alignments)
 		{
-			processAlignments_oneRead(readData.first, readData.second, referenceSequences);
+			processAlignments_oneRead(readData.first, readData.second, referenceSequences, readSequences);
 		}
 		readID_2_alignments.clear();
 	};
@@ -498,7 +511,7 @@ void processOneReadAlignment(const std::string& readID, const alignment& alignme
 	}
 }
 
-void processAlignments_oneRead(const std::string& readID, const std::vector<alignment>& alignments, const std::map<std::string, std::string>& referenceSequences)
+void processAlignments_oneRead(const std::string& readID, const std::vector<alignment>& alignments, const std::map<std::string, std::string>& referenceSequences, const map<string, std::pair<std::string, std::string>>& readSequences)
 {
 	std::string primaryReadSequence_originalStrand;
 	std::string primaryReadSequence_qualities;
@@ -541,7 +554,22 @@ void processAlignments_oneRead(const std::string& readID, const std::vector<alig
 
 	if(primaryReadSequence_originalStrand.length() == 0)
 	{
-		throw std::runtime_error("Missing primary non-supplementary alignment for read " + readID);
+		if(readSequences.count(readID))
+		{
+			primaryReadSequence_originalStrand = readSequences.at(readID).first;
+			primaryReadSequence_qualities = readSequences.at(readID).second;
+		}
+		else
+		{
+			throw std::runtime_error("Missing primary non-supplementary alignment for read " + readID);
+		}
+	}
+	else
+	{
+		if(readSequences.count(readID))
+		{
+			assert(primaryReadSequence_originalStrand == readSequences.at(readID).first);
+		}		
 	}
 	assert(primaryReadSequence_originalStrand.length());
 
@@ -568,6 +596,75 @@ void eraseNL(string& s)
 	    s.erase(s.length()-1);
 	}
 }
+
+
+map<string, std::pair<std::string, std::string>> readFASTQ(std::string file, bool fullIdentifier)
+{
+	map<string, std::pair<std::string, std::string>> forReturn;
+
+	std::ifstream FASTQstream;
+
+	FASTQstream.open(file.c_str());
+	if(! FASTQstream.is_open())
+	{
+		throw std::runtime_error("readFASTA(): Cannot open file "+file);
+	}
+
+	while(FASTQstream.good())
+	{
+		std::string line;
+		size_t lineCounter = 0;
+
+		std::string currentSequenceIdentifier;
+		while(FASTQstream.good())
+		{
+			std::getline(FASTQstream, line);
+			eraseNL(line);
+
+			if(line.length() == 0)
+			{
+				continue;
+			}
+			
+			assert(line.substr(0, 1) == "@");
+			
+			std::string sequence;
+			std::string plus;
+			std::string qualities;
+			
+			std::getline(FASTQstream, sequence);
+			eraseNL(sequence);			
+			
+			std::getline(FASTQstream, plus);
+			eraseNL(plus);			
+
+			std::getline(FASTQstream, qualities);
+			eraseNL(qualities);		
+
+			assert(sequence.length() == qualities.length());
+			
+			std::string readID = line.substr(1);
+		
+			if(! fullIdentifier)
+			{
+				for(size_t i = 0; i < readID.size(); i++)
+				{
+					if(readID.at(i) == ' ')
+					{
+						readID = readID.substr(0, i);
+						break;
+					}
+				}
+			}
+				
+			forReturn[readID] = make_pair(sequence, qualities);
+		}
+	}
+
+	return forReturn;
+}
+
+
 
 map<string, string> readFASTA(std::string file, bool fullIdentifier)
 {
