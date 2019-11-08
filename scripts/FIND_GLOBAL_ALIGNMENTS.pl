@@ -674,7 +674,7 @@ print "\n\nDone. Produced (unsorted) SAM file $outputFile_sam_unsorted - this fi
 # print "Converting to BAM with command:\n\t$cmd_bam_conversion\n\n";
 # die "BAM conversion failed" unless(system($cmd_bam_conversion) == 0);
 
-my $cmd_sam_sort = qq($samtools_path sort -o${outputFile} $outputFile_sam_unsorted);
+my $cmd_sam_sort = qq($samtools_path sort -o${outputFile} -O sam $outputFile_sam_unsorted);
 die "SAM sorting failed" unless(system($cmd_sam_sort) == 0);
 
 # print "Sorting and indexing BAM with command:\n\t$cmd_bam_sort\n\n";
