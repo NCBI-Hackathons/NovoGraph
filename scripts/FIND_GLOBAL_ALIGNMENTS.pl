@@ -581,7 +581,7 @@ my $processReadLines = sub {
 		
 		my @fields_for_output = (
 			$readID,
-			(2 | 64),
+			(0 | ($strand eq '-' ? 16 : 0)),
 			$chromosome,
 			$min_emitted_reference_position+1,
 			255,
