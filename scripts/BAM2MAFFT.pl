@@ -110,6 +110,7 @@ print ALIGNMENTSONLYGAPS join("\t", "alignedSequenceID", "referenceContigID", "c
 
 my %processedReferenceIDs;
 my %saw_ref_IDs;
+my @runningAlignmentspri;
 my @runningAlignments;
 my $runningReferenceID;
 my $process_collected_read_data = sub {
@@ -129,7 +130,7 @@ my $process_collected_read_data = sub {
 	
 	unless($processNonChrReferenceContigs)
 	{
-		next unless($referenceSequenceID =~ /chr[XY\d]+/);
+		return unless($referenceSequenceID =~ /chr[XY\d]+/);
 	}
 	
 	unless(exists $reference_href->{$referenceSequenceID})
@@ -137,7 +138,7 @@ my $process_collected_read_data = sub {
 		die "No reference sequence for $referenceSequenceID";
 		next;
 	}
-	next unless(length($reference_href->{$referenceSequenceID}) > 20000);
+	return unless(length($reference_href->{$referenceSequenceID}) > 20000);
 	
 	my $chrDir = $referenceSequenceID;
 	$chrDir =~ s/\W//g;
@@ -464,7 +465,7 @@ while(<ALIGNMENTS>)
 	my $aligned_qualities = <ALIGNMENTS>; chomp($aligned_qualities);
 	die unless($aligned_reference and $aligned_read and $aligned_qualities);
 	die unless(length($aligned_reference) == length($aligned_read));
-	print length($aligned_reference), "\n";
+	# print length($aligned_reference), "\n";
 	
 	my @header_line_fields = split(/ /, $header);
 	my $readID = $header_line_fields[0];
@@ -489,12 +490,12 @@ while(<ALIGNMENTS>)
 		die "Read ID $readID appears more than once - abort!";
 	}
 	$processedReadIDs{$readID}++;
-	
+
 	if((defined $runningReferenceID) and ($runningReferenceID ne $referenceSequenceID))
 	{
 		$process_collected_read_data->();
 	}
-	$runningReferenceID = $referenceSequenceID;
+	$runningReferenceID = $referenceSequenceID; 
 	
 	my $read_href = convertAlignmentToHash($readID, [$referenceSequenceID, $alignmentStart_1based, $alignmentStop_1based], [$alignmentStartInRead_1based, $alignmentStopInRead_1based], [$aligned_reference, $aligned_read], $readLength);	
 	push(@runningAlignments, $read_href);
