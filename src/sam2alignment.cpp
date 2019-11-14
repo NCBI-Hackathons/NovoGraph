@@ -472,6 +472,19 @@ void processOneReadAlignment(const std::string& readID, const alignment& alignme
 			std::cerr << aligned_ref_noGaps.length() << "\n";
 			std::cerr << supposed_aligned_ref_noGaps.substr(0, 20) << " " << supposed_aligned_ref_noGaps.substr(supposed_aligned_ref_noGaps.length() - 20, 20) <<  "\n";
 			std::cerr << aligned_ref_noGaps.substr(0, 20) << " " << aligned_ref_noGaps.substr(aligned_ref_noGaps.length() - 20, 20) << "\n";
+			int reported_errors = 0;
+			for(size_t pI = 0; pI < supposed_aligned_ref_noGaps.length(); pI++)
+			{
+				if(supposed_aligned_ref_noGaps.at(pI) != aligned_ref_noGaps.at(pI))
+				{
+					std::cerr << "\t" pI << " " << supposed_aligned_ref_noGaps.at(pI) << " " << aligned_ref_noGaps.at(pI) << "\n";
+					reported_errors++;
+					if(reported_errors >= 10)
+					{
+						break;
+					}
+				}
+			}
 			std::cerr << std::flush;
 		}			
 		assert(supposed_aligned_ref_noGaps == aligned_ref_noGaps);
