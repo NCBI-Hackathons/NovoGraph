@@ -477,7 +477,7 @@ void processOneReadAlignment(const std::string& readID, const alignment& alignme
 			{
 				if(supposed_aligned_ref_noGaps.at(pI) != aligned_ref_noGaps.at(pI))
 				{
-					std::cerr << "\t" pI << " " << supposed_aligned_ref_noGaps.at(pI) << " " << aligned_ref_noGaps.at(pI) << "\n";
+					std::cerr << "\t" << pI << " " << supposed_aligned_ref_noGaps.at(pI) << " " << aligned_ref_noGaps.at(pI) << "\n";
 					reported_errors++;
 					if(reported_errors >= 10)
 					{
