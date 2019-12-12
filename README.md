@@ -195,7 +195,7 @@ perl CRAM2VCF.pl --CRAM combined.cram
  
 
 ## Next, execute launch_CRAM2VCF_C++.pl
-perl launch_CRAM2VCF_C++.pl --prefix graph
+perl launch_CRAM2VCF_C++.pl --prefix graph --number_processes 10
 
 
 ## Finally, run CRAM2VCF_createFinalVCF.pl 
