@@ -15,20 +15,31 @@ require POSIX;    # provides WNOHANG
 $SIG{CHLD} = \&reap_kids;
 
 ## Usage:
-## launch_CRAM2VCF_C++.pl --prefix <path to output VCF without .VCF at the end>
+## launch_CRAM2VCF_C++.pl --prefix <path to output VCF without .VCF at the end> --number_processes <integer of total number of processes to run simultaneously>
 ##
 ## Example command:
-## ./launch_CRAM2VCF_C++.pl --prefix VCF/graph_v2.vcf
+## ./launch_CRAM2VCF_C++.pl --prefix VCF/graph_v2.vcf --number_processes 3
 
 $| = 1;
 
 my $output;
+my $number_processes;
 
 GetOptions (
 	'prefix:s' => \$output,
+	'number_processes:s' => \$number_processes
 );
 
 die "Please specify --prefix" unless($output);
+## die "Please specify the total number of processes to be simultaneously run --processes" unless($processes);
+
+## if undefined, set 
+if (not defined $number_processes){
+	$number_processes = 2;
+}
+
+die "Please specify a positive integer for input parameter `--number_processes` " unless ( $number_processes=~ /^[+]?\d+$/ && $number_processes != 0  );
+
 
 my $files_done = 0;
 my @commands;
@@ -99,8 +110,6 @@ for(my $iI = 0; $iI <= $#indices; $iI++)
 	$runningSize += (-s $inputFiles[$i]);
 }
 
-my %still_running;
-
 if($totalCommands == 0)
 {
 	print "\nAll done.\n\n";
@@ -110,7 +119,7 @@ else
 	foreach my $iI (@indices)
 	{
 		my $command = $commands[$iI];
-		while(scalar(keys %still_running) >= 10)
+		while(scalar(keys %still_running) >= $number_processes)
 		{
 			sleep 10;
 		}
