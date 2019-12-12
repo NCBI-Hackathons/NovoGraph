@@ -110,6 +110,8 @@ for(my $iI = 0; $iI <= $#indices; $iI++)
 	$runningSize += (-s $inputFiles[$i]);
 }
 
+my %still_running;
+
 if($totalCommands == 0)
 {
 	print "\nAll done.\n\n";
