@@ -123,7 +123,7 @@ my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38
 print qq(
 
 # If your contigs are interspersed with long stretches of unknown nucleotides (NNN...NNN) you should split them:
-# needs: Python 3 and biopython
+# needs: Python 3
 python scripts/split_identify_fasta.py $inputContigs > ${outputDirectory}/split_${inputContigs}
 
 # Map your input contigs with minimap2:
