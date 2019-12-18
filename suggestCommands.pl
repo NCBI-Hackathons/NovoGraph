@@ -122,11 +122,15 @@ my $samtools_view_header = ($limitToPGF) ? 'pgf.GrCh38.headerfile.txt' : 'GRCh38
 
 print qq(
 
+# If your contigs are interspersed with long stretches of unknown nucleotides (NNN...NNN) you should split them:
+# needs: Python 3
+python scripts/split_identify_fasta.py $inputContigs > ${outputDirectory}/split_${inputContigs}
+
 # Map your input contigs with minimap2:
-minimap2 -t 4 -a -x asm20 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+minimap2 -t 4 -a -x asm20 $referenceGenome ${outputDirectory}/split_${inputContigs} | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # You could also use bwa:
-# bwa mem -t 4 $referenceGenome  $inputContigs | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
+# bwa mem -t 4 $referenceGenome  ${outputDirectory}/split_${inputContigs} | $samtools_path view -Sb - > ${outputDirectory}/${prefix}_allContigs_unsorted.bam
 
 # Check that the following command returns 0 - otherwise remove entries of unmapped entries from BAM:
 $samtools_path view -c -f 0x4 ${outputDirectory}/${prefix}_allContigs_unsorted.bam
