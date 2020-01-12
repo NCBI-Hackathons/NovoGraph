@@ -4,7 +4,7 @@
 ## License: The MIT License, https://github.com/NCBI-Hackathons/Graph_Genomes/blob/master/LICENSE
 
 use strict;
-use Bio::DB::HTS;
+## use Bio::DB::HTS;  --- remove Bio::DB::HTS;
 use Getopt::Long;   
 use Data::Dumper;
 use Set::IntervalTree;
@@ -19,14 +19,29 @@ use File::Path;
 $| = 1;
 
 my $BAM;
+my $samtools_path;
 GetOptions (
 	'BAM:s' => \$BAM, 
+	'samtools_path:s' => \$samtools_path
 );
 
 die "Please specify --BAM" unless($BAM);
 die "--BAM $BAM not existing" unless(-e $BAM);
 
-my $sam = Bio::DB::HTS->new(-bam => $BAM);
+## check samtools exists
+unless($samtools_path)
+{
+	$samtools_path = `which samtools`;
+	$samtools_path =~ s/[\n\r]//g;
+	unless($samtools_path and -x $samtools_path)
+	{
+		die "Cannot determine path to samtools - please specify --samtools_path";
+	}
+}	
+die unless(-x $samtools_path);
+
+
+## my $sam = Bio::DB::HTS->new(-bam => $BAM); --- remove Bio::DB::HTS;
 
 my %total_contig_IDs;
 my %contigID_atLeastOneAlignment;
@@ -34,7 +49,30 @@ my %skipped_alignments_from;
 my %lengths_by_category;
 my %lengths_by_readID;
 
-my @sequence_ids = $sam->seq_ids();
+### my @sequence_ids = $sam->seq_ids(); --- remove Bio::DB::HTS;
+
+## We directly parse the BAM header instead
+
+## create header file *.header.txt
+my $BAM_header = $BAM . ".header.txt";
+my $cmd_extract_bam_header = qq($samtools_path view -H $BAM > $BAM_header );
+system($cmd_extract_bam_header) and die "Cannot execute command: $cmd_extract_bam_header"; 
+
+## parse *.header.txt
+my @sequence_ids;
+open(BAMHEADER, '<', $BAM_header) or die "Cannot open $BAM_header";
+while(<BAMHEADER>)
+{
+	chomp;
+	if($_ =~ /\@SQ\s+SN:(\S+)\s+LN:/)
+	{
+		push(@sequence_ids, $1);
+	}
+}
+close(BAMHEADER);
+
+
+
 my $nbases_used = 0;
 my $nbases_skipped = 0;
 foreach my $referenceSequenceID (@sequence_ids)
