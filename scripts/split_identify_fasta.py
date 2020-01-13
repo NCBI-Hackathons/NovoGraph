@@ -11,7 +11,9 @@ parser.add_argument("outputfile", help="Output with split fasta records")
 parser.add_argument("--Ns", type = int, default = 5000, help = "Number of Ns to split by [5000]")
 
 args = parser.parse_args()
+
 def read_fasta(fp):
+    """Parses Fasta file using a generator function."""
     name, seq = None, []
     for line in fp:
         line = line.rstrip()
@@ -27,7 +29,7 @@ with open(args.outputfile, "w+") as outf:
     with open(args.inputfile) as f:
         for fid, seqt in read_fasta(f):
             seq = seqt.upper()
-            if seq[0] not in {'A', 'G', 'C', 'T', 'N'}:
+            if seq[0] not in "GATCRYWSMKHBVDN":
                 print("Error found in input file. Make sure the input is in correct fasta format.")
                 sys.exit()
             print(fid + "... ", end = "")
@@ -41,13 +43,13 @@ with open(args.outputfile, "w+") as outf:
                 #print(s[m.span()[1]])
                 part = s[start:nstart]
 
-                outf.write(">" + args.prefix + "_" + fid + "_" + str(partnr) + "\n")
+                outf.write(">" + args.prefix + "_" + fid.lstrip(">") + "_" + str(partnr) + "\n")
                 outf.write(part + "\n")
 
                 partnr += 1
                 start = nstop
             part = s[start:]
-            outf.write(">" + args.prefix + "_" + fid + "_" + str(partnr) + "\n")
+            outf.write(">" + args.prefix + "_" + fid.lstrip(">") + "_" + str(partnr) + "\n")
             outf.write(part + "\n")
             
             print("found " + str(partnr) + " parts")
