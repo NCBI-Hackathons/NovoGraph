@@ -106,3 +106,4 @@ print "\t", "Skipped: ", $n_ignored, " / ", sprintf("%.2f", $nbases_skipped/1e6)
 print "\t", "Produce alignments: ", scalar(keys %contigID_atLeastOneAlignment), " / ", sprintf("%.2f", $nbases_used/1e6), "Mb\n";
 
 
+
