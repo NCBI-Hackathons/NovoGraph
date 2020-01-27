@@ -3,6 +3,9 @@ import sys
 from os import path
 import re
 from collections import defaultdict, namedtuple
+import logging
+
+logging.basicConfig(filename='genotyping_warnings.log', filemode='w', format='%(message)s')
 
 parser = ArgumentParser()
 parser.add_argument("inputfile", help = "Input file in vcf format. Only works for overlapping vcf.")
@@ -48,20 +51,28 @@ class Genotypes():
     def header(self):
         return "\t".join(self.gids)
     
-    def get_genotypes(self, chrom, info, table):
+    def get_genotypes(self, chrom, position, info, table):
         #print(info)
         idfields = info.lstrip("CONTIG=").split(",")
         gtstring = Gtstring(len(self.gids)*2)
         for allelenr, ids in enumerate(idfields):
-            print("ids: "  + ids)
+            #print("ids: "  + ids)
             if ids  == "-1":
                 continue
             for idx in ids.split("/"):
                 if ids  == -1:
                     continue
                 s = table[chrom][idx].sampleid
-                print("htpos: " + str(self.htpos[s]) + " s: " + str(s))
-                gtstring.set(self.htpos[s], allelenr)#print(s)
+                #print("htpos: " + str(self.htpos[s]) + " s: " + str(s))
+                curra = gtstring.gtarray[self.htpos[s]] 
+                if curra != "." and curra == str(allelenr):
+                    logging.warning(str(s) + " is found multiple times at " + str(chrom) + ": " + str(position))
+                    gtstring.set(self.htpos[s], ".")
+                elif curra != "." and curra != str(allelenr):
+                    logging.error(str(s) + " is both " + curra + " and " + str(allelenr) + " at " + str(chrom) + ": " + str(position))
+                    gtstring.set(self.htpos[s], ".")
+                else:    #sys.exit()
+                    gtstring.set(self.htpos[s], allelenr)#print(s)
                 #print(self.htpos[s])
                 #print(table[chrom][idx].pos)
         return str(gtstring)
@@ -99,6 +110,7 @@ for idf, chrom in idfiles.items():
                 fid, vid = line.rstrip().split()
                 ids_per_chrom[chrom][vid] = idPair(fid, fid.split("_")[0])
 
+print(ids_per_chrom)
 
 header = ""
 with open(args.outputfile, 'w+') as outf:
@@ -114,14 +126,15 @@ with open(args.outputfile, 'w+') as outf:
                 outf.write(header + "\n")
                 #print(line.rstrip())
                 break
+        f.seek(0)
+        counter = 0
         for line in f:
             if line.startswith('#'):
                 continue
             else:
+                counter += 1
+                if counter % 10000 == 0:
+                    print(str(counter) + " variants changed", end="\r")
                 sline = line.rstrip().split()
-                genotypes = gto.get_genotypes(sline[0], sline[7], ids_per_chrom)
+                genotypes = gto.get_genotypes(sline[0],sline[1], sline[7], ids_per_chrom)
                 outf.write(line.rstrip() + "\tGT\t" + genotypes + "\n")
-           
-
-
-
