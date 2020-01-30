@@ -60,7 +60,7 @@ class Genotypes():
         #print(info)
         idfields = info.lstrip("CONTIG=").split(",")
         #gtstring = Gtstring(len(self.sampleIds)*2)
-        gtstring = ["-"] * size * 2 # diploid
+        gtstring = ["-"] * len(self.sampleIds) * 2 # diploid
         for allelenr, ids in enumerate(idfields):
             #print("ids: "  + ids)
             if ids  == "-1":
@@ -77,9 +77,6 @@ class Genotypes():
                 elif curra != str(allelenr):
                     logging.error(str(s) + " is both " + curra + " and " + str(allelenr) + " at " + str(chrom) + ": " + str(position))
                     gtstring[self.samplePos[s]] = "." 
-                else:    #sys.exit()
-                #print(self.samplePos[s])
-                #print(table[chrom][idx].pos)
         return self.get_fullgenotypestring(gtstring)
         
 
@@ -100,7 +97,7 @@ with open(args.pedigree) as f:
     sampleIds = []
     for line in f:
         sampleId = line.rstrip().split()[0]
-        sampleIds.append(gt)
+        sampleIds.append(sampleId)
 
 gto = Genotypes(sampleIds, args.pedigree)
 
