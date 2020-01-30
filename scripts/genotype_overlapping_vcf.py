@@ -15,13 +15,6 @@ parser.add_argument("pedigree", help = "File listing HaplotypeIds and GenotypeId
 parser.add_argument("outputfile", help="Output file in vcf format")
 args = parser.parse_args()
 
-class Gtstring():
-    def __init__(self, size):
-        self.gtarray = ["."] * size # diploid
-
-    def set(self, pos, val):
-        self.gtarray[pos] = str(val)
-
     
 class Genotypes():
     def __init__(self,sids,pedigreefile):
@@ -56,7 +49,6 @@ class Genotypes():
         """ Returns genotypes as a string for a specific variant at chrom:position """
         #print(info)
         idfields = info.lstrip("CONTIG=").split(",")
-        #gtstring = Gtstring(len(self.sampleIds)*2)
         gtstring = ["-"] * len(self.sampleIds) * 2 # diploid
         for allelenr, ids in enumerate(idfields):
             #print("ids: "  + ids)
