@@ -2,7 +2,6 @@
 from argparse import ArgumentParser
 import sys
 from os import path
-import re
 from collections import defaultdict, namedtuple
 import logging
 
@@ -14,10 +13,7 @@ parser.add_argument("contig_alignment_file", help = "Alignments per chromosome. 
 parser.add_argument("id_prefix", help = "Path and prefix to *.queryIDs files")
 parser.add_argument("pedigree", help = "File listing HaplotypeIds and GenotypeIds.")
 parser.add_argument("outputfile", help="Output file in vcf format")
-
 args = parser.parse_args()
-
-Gtpos = namedtuple('Gtpos', ['gid', 'pos'])
 
 class Gtstring():
     def __init__(self, size):
