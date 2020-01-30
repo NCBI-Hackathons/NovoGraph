@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from argparse import ArgumentParser
 import sys
 from os import path
