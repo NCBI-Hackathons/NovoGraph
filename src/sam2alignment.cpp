@@ -16,6 +16,7 @@
 #include <fstream>
 #include <assert.h>
 #include <utility>
+#include <cctype>
 
 using namespace std;
 
@@ -445,7 +446,7 @@ void processOneReadAlignment(const std::string& readID, const alignment& alignme
 		unsigned int nm = 0;
 		for(unsigned int cI = 0; cI < aligned_reference.length(); cI++)
 		{
-			if(aligned_reference.at(cI) != aligned_read.at(cI))
+			if(std::toupper(aligned_reference.at(cI)) != std::toupper(aligned_read.at(cI)))
 				nm++;
 		}
 		int output_read_coordinates_1 = first_readBase_in_alignment;

@@ -99,6 +99,14 @@ int main(int argc, char *argv[]) {
 		doProduce_separatedVCF = std::stoi(arguments.at("doProduce_separatedVCF"));
 	}
 	
+	std::cout << "CRAM2VCF\n";
+	std::cout << "\t" << "input" << ": " << arguments.at("input") << "\n";
+	std::cout << "\t" << "referenceSequenceID" << ": " << arguments.at("referenceSequenceID") << "\n";
+	std::cout << "\t" << "max_gap_length" << ": " << arguments.at("max_gap_length") << "\n";
+	std::cout << "\t" << "doProduce_pseudoSample" << ": " << arguments.at("doProduce_pseudoSample") << "\n";
+	std::cout << "\t" << "doProduce_separatedVCF" << ": " << arguments.at("doProduce_separatedVCF") << "\n";
+	std::cout << std::flush;
+	
 	std::string outputFn_1 = arguments.at("input") + ".separated.VCF";
 	std::string outputFn_2 = arguments.at("input") + ".overlapping.VCF";
 	std::string outputFn_3 = arguments.at("input") + ".pseudoSample.VCF";
@@ -503,6 +511,7 @@ int main(int argc, char *argv[]) {
 
 	// produce overlapping VCF
 	{
+		std::cout << "Produce overlapping VCF into " << outputFn_2 << "\n" << std::flush;
 		std::ofstream outputStream_overlapping;
 		outputStream_overlapping.open(outputFn_2.c_str());
 		if(! outputStream_overlapping.is_open())
@@ -559,11 +568,17 @@ int main(int argc, char *argv[]) {
 	}
 	
 	if(doProduce_pseudoSample)
+	{
+		std::cout << "Produce pseudo-sample VCF...\n" << std::flush;
 		produceVCF_pseudoSample(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_3);	
-	
+	}
 	if(doProduce_separatedVCF)
+	{
+		std::cout << "Produce separated VCF...\n" << std::flush;
 		produceVCF(arguments.at("referenceSequenceID"), referenceSequence, alignments_starting_at, outputFn_1);
-
+	}
+	
+	std::cout << "Produce further files...\n" << std::flush;
 
 	std::string fn_files_SNPs = arguments.at("input")+".VCF.expectedSNPs";
 	std::ofstream SNPsstream;
@@ -653,6 +668,8 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 	size_t N_startingHaplotypes = startingHaplotypes_pos_2_alleles.size();
 	assert(startingHaplotype_pos_2_haplotypeID.size() == N_startingHaplotypes);
 	
+	std::cout << "\t" << "produceVCF_pseudoSample(..): Loaded alignments...\n";
+	
 	// we start collecting alleles whenever we find an all-reference-identical position 
 	// we also stop when we find an all-reference-identical position (and then we flush)
 	// whenever we are in this collection process, we demand that the set of 
@@ -663,7 +680,9 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 	runningOpenAlleles.resize(N_startingHaplotypes);
 	
 	std::vector<bool> runningOpenAlleles_which;
+	std::vector<bool> runningOpenAlleles_tainted;
 	runningOpenAlleles_which.resize(N_startingHaplotypes, false);
+	runningOpenAlleles_tainted.resize(N_startingHaplotypes, false);
 	
 	bool inVariableStretch = false;
 
@@ -687,6 +706,10 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 	
 	for(int posI = 0; posI < (int)referenceSequence.length(); posI++)
 	{
+		if((posI % 10000) == 0)
+		{
+			std::cout << "\r\t\t" << posI << "/" << referenceSequence.length() << std::flush;
+		}
 		std::string refC = referenceSequence.substr(posI, 1);
 		
 		bool allReferenceIdentical = true;	
@@ -715,11 +738,13 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 				{
 					// we have lost a haplotype - no good!
 					
-					if(! printedWarning)
-							printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
-					printedWarning = true;
+					//if(! printedWarning)
+					//		printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
+					//printedWarning = true;
 					
-					posI_startedOpenAlleles = -1;	
+					// posI_startedOpenAlleles = -1;	
+					
+					runningOpenAlleles_tainted.at(haplotypeI) = true;
 				}
 				else if((!runningOpenAlleles_which.at(haplotypeI)) && runningOpenAlleles_thisPos.at(haplotypeI))
 				{
@@ -728,11 +753,13 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 						// we have gained a haplotype
 						// this is fine as long as we're about to close in any case!
 						
-						if(! printedWarning)
-								printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
-						printedWarning = true;
+						// if(! printedWarning)
+						//		printDebug_open_or_lose_haplotype(posI, runningOpenAlleles_which, runningOpenAlleles_thisPos);
+						// printedWarning = true;
 
-						posI_startedOpenAlleles = -1;
+						// posI_startedOpenAlleles = -1;
+						
+						runningOpenAlleles_tainted.at(haplotypeI) = true;
 					}
 				}
 				else
@@ -746,33 +773,44 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 		{
 			if(posI_startedOpenAlleles != -1)
 			{
+				bool atLeastOneTained = false;
 				std::set<std::string> runningAlleles;
 				std::vector<std::string> runningAlleles_vec;
 				std::vector<unsigned int> runningAlleles_vec_from;
+				std::set<unsigned int> missing_from;				
 				for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
 				{
-					std::string runningAllele_noGaps = removeGaps(runningOpenAlleles.at(haplotypeI).substr(0, runningOpenAlleles.at(haplotypeI).length() - 1));
-					unsigned int runningAllele_noGaps_whereFrom = startingHaplotype_pos_2_haplotypeID.at(haplotypeI);	
-					
-					if(runningOpenAlleles_which.at(haplotypeI))
+					if(runningOpenAlleles_tainted.at(haplotypeI) == false)
 					{
-						assert(runningAllele_noGaps.length() > 0);
-						assert(runningOpenAlleles.at(haplotypeI).substr(runningOpenAlleles.at(haplotypeI).length() - 1, 1) == refC);	
+						std::string runningAllele_noGaps = removeGaps(runningOpenAlleles.at(haplotypeI).substr(0, runningOpenAlleles.at(haplotypeI).length() - 1));
+						unsigned int runningAllele_noGaps_whereFrom = startingHaplotype_pos_2_haplotypeID.at(haplotypeI);	
+						
+						if(runningOpenAlleles_which.at(haplotypeI))
+						{
+							assert(runningAllele_noGaps.length() > 0);
+							assert(runningOpenAlleles.at(haplotypeI).substr(runningOpenAlleles.at(haplotypeI).length() - 1, 1) == refC);	
 
-						runningAlleles.insert(runningAllele_noGaps);
-						runningAlleles_vec.push_back(runningAllele_noGaps);
-						runningAlleles_vec_from.push_back(runningAllele_noGaps_whereFrom);
+							runningAlleles.insert(runningAllele_noGaps);
+							runningAlleles_vec.push_back(runningAllele_noGaps);
+							runningAlleles_vec_from.push_back(runningAllele_noGaps_whereFrom);
+						}
+						else
+						{
+							assert(runningAllele_noGaps.length() == 0);
+						}
 					}
 					else
 					{
-						assert(runningAllele_noGaps.length() == 0);
+						unsigned int tainted_which = startingHaplotype_pos_2_haplotypeID.at(haplotypeI);		
+						missing_from.insert(tainted_which);
+						atLeastOneTained = true;
 					}
 				}
 				
 				size_t runningAllele_lastRefPos = posI - 1;
 				std::string runningAlleles_refSpan = referenceSequence.substr(posI_startedOpenAlleles, runningAllele_lastRefPos - posI_startedOpenAlleles + 1);
 				
-				if((runningAlleles.size() > 1) || ((runningAlleles.size() > 0) && (*(runningAlleles.begin()) != runningAlleles_refSpan)))
+				if((runningAlleles.size() > 1) || ((runningAlleles.size() > 0) && (*(runningAlleles.begin()) != runningAlleles_refSpan)) || (atLeastOneTained))
 				{
 					std::vector<std::string> alleles_ordered;
 					std::map<std::string, int> allele_2_i;
@@ -810,7 +848,7 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 							}
 						}
 
-						if(minAlleleLength > 1)
+						if((minAlleleLength > 1) && (! atLeastOneTained))
 						{
 							for(int allelePos = 0; allelePos < (minAlleleLength-1); allelePos++)
 							{	
@@ -845,6 +883,7 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 						alleles_ordered_forPrint.push_back(oneAllele.substr(removeInitialXBases));
 					}
 					
+					bool atLeastOneUndefined = false;
 					std::vector<std::string> genotypes;				
 					std::vector<std::string> genotypes_origin;	
 					assert(runningAlleles_vec.size() == runningAlleles_vec_from.size());
@@ -861,25 +900,50 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 						}
 						else
 						{
+							atLeastOneUndefined = true;
 							genotypes.push_back("?");
 							genotypes_origin.push_back("?");
 						}
 					}
+					for(auto missingWhich : missing_from)
+					{
+						genotypes.push_back(".");
+						genotypes_origin.push_back(std::to_string(missingWhich));
+					}
 					
+					std::vector<std::string> filter_issues;
+					if(atLeastOneTained)
+					{
+						filter_issues.push_back("tainted");
+					}
+					if(atLeastOneUndefined)
+					{
+						filter_issues.push_back("invalidAllele");
+					}
+					std::string filterPASS = (filter_issues.size() == 0) ? "PASS" : join(filter_issues, ",");
+					
+					std::string ALTalleles = join(std::vector<std::string>(alleles_ordered_forPrint.begin()+1, alleles_ordered_forPrint.end()), ",");
+					if(ALTalleles.length() == 0)
+					{
+						ALTalleles = ".";
+					}
 					outputStream <<
 							referenceSequenceID << "\t" <<
 							posI_startedOpenAlleles+1+removeInitialXBases << "\t" <<
 							"." << "\t" <<
 							alleles_ordered_forPrint.at(0) << "\t" <<
-							join(std::vector<std::string>(alleles_ordered_forPrint.begin()+1, alleles_ordered_forPrint.end()), ",") << "\t" <<
+							ALTalleles << "\t" <<
 							"." << "\t" <<
-							"PASS" << "\t" <<
+							filterPASS << "\t" <<
 							"." << "\t" <<
 							"GT:CONTIG" << "\t" <<
 							join(genotypes, "/") << ":" << join(genotypes_origin, ",") << "\n";
 				}
 			}
 			
+			runningOpenAlleles_tainted.clear();
+			runningOpenAlleles_tainted.resize(N_startingHaplotypes, false);
+				
 			for(unsigned int haplotypeI = 0; haplotypeI < N_startingHaplotypes; haplotypeI++)
 			{
 				//if(runningOpenAlleles.at(haplotypeI).length())
@@ -908,6 +972,7 @@ void produceVCF_pseudoSample(const std::string referenceSequenceID, const std::s
 		
 		runningOpenAlleles_which = runningOpenAlleles_thisPos;
 	}
+	std::cout << "\n";
 }
 
 
