@@ -17,7 +17,6 @@ $| = 1;
 ## Usage:
 ## generateMsaAndBam.pl <'makeMSA', 'makeBAM'> --fas2bam_path f2bp [--samtools_path stp] [--mafft_path mp] [--useGinsi] [--usePreClustering] [--preCluster_k pck] [--preCluster_jaccard_threshold pcjt] inputfile outputfile
 
-my $path_to_script = $FindBin::Bin.'/'.$FindBin::Script;
 my $mafft_path;
 my $samtools_path;
 my $bamheader;
