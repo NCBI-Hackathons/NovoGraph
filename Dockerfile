@@ -36,5 +36,6 @@ RUN cd /opt \
     && make all
 
 ENV PATH="/opt/NovoGraph/src:${PATH}"
+ENV PERL5LIB="/opt/NovoGraph/scripts:${PERL5LIB}"
 
 WORKDIR /opt/NovoGraph/scripts
