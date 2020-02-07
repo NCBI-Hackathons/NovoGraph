@@ -102,9 +102,9 @@ int main(int argc, char *argv[]) {
 	std::cout << "CRAM2VCF\n";
 	std::cout << "\t" << "input" << ": " << arguments.at("input") << "\n";
 	std::cout << "\t" << "referenceSequenceID" << ": " << arguments.at("referenceSequenceID") << "\n";
-	std::cout << "\t" << "max_gap_length" << ": " << arguments.at("max_gap_length") << "\n";
-	std::cout << "\t" << "doProduce_pseudoSample" << ": " << arguments.at("doProduce_pseudoSample") << "\n";
-	std::cout << "\t" << "doProduce_separatedVCF" << ": " << arguments.at("doProduce_separatedVCF") << "\n";
+	std::cout << "\t" << "max_gap_length" << ": " << max_gap_length << "\n";
+	std::cout << "\t" << "doProduce_pseudoSample" << ": " << doProduce_pseudoSample << "\n";
+	std::cout << "\t" << "doProduce_separatedVCF" << ": " << doProduce_separatedVCF << "\n";
 	std::cout << std::flush;
 	
 	std::string outputFn_1 = arguments.at("input") + ".separated.VCF";
