@@ -354,11 +354,11 @@ elsif($action eq 'processChunk')
 		my $bamFile = $file;
 		$bamFile=~ s/\.fa$/.bam/;
 		
-        #makeMSA($file, $msaFile);
-        #makeBAM($msaFile, $bamFile);
+		#makeMSA($file, $msaFile);
+		#makeBAM($msaFile, $bamFile);
 
-        MSAandBAM::makeMSA($file, $msaFile, $mafft_executable, $useGinsi, $usePreClustering, $preCluster_k, $preCluster_jaccard_threshold);
-        MSAandBAM::makeBAM($msaFile, $bamFile, $bamheader, $samtools_path, $fas2bam_path);
+		MSAandBAM::makeMSA($file, $msaFile, $mafft_executable, $useGinsi, $usePreClustering, $preCluster_k, $preCluster_jaccard_threshold);
+		MSAandBAM::makeBAM($msaFile, $bamFile, $bamheader, $samtools_path, $fas2bam_path);
 		# todo
 		#unlink($msaFile);
 	}
