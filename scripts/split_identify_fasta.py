@@ -24,6 +24,15 @@ def read_fasta(fp):
             seq.append(line)
     if name: yield (name, ''.join(seq))
      
+def get_new_id(prefix,partnr,oldid):
+    split_oldid = oldid.split(" ")
+    if len(split_oldid) > 1:
+        fid = split_oldid[0]
+        rid = " ".join(split_oldid[1:])
+    else:
+        fid = split_oldid[0]
+        rid = ""
+    return ">" + args.prefix + "_" + fid.lstrip(">") + "_" + str(partnr) + "_" + rid + "\n"
 
 with open(args.outputfile, "w+") as outf:
     with open(args.inputfile) as f:
@@ -43,13 +52,13 @@ with open(args.outputfile, "w+") as outf:
                 #print(s[m.span()[1]])
                 part = s[start:nstart]
 
-                outf.write(">" + args.prefix + "_" + fid.lstrip(">") + "_" + str(partnr) + "\n")
+                outf.write(get_new_id(args.prefix, str(partnr),fid))
                 outf.write(part + "\n")
 
                 partnr += 1
                 start = nstop
             part = s[start:]
-            outf.write(">" + args.prefix + "_" + fid.lstrip(">") + "_" + str(partnr) + "\n")
+            outf.write(get_new_id(args.prefix, str(partnr),fid))
             outf.write(part + "\n")
             
             print("found " + str(partnr) + " parts")
