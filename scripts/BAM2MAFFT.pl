@@ -201,7 +201,7 @@ my $process_collected_read_data = sub {
 		my $middleWindowPos = $potentialWindowPos + $targetWindowSize;
 		my $minWindowsPos = $middleWindowPos - $scanTarget;
 		my $maxWindowsPos = $middleWindowPos + $scanTarget;
-		last if($middleWindowsPos >= $#contig_coverage);
+		last if($middleWindowPos >= $#contig_coverage);
 		
 		$minWindowsPos = 0 if($minWindowsPos < 0);
 		$maxWindowsPos = $#contig_coverage if ($maxWindowsPos > $#contig_coverage);
