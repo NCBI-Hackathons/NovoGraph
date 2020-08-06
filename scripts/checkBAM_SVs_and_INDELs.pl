@@ -25,6 +25,7 @@ my $readsFasta;
 my $lenientOrder = 1;
 my $bin_sam2alignment;
 my $samtools_path;
+my $printDetailedAlignmentData;
 
 GetOptions (
 	'referenceFasta:s' => \$referenceFasta, 
@@ -34,6 +35,7 @@ GetOptions (
 	'lenientOrder:s' => \$lenientOrder,
 	'sam2alignment_executable:s' => \$bin_sam2alignment,
 	'samtools_path:s' => \$samtools_path,	
+    'printDetailedAlignmentData:s' => \$printDetailedAlignmentData,
 );
 
 die "Please specify --BAM" unless($BAM);
@@ -105,7 +107,11 @@ my $read_got_primary = 0;
 my $read_no_primary = 0;
 my %histograms;
 
-open(OUT2, '>', $outputFile2) or die "Cannot open $outputFile2";
+if ($printDetailedAlignmentData)
+{
+    open(OUT2, '>', $outputFile2) or die "Cannot open $outputFile2";
+}
+
 
 my $process_collected_read_data = sub {
 	die "Weird number of collected reads: ". scalar(keys %read_reference_positions) unless(scalar(keys %read_reference_positions) == 1);
@@ -122,7 +128,7 @@ my $process_collected_read_data = sub {
 	{
 		$read_got_primary++;
 		
-		print OUT2 "Read ", $readID, "\n";
+		print OUT2 "Read ", $readID, "\n" if ($printDetailedAlignmentData);
 		my $first_definedPosition;
 		my $last_definedPosition;
 		for(my $readPos = 0; $readPos <= $#{$read_reference_positions{$readID}}; $readPos++)
@@ -132,7 +138,7 @@ my $process_collected_read_data = sub {
 				$first_definedPosition = $readPos unless(defined $first_definedPosition);
 				$last_definedPosition = $readPos;
 			}
-			print OUT2 $readPos, "\t", $read_reference_positions{$readID}[$readPos], "\n";
+			print OUT2 $readPos, "\t", $read_reference_positions{$readID}[$readPos], "\n" if ($printDetailedAlignmentData);
 		}
 		
 		my $padding_front;

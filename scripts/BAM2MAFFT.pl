@@ -502,6 +502,7 @@ while(<ALIGNMENTS>)
 }
 close(ALIGNMENTS);
 $process_collected_read_data->();
+unlink($fn_SAM_alignments);
 
 
 close(WINDOWS);
