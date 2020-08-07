@@ -327,6 +327,9 @@ while(<ALIGNMENTS>)
 	}
 }
 close(ALIGNMENTS);
+unlink($fn_BAM_alignments) if not $printDetailedAlignmentData;
+unlink($fn_BAM_SAM) if not $printDetailedAlignmentData;
+
 $process_collected_read_data->();
 
 $histograms{primary}{1} = $read_got_primary;
