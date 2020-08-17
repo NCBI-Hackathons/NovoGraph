@@ -60,7 +60,7 @@ Some important notes:
 ```
 ## If you have long stretches of undetermined nucleotides (Ns) in your input fasta files or if you want
 ## to add a specific prefix to you input fastas you can use this helper script
-python split_identify_fasta.py --Ns 6 assembly1.fa prefix_for_assembly1 assembly1_split.fa
+python split_identify_fasta.py --Ns 5000 assembly1.fa prefix_for_assembly1 assembly1_split.fa
 
 ## Concatenate the input fasta files
 cat assembly1_split.fa assembly2_split.fa assembly3_split.fa > allContigs.fa
