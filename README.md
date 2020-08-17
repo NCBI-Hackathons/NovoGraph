@@ -54,7 +54,7 @@ Some important notes:
 * The utilized reference genome (here: `GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa`) should always be a primary reference, i.e. it should not contain any ALT contigs. You can, however, include the ALT contigs in your input file (here: `allContigs.fa`).
 
 #### Preparation:
-*Note*: The following commands assume you are in the `scripts` directory of NovoGraph, and most intermediate output also goes there. In most circumstances, it is preferable to use a dedicated output directory. When using `suggestCommands.pl`, this is specified as a parameter.
+*Note*: The following commands assume you are in the `/scripts` subdirectory of NovoGraph, and most intermediate output also goes there. In most circumstances, it is preferable to use a dedicated output directory. When using `suggestCommands.pl`, this is specified as a parameter.
 
 
 ```
@@ -80,7 +80,7 @@ samtools view -F 0x4 -bo allContigs_unsorted.filtered.bam allContigs_unsorted.ba
 perl checkBAM_SVs_and_INDELs.pl --BAM allContigs_unsorted.bam
                                 --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                                 --readsFasta allContigs.fa
-								--sam2alignment_executable ../src/sam2alignment
+				--sam2alignment_executable ../src/sam2alignment
 ```
 
 <p align="center">
@@ -98,7 +98,7 @@ perl BAM2ALIGNMENT.pl --BAM allContigs_unsorted.bam
                       --referenceFasta GRCh38_full_plus_hs38d1_analysis_set_minus_alts.fa 
                       --readsFasta allContigs.fa 
                       --outputFile ../intermediate_files/AlignmentInput.txt
-					  --sam2alignment_executable ../src/sam2alignment
+		      --sam2alignment_executable ../src/sam2alignment
 
 ## Output:
 ## AlignmentInput.txt.sortedWithHeader
@@ -197,7 +197,7 @@ perl CRAM2VCF.pl --CRAM combined.cram
                  --prefix graph 
                  --contigLengths .../intermediate_files/postGlobalAlignment_readLengths
                  --CRAM2VCF_executable ../src/CRAM2VCF
-				 --sam2alignment_executable ../src/sam2alignment
+		 --sam2alignment_executable ../src/sam2alignment
 
  
 
