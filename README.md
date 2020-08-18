@@ -154,7 +154,7 @@ perl CALLMAFFT.pl --action processChunk --mafftDirectory .../intermediate_files/
 perl CALLMAFFT.pl --action reprocess --mafftDirectory .../intermediate_files/forMAFFT
                   --mafft_executable /mafft/mafft-7.273-with-extensions/install/bin/mafft 
                   --fas2bam_path fas2bam.pl --samtools_path /usr/local/bin/samtools --bamheader windowbam.header.txt
-				  --usePreClustering 1
+                  --usePreClustering 1
 				  
 ## 
 ## Note: For the majority of use cases, this file 'windowbam.header.txt' should remain untouched. 
