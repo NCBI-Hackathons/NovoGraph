@@ -314,7 +314,7 @@ sub createMSA_preCluster
 		else
 		{
 			my $cmd_mafft = qq(${mafft_path} --retree 1 --maxiterate 0 --quiet $fn_rawSeq > $fn_msaSeq);
-			my $mafft_retcode;
+			my $mafft_retcode=-1;
 			if($usePreClustering ne 'ultra')
 			{
 				$mafft_retcode = system($cmd_mafft);
