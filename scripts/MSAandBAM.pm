@@ -149,9 +149,9 @@ sub makeMSA
 	my $output_href = readFASTA($outputFile);
 	die unless(scalar(keys %$output_href) == $n_sequences_originallyIn);
 	
-	# todo
-	#unlink($temp_file_in);
-	#unlink($temp_file_put);
+	# todo check
+	unlink($temp_file_in);
+	unlink($temp_file_out);
 	
 	
 }

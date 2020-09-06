@@ -31,6 +31,8 @@ my $bin_CRAM2VCF;
 my $bin_sam2alignment;
 my $contigLengths;
 my $samtools_path;
+my $printDetailedAlignmentData;
+
 GetOptions (
 	'CRAM:s' => \$CRAM, 
 	'referenceFasta:s' => \$referenceFasta, 
@@ -39,6 +41,7 @@ GetOptions (
 	'CRAM2VCF_executable:s' => \$bin_CRAM2VCF,
 	'sam2alignment_executable:s' => \$bin_sam2alignment,
 	'samtools_path:s' => \$samtools_path,
+	'printDetailedAlignmentData:s' => \$printDetailedAlignmentData,
 );
 	
 die "Please specify --CRAM" unless($CRAM);
@@ -432,6 +435,9 @@ while(<ALIGNMENTS>)
 	}
 }
 close(ALIGNMENTS);
+unlink($fn_CRAM_alignments) if not $printDetailedAlignmentData;
+unlink($fn_CRAM_SAM) if not $printDetailedAlignmentData;
+
 $postProcess_collectedAlignments->();
 $processed_ref_contig{$runningRefID}++;
 

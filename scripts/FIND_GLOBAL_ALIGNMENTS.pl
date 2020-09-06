@@ -92,7 +92,8 @@ foreach my $refChromosome (keys %$reference_href)
 	print SAMOUTPUT "\@SQ\tSN:${refChromosome}\tLN:", length($reference_href->{$refChromosome}),"\n";
 }
 
-open(INPUT, '<', $alignmentsFile) or die "$alignmentsFile not existing";
+my $gz_open_cmd = "zcat $alignmentsFile";
+open(INPUT, "$gz_open_cmd |") or die "Cannot open pipe to $gz_open_cmd";
 my $alignments_headerLine = <INPUT>;
 chomp($alignments_headerLine);
 my @alignments_headerFields = split(/\t/, $alignments_headerLine);

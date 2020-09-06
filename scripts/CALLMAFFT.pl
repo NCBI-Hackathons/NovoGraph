@@ -360,7 +360,7 @@ elsif($action eq 'processChunk')
 		MSAandBAM::makeMSA($file, $msaFile, $mafft_executable, $useGinsi, $usePreClustering, $preCluster_k, $preCluster_jaccard_threshold);
 		MSAandBAM::makeBAM($msaFile, $bamFile, $bamheader, $samtools_path, $fas2bam_path);
 		# todo
-		#unlink($msaFile);
+		unlink($msaFile);
 	}
 }
 else
