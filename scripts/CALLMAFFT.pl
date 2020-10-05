@@ -47,11 +47,10 @@ my $mafftDirectory;
 my $action;
 my $inputTruncatedReads;
 my $readsFasta;
-my $paranoid = 1;
 my $chunkSize = 5;
 my $processChunk;
 my $chunkI;
-my $qsub = 1;
+my $qsub = 0;  ## by default, --qsub isn't called
 my $path_to_script = $FindBin::Bin.'/'.$FindBin::Script;
 my $temp_qsub = 'temp_qsub';
 my $reprocess;
