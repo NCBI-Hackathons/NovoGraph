@@ -13,6 +13,7 @@ use FindBin;
 use File::Spec;
 use List::Util qw/shuffle/;
 use Cwd;
+use MSAandBAM;  ## module MSAandBAM.pm
 use lib $FindBin::Bin; # finds all modules in script directory
 my $current_dir = getcwd;
 
