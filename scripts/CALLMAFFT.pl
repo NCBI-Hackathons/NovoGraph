@@ -13,7 +13,9 @@ use FindBin;
 use File::Spec;
 use List::Util qw/shuffle/;
 use Cwd;
-use lib $FindBin::Bin; # finds all modules in script directory
+use FindBin;              ## locate this script
+use lib "$FindBin::Bin";  
+use MSAandBAM;            ## module MSAandBAM.pm
 my $current_dir = getcwd;
 
 $| = 1;
@@ -47,11 +49,10 @@ my $mafftDirectory;
 my $action;
 my $inputTruncatedReads;
 my $readsFasta;
-my $paranoid = 1;
 my $chunkSize = 5;
 my $processChunk;
 my $chunkI;
-my $qsub = 1;
+my $qsub = 0;  ## by default, --qsub isn't called
 my $path_to_script = $FindBin::Bin.'/'.$FindBin::Script;
 my $temp_qsub = 'temp_qsub';
 my $reprocess;
