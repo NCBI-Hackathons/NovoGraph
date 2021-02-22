@@ -384,6 +384,11 @@ sub invoke_self_array
 		open(QSUB, '>', $temp_qsub) or die "Cannot open $temp_qsub";
 		my $minJobID = 1;
 		my $maxJobID = $maxChunk_0based + 1;
+		## task ids of a job array, should at least be 1
+		## ${minJobID}-${maxJobID}
+		if ($minJobID==1 && $maxJobID==1){
+			$maxJobID = 2;
+		}
 		if($PBSPro)
 		{
 		print QSUB qq(#!/bin/bash
